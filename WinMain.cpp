@@ -12,7 +12,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE:
 		PostQuitMessage(100);
 		break;
+	case WM_KEYDOWN:
+		if (wParam == 'F')
+		{
+			SetWindowText(hWnd, "You pressed the F key my dude.");
+		}
+		break;
+	case WM_KEYUP:
+		if (wParam == 'F')
+		{
+			SetWindowText(hWnd, "F key is up now.");	
+		}
+		break;
+	case WM_CHAR:
+	{
+		static std::string title;
+		title.push_back((char)wParam);
+		SetWindowText(hWnd, title.c_str());
 	}
+		break;
+	
+	case WM_LBUTTONDOWN:
+		
+		break;
+	
+	}
+	
 
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
