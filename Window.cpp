@@ -1,5 +1,6 @@
 #include "Window.h"
 #include <sstream>
+#include "resource.h"
 
 Window::WindowClass Window::WindowClass::wndClass;
 
@@ -24,12 +25,12 @@ Window::WindowClass::WindowClass() noexcept
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = GetInstance();
-	wc.hIcon = nullptr;
+	wc.hIcon = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 32, 32, 0));
 	wc.hCursor = nullptr;
 	wc.hbrBackground = nullptr;
 	wc.lpszMenuName = nullptr;
 	wc.lpszClassName = GetName();
-	wc.hIconSm = nullptr;
+	wc.hIconSm = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, 16, 16, 0));
 
 	RegisterClassEx(&wc);
 }
@@ -128,7 +129,7 @@ const char* Window::Exception::what() const noexcept
 	oss << GetType() << std::endl
 		<< "[Error Code] " << GetErrorCode() << std::endl
 		<< "[Description] " << GetErrorString() << std::endl
-		<< GetOriginString;
+		<< GetOriginString();
 	whatBuffer = oss.str();
 	return whatBuffer.c_str();
 }
