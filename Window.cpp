@@ -119,6 +119,8 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 
 		/*KEYBOARD MESSAGES*/
 	case WM_KEYDOWN:
+	// syskey commands need to be handled to track ALT key (VK_MENU)
+	case WM_SYSKEYDOWN:
 
 		// check 30th bit for previous key state
 		// only send key pressed event if the auto repeat is enabled, in the case of key being pressed in the previous event.
@@ -127,6 +129,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			kbd.OnKeyPressed(static_cast<unsigned char>(wParam));
 		}	
 		break;
+	case WM_SYSKEYUP:
 	case WM_KEYUP:
 		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
