@@ -1,5 +1,6 @@
 #include "Keyboard.h"
 
+
 bool Keyboard::KeyIsPressed(unsigned char keycode) const noexcept
 {
 	return keyStates[keycode];
@@ -53,6 +54,8 @@ void Keyboard::Flush() noexcept
 	FlushKey();
 	FlushChar();
 }
+
+
 
 void Keyboard::EnableAutoRepeat() noexcept
 {
