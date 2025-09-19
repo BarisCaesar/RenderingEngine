@@ -96,7 +96,7 @@ std::optional<int> Window::ProcessMessages()
 		if (msg.message == WM_QUIT)
 		{
 			// return optional wrapping int (arg to PostQuitMessage is wparam)
-			return msg.wParam;
+			return (int)msg.wParam;
 		}
 
 		TranslateMessage(&msg);

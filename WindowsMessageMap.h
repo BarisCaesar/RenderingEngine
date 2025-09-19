@@ -1,6 +1,6 @@
 #pragma once
 #include <unordered_map>
-#include <Windows.h>
+#include "CustomWindows.h"
 #include <string>
 class WindowsMessageMap
 {
