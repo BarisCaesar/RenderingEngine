@@ -16,7 +16,6 @@ int App::Go()
 			return *ecode;
 		}
 		DoFrame();
-		Sleep(1);
 	}
 
 }
