@@ -114,7 +114,7 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	pContext->ClearRenderTargetView(pTarget, color);
 }
 
-Graphics::HrException::HrException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs = {}) noexcept
+Graphics::HrException::HrException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs) noexcept
 	:
 	Exception(line, file),
 	hr(hr)
