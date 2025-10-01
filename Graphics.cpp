@@ -2,6 +2,8 @@
 #include "dxerr.h"
 #include <sstream>
 
+namespace wrl = Microsoft::WRL;
+
 #pragma comment(lib, "d3d11.lib")
 
 // graphics exception checking/throwing macros (some with dxgi infos)
@@ -62,32 +64,14 @@ Graphics::Graphics(HWND hWnd)
 		&pContext
 	));
 
+	
 	// gain access to texture subresource in swap chain (back buffer)
-	ID3D11Resource* pBackBuffer = nullptr;
-	GFX_THROW_INFO(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), reinterpret_cast<void**>(&pBackBuffer)));
-	GFX_THROW_INFO(pDevice->CreateRenderTargetView(pBackBuffer, nullptr, &pTarget));
-	pBackBuffer->Release();
+	wrl::ComPtr<ID3D11Resource> pBackBuffer;
+	GFX_THROW_INFO(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));
+	GFX_THROW_INFO(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pTarget));
 }
 
-Graphics::~Graphics()
-{
-	if (pTarget != nullptr)
-	{
-		pTarget->Release();
-	}
-	if (pContext != nullptr)
-	{
-		pDevice->Release();
-	}
-	if (pSwap != nullptr)
-	{
-		pSwap->Release();
-	}
-	if (pDevice != nullptr)
-	{
-		pContext->Release();
-	}
-}
+
 
 void Graphics::EndFrame()
 {
@@ -111,7 +95,48 @@ void Graphics::EndFrame()
 void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[4] = { red, green, blue, 1.f };
-	pContext->ClearRenderTargetView(pTarget, color);
+	pContext->ClearRenderTargetView(pTarget.Get(), color);
+}
+
+void Graphics::DrawTestTriangle()
+{
+	namespace wrl = Microsoft::WRL;
+	HRESULT hr;
+
+	struct Vertex
+	{
+		float x;
+		float y;
+	};
+
+	// create vertex buffer (1 2d triangle at the center of the screen)
+	const Vertex vertices[] =
+	{
+		{ 0.0f, 0.5f },
+		{ 0.5f, -0.5f },
+		{ -0.5f, -0.5f }
+	};
+
+	wrl::ComPtr<ID3D11Buffer> pVertexBuffer;
+	D3D11_BUFFER_DESC bDesc = {};
+	bDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	bDesc.Usage = D3D11_USAGE_DEFAULT;
+	bDesc.CPUAccessFlags = 0u;
+	bDesc.MiscFlags = 0u;
+	bDesc.ByteWidth = sizeof(vertices);
+	bDesc.StructureByteStride = sizeof(Vertex);
+
+	D3D11_SUBRESOURCE_DATA sDesc = {};
+	sDesc.pSysMem = vertices;
+
+	GFX_THROW_INFO(pDevice->CreateBuffer(&bDesc, &sDesc, &pVertexBuffer));
+
+	// bind vertex buffer to pipeline
+	const UINT stride = sizeof(Vertex);
+	const UINT offset = 0u;
+
+	pContext->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
+	pContext->Draw(3u, 0);
 }
 
 Graphics::HrException::HrException(int line, const char* file, HRESULT hr, std::vector<std::string> infoMsgs) noexcept
