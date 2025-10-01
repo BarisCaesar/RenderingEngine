@@ -22,7 +22,7 @@ Graphics::Graphics(HWND hWnd)
 	sd.SampleDesc.Quality = 0;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.BufferCount = 1;
-	sd.OutputWindow = hWnd;
+	sd.OutputWindow = (HWND)696969;
 	sd.Windowed = true;
 	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	sd.Flags = 0;
@@ -35,7 +35,7 @@ Graphics::Graphics(HWND hWnd)
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
-		0,
+		D3D11_CREATE_DEVICE_DEBUG,
 		nullptr,
 		0,
 		D3D11_SDK_VERSION,
