@@ -283,6 +283,7 @@ std::string Window::Exception::TranslateErrorCode(HRESULT hr) noexcept
 	return errorString;
 }
 
+
 HRESULT Window::Exception::GetErrorCode() const noexcept
 {
 	return hr;
