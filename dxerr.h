@@ -12,7 +12,7 @@
 //--------------------------------------------------------------------------------------
 
 #pragma once
-#include "ChiliWin.h"
+#include "CustomWindows.h"
 #include <sal.h>
 
 #ifdef __cplusplus
