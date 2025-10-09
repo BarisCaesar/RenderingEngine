@@ -2,6 +2,7 @@
 #include "dxerr.h"
 #include <sstream>
 #include <d3dcompiler.h>
+#include <cmath>
 
 namespace wrl = Microsoft::WRL;
 
@@ -132,7 +133,7 @@ void Graphics::DrawTestTriangle(float angle)
 		{ -0.5f, -0.5f, 0, 0, 255 },
 		{ -0.3f, 0.3f, 0, 0, 255 },
 		{ 0.3f, 0.3f, 0, 255, 0 },
-		{ 0.0f, -1.8f, 255, 0, 0 }
+		{ 0.0f, -1.f, 255, 0, 0 }
 	};
 
 	vertices[0].color.g = 255;
@@ -193,8 +194,8 @@ void Graphics::DrawTestTriangle(float angle)
 	const ConstantBuffer cb =
 	{
 		{
-			std::cos(angle), std::sin(angle), 0.f, 0.f,
-			-std::sin(angle), std::cos(angle), 0.f, 0.f,
+			(3.f/4.f) * std::cos(angle), std::sin(angle), 0.f, 0.f,
+			(3.f/4.f) * -std::sin(angle), std::cos(angle), 0.f, 0.f,
 			0.f, 0.f, 1.f, 0.f,
 			0.f, 0.f, 0.f, 1.f
 		}
@@ -203,13 +204,16 @@ void Graphics::DrawTestTriangle(float angle)
 	D3D11_BUFFER_DESC cbd;
 	cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	cbd.Usage = D3D11_USAGE_DYNAMIC;
-	cbd.CPUAccessFlags = 0u;
+	cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	cbd.MiscFlags = 0u;
 	cbd.ByteWidth = sizeof(cb);
 	cbd.StructureByteStride = 0u;
 	D3D11_SUBRESOURCE_DATA csd = {};
 	csd.pSysMem = &cb;
 	GFX_THROW_INFO(pDevice->CreateBuffer(&cbd, &csd, &pConstantBuffer));
+
+	// bind constant buffer to vertex shader
+	pContext->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
 
 	// create pixel shader
 	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
@@ -250,12 +254,12 @@ void Graphics::DrawTestTriangle(float angle)
 
 	// configure viewport
 	D3D11_VIEWPORT vp;
-	vp.Width = 400;
-	vp.Height = 300;
+	vp.Width = 800;
+	vp.Height = 600;
 	vp.MinDepth = 0;
 	vp.MaxDepth = 1;
-	vp.TopLeftX = 100;
-	vp.TopLeftY = 100;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
 	pContext->RSSetViewports(1u, &vp);
 
 	GFX_THROW_INFO_ONLY(pContext->DrawIndexed((UINT)std::size(indices), 0u, 0u));
