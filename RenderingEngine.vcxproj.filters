@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Bindable">
       <UniqueIdentifier>{4b623e7d-b211-4697-8b91-ab47cf7a38a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Drawable">
+      <UniqueIdentifier>{503d7c18-e90e-4105-b83f-928e9dd19200}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Drawable">
+      <UniqueIdentifier>{d2a02452-7cf7-4858-bc06-8e1ebb7deaea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMain.cpp">
@@ -83,6 +89,12 @@
     </ClCompile>
     <ClCompile Include="VertexShader.cpp">
       <Filter>Source Files\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawable.cpp">
+      <Filter>Source Files\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>Source Files\Drawable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -157,6 +169,12 @@
     </ClInclude>
     <ClInclude Include="VertexShader.h">
       <Filter>Header Files\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Box.h">
+      <Filter>Header Files\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawable.h">
+      <Filter>Header Files\Drawable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

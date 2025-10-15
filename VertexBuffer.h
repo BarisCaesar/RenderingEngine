@@ -28,5 +28,5 @@ public:
 	void Bind(Graphics& gfx) noexcept override;
 protected:
 	UINT stride;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;s
+	Microsoft::WRL::ComPtr<ID3D11Buffer> pVertexBuffer;
 };
