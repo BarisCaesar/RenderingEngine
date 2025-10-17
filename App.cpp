@@ -5,12 +5,16 @@
 #include <memory>
 #include <algorithm>
 #include "RMath.h"
+#include "Surface.h"
+#include "GDIPlusManager.h"
+
+GDIPlusManager gdipm;
 
 App::App()
 	:
 	wnd(800, 600, "Basic App")
 {
-	/*class Factory
+	class Factory
 	{
 	public:
 		Factory(Graphics& gfx)
@@ -58,7 +62,9 @@ App::App()
 
 	Factory f(wnd.Gfx());
 	drawables.reserve(nDrawables);
-	std::generate_n(std::back_inserter(drawables), nDrawables, f);*/
+	std::generate_n(std::back_inserter(drawables), nDrawables, f);
+
+	const auto s = Surface::FromFile("Images//kappa50.png");
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
 }
