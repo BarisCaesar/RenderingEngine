@@ -93,6 +93,11 @@ Surface::Color* Surface::GetBufferPtr() noexcept
 	return pBuffer.get();
 }
 
+const Surface::Color* Surface::GetBufferPtr() const noexcept
+{
+	return nullptr;
+}
+
 const Surface::Color* Surface::GetBufferPtrConst() const noexcept
 {
 	return pBuffer.get();
@@ -102,8 +107,7 @@ Surface Surface::FromFile(const std::string& name)
 {
 	unsigned int width = 0;
 	unsigned int height = 0;
-	unsigned int pitch = 0;
-	std::unique_ptr<Color[]> pBuffer = nullptr;
+	std::unique_ptr<Color[]> pBuffer;
 	{
 		// convert filename to wide string (for gdi plus)
 		wchar_t wideName[512];
@@ -117,6 +121,7 @@ Surface Surface::FromFile(const std::string& name)
 			ss << "Loading image [" << name << "]: failed to load.";
 			throw Exception(__LINE__, __FILE__, ss.str());
 		}
+		width = bitmap.GetWidth();
 		height = bitmap.GetHeight();
 		pBuffer = std::make_unique<Color[]>(width * height);
 
@@ -126,7 +131,7 @@ Surface Surface::FromFile(const std::string& name)
 			{
 				Gdiplus::Color c;
 				bitmap.GetPixel(x, y, &c);
-				pBuffer[y * pitch + x] = c.GetValue();
+				pBuffer[y * width + x] = c.GetValue();
 			}
 		}
 	}

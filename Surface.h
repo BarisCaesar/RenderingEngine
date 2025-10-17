@@ -112,6 +112,7 @@ public:
 	unsigned int GetWidth() const noexcept;
 	unsigned int GetHeight() const noexcept;
 	Color* GetBufferPtr() noexcept;
+	const Color* GetBufferPtr() const noexcept;
 	const Color* GetBufferPtrConst() const noexcept;
 	static Surface FromFile(const std::string& name);
 	void Save(const std::string& filename) const;
