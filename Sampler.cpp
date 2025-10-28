@@ -10,6 +10,10 @@ Sampler::Sampler(Graphics& gfx)
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.BorderColor[0] = 0.f;
+	samplerDesc.BorderColor[1] = 1.f;
+	samplerDesc.BorderColor[2] = 0.f;
+	samplerDesc.BorderColor[3] = 0.f;
 
 	GFX_THROW_INFO(GetDevice(gfx)->CreateSamplerState(&samplerDesc, &pSampler));
 }
