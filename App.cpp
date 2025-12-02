@@ -1,9 +1,5 @@
 #include "App.h"
-#include "Melon.h"
-#include "Pyramid.h"
 #include "Box.h"
-#include "Sheet.h"
-#include "SkinnedBox.h"
 #include <memory>
 #include <algorithm>
 #include "RMath.h"
@@ -17,7 +13,8 @@ GDIPlusManager gdipm;
 
 App::App()
 	:
-	wnd(800, 600, "Basic App")
+	wnd(800, 600, "Basic App"),
+	light(wnd.Gfx())
 {
 	class Factory
 	{
@@ -29,37 +26,13 @@ App::App()
 		}
 		std::unique_ptr<Drawable> operator()()
 		{
-			switch (typedist(rng))
-			{
-			case 0:
-				return std::make_unique<Pyramid>(
-					gfx, rng, adist, ddist,
-					odist, rdist
-				);
-			case 1:
-				return std::make_unique<Box>(
-					gfx, rng, adist, ddist,
-					odist, rdist, bdist
-				);
-			case 2:
-				return std::make_unique<Melon>(
-					gfx, rng, adist, ddist,
-					odist, rdist, longdist, latdist
-				);
-			case 3:
-				return std::make_unique<Sheet>(
-					gfx, rng, adist, ddist,
-					odist, rdist
-				);
-			case 4:
-				return std::make_unique<SkinnedBox>(
-					gfx, rng, adist, ddist,
-					odist, rdist
-				);
-			default:
-				assert(false && "bad drawable type in factory");
-				return {};
-			}
+		
+			return std::make_unique<Box>(
+				gfx, rng, adist, ddist,
+				odist, rdist, bdist
+			);
+			
+			
 		}
 	private:
 		Graphics& gfx;
@@ -92,11 +65,13 @@ void App::DoFrame()
 
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
 	wnd.Gfx().SetCamera(cam.GetMatrix());
+	light.Bind(wnd.Gfx());
 	for (auto& d : drawables)
 	{
 		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE) ? 0.0f : dt);
 		d->Draw(wnd.Gfx());
 	}
+	light.Draw(wnd.Gfx());
 
 	static char buffer[1024];
 	// imgui window to control simulation speed
@@ -107,8 +82,9 @@ void App::DoFrame()
 		ImGui::Text("Status: %s", wnd.kbd.KeyIsPressed(VK_SPACE) ? "PAUSED" : "RUNNING");
 	}
 	ImGui::End();
-	// imgui window to control camera
+	// imgui window to control camera and light
 	cam.SpawnControlWindow();
+	light.SpawnControlWindow();
 	
 	// present
 	wnd.Gfx().EndFrame();
