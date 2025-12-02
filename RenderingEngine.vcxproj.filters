@@ -150,6 +150,9 @@
     <ClCompile Include="imgui\imgui_widgets.cpp">
       <Filter>Header Files\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowsMessageMap.h">
@@ -304,6 +307,9 @@
     </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
       <Filter>Header Files\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
