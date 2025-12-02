@@ -11,6 +11,7 @@
 #include "GDIPlusManager.h"
 #include "imgui/imgui.h"
 
+namespace dx = DirectX;
 
 GDIPlusManager gdipm;
 
@@ -80,6 +81,7 @@ App::App()
 	const auto s = Surface::FromFile("Images//kappa50.png");
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
+	wnd.Gfx().SetCamera(dx::XMMatrixTranslation(0.f, 0.f, 20.f));
 }
 
 
