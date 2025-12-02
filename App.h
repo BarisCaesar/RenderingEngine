@@ -18,6 +18,7 @@ private:
 	Window wnd;
 	Timer timer;
 	std::vector<std::unique_ptr<class Drawable>> drawables;
+	float speedFactor = 1.f;
 	static constexpr size_t nDrawables = 180;
 };
 

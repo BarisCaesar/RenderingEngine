@@ -5,4 +5,5 @@ class ImguiManager
 public:
 	ImguiManager();
 	~ImguiManager();
+
 };
