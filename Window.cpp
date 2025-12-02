@@ -159,7 +159,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		return true;
 	}
 
-	const ImGuiIO imio = ImGui::GetIO();
+	const ImGuiIO& imio = ImGui::GetIO();
 
 	switch (msg)
 	{
