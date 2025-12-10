@@ -64,7 +64,8 @@ void App::DoFrame()
 
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
 	wnd.Gfx().SetCamera(cam.GetMatrix());
-	light.Bind(wnd.Gfx());
+	light.Bind(wnd.Gfx(), cam.GetMatrix());
+
 	for (auto& d : drawables)
 	{
 		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE) ? 0.0f : dt);
