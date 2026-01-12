@@ -82,9 +82,19 @@ bool Box::SpawnControlWindow(int id, Graphics& gfx) noexcept
 	bool open = true;
 	if (ImGui::Begin( ("Box "s + std::to_string(id)).c_str(), &open )) 
 	{
-		dirty = ImGui::ColorEdit3("Material Color", &materialConstants.color.x) || dirty;
-		dirty = ImGui::SliderFloat("Specular Intensity", &materialConstants.specularIntensity, 0.05f, 4.f, "%.2f", 2) || dirty;
-		dirty = ImGui::SliderFloat("Specular Power", &materialConstants.specularPower, 1.f, 200.f, "%.2f", 2) || dirty;
+		ImGui::Text("Material Properties");
+		dirty = ImGui::ColorEdit3("Material Color", &materialConstants.color.x)											|| dirty;
+		dirty = ImGui::SliderFloat("Specular Intensity", &materialConstants.specularIntensity, 0.05f, 4.f, "%.2f", 2)	|| dirty;
+		dirty = ImGui::SliderFloat("Specular Power", &materialConstants.specularPower, 1.f, 200.f, "%.2f", 2)			|| dirty;
+
+		ImGui::Text("Position");
+		ImGui::SliderFloat("R", &r, 0.0f, 80.0f, "%.1f");
+		ImGui::SliderAngle("Theta", &theta, -180.0f, 180.0f);
+		ImGui::SliderAngle("Phi", &phi, -180.0f, 180.0f);
+		ImGui::Text("Orientation");
+		ImGui::SliderAngle("Roll", &roll, -180.0f, 180.0f);
+		ImGui::SliderAngle("Pitch", &pitch, -180.0f, 180.0f);
+		ImGui::SliderAngle("Yaw", &yaw, -180.0f, 180.0f);
 	}
 	ImGui::End();
 
