@@ -20,6 +20,7 @@ private:
 	Window wnd;
 	Timer timer;
 	std::vector<std::unique_ptr<class Drawable>> drawables;
+	std::vector<class Box*> boxes;
 	float speedFactor = 1.f;
 	Camera cam;
 	PointLight light;
