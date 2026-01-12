@@ -4,6 +4,7 @@
 #include "ImguiManager.h"
 #include "Camera.h"
 #include "PointLight.h"
+#include <set>
 
 
 class App
@@ -15,6 +16,9 @@ public:
 	~App();
 private:
 	void DoFrame();
+	void SpawnSimulationWindow() noexcept;
+	void SpawnBoxWindowManagerWindow() noexcept;
+	void SpawnBoxWindows() noexcept;
 private:
 	ImguiManager imgui;
 	Window wnd;
@@ -25,5 +29,7 @@ private:
 	Camera cam;
 	PointLight light;
 	static constexpr size_t nDrawables = 180;
+	std::optional<int> comboBoxIndex;
+	std::set<int> boxControlIds;
 };
 

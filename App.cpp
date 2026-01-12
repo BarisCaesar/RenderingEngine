@@ -102,6 +102,7 @@ void App::DoFrame()
 	wnd.Gfx().SetCamera(cam.GetMatrix());
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
+	// render geometry
 	for (auto& d : drawables)
 	{
 		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE) ? 0.0f : dt);
@@ -110,6 +111,20 @@ void App::DoFrame()
 	light.Draw(wnd.Gfx());
 
 	static char buffer[1024];
+	
+	// imgui windows
+	SpawnSimulationWindow();
+	cam.SpawnControlWindow();
+	light.SpawnControlWindow();
+	SpawnBoxWindowManagerWindow();
+	SpawnBoxWindows();
+	
+	// present
+	wnd.Gfx().EndFrame();
+}
+
+void App::SpawnSimulationWindow() noexcept
+{
 	// imgui window to control simulation speed
 	if (ImGui::Begin("Simulation Speed"))
 	{
@@ -118,14 +133,55 @@ void App::DoFrame()
 		ImGui::Text("Status: %s", wnd.kbd.KeyIsPressed(VK_SPACE) ? "PAUSED" : "RUNNING");
 	}
 	ImGui::End();
-	// imgui window to control camera and light
-	cam.SpawnControlWindow();
-	light.SpawnControlWindow();
+}
+
+void App::SpawnBoxWindowManagerWindow() noexcept
+{
+	//imgui window to open box windows
+	if (ImGui::Begin("Boxes"))
+	{
+		using namespace std::string_literals;
+		const auto preview = comboBoxIndex ? std::to_string(*comboBoxIndex) : "Choose a box..."s;
+		if (ImGui::BeginCombo("Box Number", preview.c_str()))
+		{
+			for (int i = 0; i < boxes.size(); i++)
+			{
+				const bool selected = comboBoxIndex ? (*comboBoxIndex == i) : false;
+				if (ImGui::Selectable(std::to_string(i).c_str(), selected))
+				{
+					comboBoxIndex = i;
+				}
+				if (selected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::Button("Spawn Control Window") && comboBoxIndex)
+		{
+			boxControlIds.insert(*comboBoxIndex);
+			comboBoxIndex.reset();
+		}
+	}
+	ImGui::End();
+}
+
+void App::SpawnBoxWindows() noexcept
+{
 	// imgui window to adjust box instance parameters
-	boxes.front()->SpawnControlWindow(69, wnd.Gfx());
-	
-	// present
-	wnd.Gfx().EndFrame();
+	for (auto i = boxControlIds.begin(); i != boxControlIds.end();)
+	{
+		if (!boxes[*i]->SpawnControlWindow(*i, wnd.Gfx()))
+		{
+			i = boxControlIds.erase(i);
+		}
+		else
+		{
+			i++;
+		}
+	}
 }
 
 App::~App()
