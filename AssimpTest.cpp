@@ -24,8 +24,8 @@ AssimpTest::AssimpTest(Graphics& gfx, std::mt19937& rng,
 		using REngineExp::VertexLayout;
 		REngineExp::VertexBuffer vbuf(std::move(
 			VertexLayout{}
-			.Append<VertexLayout::Position3D>()
-			.Append<VertexLayout::Normal>()
+			.Append(VertexLayout::Position3D)
+			.Append(VertexLayout::Normal)
 			));
 
 		Assimp::Importer importer;
