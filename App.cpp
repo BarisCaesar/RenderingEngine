@@ -21,12 +21,27 @@ GDIPlusManager gdipm;
 
 void f()
 {
-	VertexLayout vl;
-	vl.Append<VertexLayout::Position3D>()
-		.Append<VertexLayout::Normal>();
-	VertexBuffer vb(std::move(vl));
-	vb.EmplaceBack(dx::XMFLOAT3{ 1.f, 1.f, 5.f }, dx::XMFLOAT3{ 2.f, 1.f, 4.f });
+	VertexBuffer vb(std::move(
+		VertexLayout{}
+		.Append<VertexLayout::Position3D>()
+		.Append <VertexLayout::Normal>()
+		.Append <VertexLayout::Texture2D>()
+	));
+	vb.EmplaceBack(
+		dx::XMFLOAT3(1.f, 1.f, 5.f),
+		dx::XMFLOAT3(2.f, 1.f, 4.f),
+		dx::XMFLOAT2(6.f, 10.f)
+	);
+	vb.EmplaceBack(
+		dx::XMFLOAT3(6.f, 10.f, 6.f),
+		dx::XMFLOAT3(9.f, 7.f, 9.f),
+		dx::XMFLOAT2(4.f, 10.f)
+	);
 	auto pos = vb[0].Attr<VertexLayout::Position3D>();
+	auto normal = vb[0].Attr<VertexLayout::Normal>();
+	auto texture = vb[0].Attr<VertexLayout::Texture2D>();
+	vb.Back().Attr<VertexLayout::Position3D>().z = 420.f;
+	pos = vb.Back().Attr<VertexLayout::Position3D>();
 }
 
 App::App()
