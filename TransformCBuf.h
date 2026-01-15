@@ -3,18 +3,22 @@
 #include "Drawable.h"
 #include "DirectXMath.h"
 
-class TransformCBuf : public Bindable
+namespace Bind
 {
-private:
-	struct Transforms
+	class TransformCBuf : public Bindable
 	{
-		DirectX::XMMATRIX modelViewProj;
-		DirectX::XMMATRIX model;
+	private:
+		struct Transforms
+		{
+			DirectX::XMMATRIX modelViewProj;
+			DirectX::XMMATRIX model;
+		};
+	public:
+		TransformCBuf(Graphics& gfx, const Drawable& parent, UINT slot = 0u);
+		void Bind(Graphics& gfx) noexcept override;
+	private:
+		static std::unique_ptr<VertexConstantBuffer<Transforms>> pVcbuf;
+		const Drawable& parent;
 	};
-public:
-	TransformCBuf(Graphics& gfx, const Drawable& parent, UINT slot = 0u);
-	void Bind(Graphics& gfx) noexcept override;
-private:
-	static std::unique_ptr<VertexConstantBuffer<Transforms>> pVcbuf;
-	const Drawable& parent;
-};
+}
+

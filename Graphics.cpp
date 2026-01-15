@@ -7,6 +7,7 @@
 #include "GraphicsThrowMacros.h"
 #include "imgui/imgui_impl_dx11.h"
 #include "imgui/imgui_impl_win32.h"
+#include "ConditionalNoexcept.h"
 
 namespace wrl = Microsoft::WRL;
 
@@ -160,7 +161,7 @@ void Graphics::BeginFrame(float red, float green, float blue) noexcept
 	pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.f, 0u);
 }
 
-void Graphics::DrawIndexed(UINT count) noexcept(!IS_DEBUG)
+void Graphics::DrawIndexed(UINT count) noxnd
 {
 	GFX_THROW_INFO_ONLY(pContext->DrawIndexed(count, 0u, 0u));
 }
