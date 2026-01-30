@@ -14,11 +14,11 @@ GDIPlusManager gdipm;
 
 App::App()
 	:
-	wnd(800, 600, "Basic App"),
+	wnd(1280, 720, "Basic App"),
 	light(wnd.Gfx())
 {
 
-	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
+	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
 	
 }
 
