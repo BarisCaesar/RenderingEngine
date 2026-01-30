@@ -2,10 +2,22 @@
 #include "DrawableBase.h"
 #include "BindableCommon.h"
 #include "Vertex.h"
+#include <optional>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "ConditionalNoexcept.h"
+
+class ModelException : public RException
+{
+public:
+	ModelException(int line, const char* file, std::string note) noexcept;
+	const char* what() const noexcept override;
+	const char* GetType() const noexcept override;
+	const std::string& GetNote() const noexcept;
+private:
+	std::string note;
+};
 
 class Mesh : public DrawableBase<Mesh>
 {
@@ -20,17 +32,21 @@ private:
 class Node
 {
 	friend class Model;
+	friend class ModelWindow;
 public:
 	Node(const std::string& name, std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd;
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd;
-	void RenderTree() const noexcept;
+	void SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept;
+	
 private:
 	void AddChild(std::unique_ptr<Node> pChild) noxnd;
+	void ShowTree(int& nodeIndex, std::optional<int>& selectedIndex, Node*& selectedNode) const noexcept;
 private:
 	std::string name;
 	std::vector<std::unique_ptr<Node>> childPtrs;
 	std::vector<Mesh*> meshPtrs;
-	DirectX::XMFLOAT4X4 transform;
+	DirectX::XMFLOAT4X4 baseTransform;
+	DirectX::XMFLOAT4X4 appliedTransform;
 };
 
 class Model
@@ -39,19 +55,12 @@ public:
 	Model(Graphics& gfx, const std::string fileName);
 	void Draw(Graphics& gfx) const noxnd;
 	void ShowWindow(const char* windowName = nullptr) noexcept;
+	~Model() noexcept;
 private:
 	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiMesh& mesh);
 	std::unique_ptr<Node> ParseNode(const aiNode& node) noexcept;
 private:
 	std::unique_ptr<Node> pRoot;
 	std::vector<std::unique_ptr<Mesh>> meshPtrs;
-	struct
-	{
-		float rotX = 0.f;
-		float rotY = 0.f;
-		float rotZ = 0.f;
-		float x = 0;
-		float y = 0;
-		float z = 0;
-	}pos;
+	std::unique_ptr<class ModelWindow> pWindow;
 };

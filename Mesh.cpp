@@ -1,5 +1,34 @@
 #include "Mesh.h"
 #include "imgui/imgui.h"
+#include <unordered_map>
+#include <sstream>
+
+namespace dx = DirectX;
+
+ModelException::ModelException(int line, const char* file, std::string note) noexcept
+	:
+	RException(line, file),
+	note(std::move(note))
+{}
+
+const char* ModelException::what() const noexcept
+{
+	std::ostringstream oss;
+	oss << RException::what() << std::endl
+		<< "[Note] " << GetNote();
+	whatBuffer = oss.str();
+	return whatBuffer.c_str();
+}
+
+const char* ModelException::GetType() const noexcept
+{
+	return "Chili Model Exception";
+}
+
+const std::string& ModelException::GetNote() const noexcept
+{
+	return note;
+}
 
 // Mesh
 Mesh::Mesh(Graphics& gfx, std::vector<std::unique_ptr<Bind::Bindable>> bindPtrs)
@@ -41,12 +70,16 @@ Node::Node(const std::string& name, std::vector<Mesh*> meshPtrs, const DirectX::
 	meshPtrs(std::move(meshPtrs)),
 	name(name)
 {
-	DirectX::XMStoreFloat4x4(&this->transform, transform);
+	DirectX::XMStoreFloat4x4(&baseTransform, transform);
+	DirectX::XMStoreFloat4x4(&appliedTransform, dx::XMMatrixIdentity());
 }
 
 void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd
 {
-	const auto built = DirectX::XMLoadFloat4x4(&transform) * accumulatedTransform;
+	const auto built = 
+		dx::XMLoadFloat4x4(&baseTransform) *
+		dx::XMLoadFloat4x4(&appliedTransform) *
+		accumulatedTransform;
 	for (const auto pm : meshPtrs)
 	{
 		pm->Draw(gfx, built);
@@ -63,27 +96,109 @@ void Node::AddChild(std::unique_ptr<Node> pChild) noxnd
 	childPtrs.push_back(std::move(pChild));
 }
 
-void Node::RenderTree() const noexcept
+void Node::ShowTree(int& nodeIndexTracked, std::optional<int>& selectedIndex, Node*& pSelectedNode) const noexcept
 {
-	if (ImGui::TreeNode(name.c_str()))
+	// nodeIndex serves as the uid for gui tree nodes, incremented throughout recursion
+	const int currentNodeIndex = nodeIndexTracked;
+	nodeIndexTracked++;
+	// build up flags for current node
+	const auto nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow
+		| ((currentNodeIndex == selectedIndex.value_or(-1)) ? ImGuiTreeNodeFlags_Selected : 0)
+		| ((childPtrs.size() == 0) ? ImGuiTreeNodeFlags_Leaf : 0);
+	// if tree node expanded recursively render all children
+	if (ImGui::TreeNodeEx((void*)(intptr_t)currentNodeIndex, nodeFlags, name.c_str()))
 	{
+		// detecting / setting selected node
+		if (ImGui::IsItemClicked())
+		{
+			selectedIndex = currentNodeIndex;
+			pSelectedNode = const_cast<Node*>(this);
+		}
 		for (const auto& pChild : childPtrs)
 		{
-			pChild->RenderTree();
+			pChild->ShowTree(nodeIndexTracked, selectedIndex, pSelectedNode);
 		}
 		ImGui::TreePop();
 	}
 }
+void Node::SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept
+{
+	dx::XMStoreFloat4x4(&appliedTransform, transform);
+}
 
+class ModelWindow //pIml idiom, only defined in this class cpp file
+{
+public:
+	void Show(const char* windowName, const Node& root) noexcept
+	{
+		windowName = windowName ? windowName : "Model";
+		
+		int nodeIndexTracker = 0;
 
+		if (ImGui::Begin(windowName));
+		{
+			ImGui::Columns(2, nullptr, true);
+			root.ShowTree(nodeIndexTracker, selectedIndex, pSelectedNode);
+
+			ImGui::NextColumn();
+			if (pSelectedNode != nullptr)
+			{
+				auto& transform = transforms[*selectedIndex];
+				ImGui::Text("Orientation");
+				ImGui::SliderAngle("X Rotation", &transform.rotX, -180.f, 180.f);
+				ImGui::SliderAngle("Y Rotation", &transform.rotY, -180.f, 180.f);
+				ImGui::SliderAngle("Z Rotation", &transform.rotZ, -180.f, 180.f);
+
+				ImGui::Text("Position");
+				ImGui::SliderFloat("X", &transform.x, -20.f, 20.f);
+				ImGui::SliderFloat("Y", &transform.y, -20.f, 20.f);
+				ImGui::SliderFloat("Z", &transform.z, -20.f, 20.f);
+			}
+			
+		}
+		ImGui::End();
+	}
+	dx::XMMATRIX GetTransform() const noexcept
+	{
+		const auto& transform = transforms.at(*selectedIndex);
+		return dx::XMMatrixRotationRollPitchYaw(transform.rotX, transform.rotY, transform.rotZ) *
+			DirectX::XMMatrixTranslation(transform.x, transform.y, transform.z);
+	}
+	Node* GetSelectedNode() const noexcept
+	{
+		return pSelectedNode;
+	}
+private:
+	std::optional<int> selectedIndex;
+	Node* pSelectedNode;
+	struct TransformParameters
+	{
+		float rotX = 0.0f;
+		float rotY = 0.0f;
+		float rotZ = 0.0f;
+		float x = 0.0f;
+		float y = 0.0f;
+		float z = 0.0f;
+	};
+	std::unordered_map<int, TransformParameters> transforms;
+};
 // Model
 Model::Model(Graphics& gfx, const std::string fileName)
+	:
+	pWindow(std::make_unique<ModelWindow>())
 {
 	Assimp::Importer imp;
 	const auto pScene = imp.ReadFile(fileName.c_str(),
 		aiProcess_Triangulate |
-		aiProcess_JoinIdenticalVertices
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_ConvertToLeftHanded |
+		aiProcess_GenNormals
 	);
+
+	if (pScene == nullptr)
+	{
+		throw ModelException(__LINE__, __FILE__, imp.GetErrorString());
+	}
 
 	for (size_t i = 0; i < pScene->mNumMeshes; i++)
 	{
@@ -94,31 +209,20 @@ Model::Model(Graphics& gfx, const std::string fileName)
 }
 void Model::Draw(Graphics& gfx) const noxnd
 {
-	const auto transform = DirectX::XMMatrixRotationRollPitchYaw(pos.rotX, pos.rotY, pos.rotZ) *
-		DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
-	pRoot->Draw(gfx, transform);
+	if (auto node = pWindow->GetSelectedNode())
+	{
+		node->SetAppliedTransform(pWindow->GetTransform());
+	}
+	pRoot->Draw(gfx, dx::XMMatrixIdentity());
 }
 
 void Model::ShowWindow(const char* windowName) noexcept
 {
-	windowName = windowName ? windowName : "Model";
-	if (ImGui::Begin(windowName));
-	{
-		ImGui::Columns(2, nullptr, true);
-		pRoot->RenderTree();
+	pWindow->Show(windowName, *pRoot);
+}
 
-		ImGui::NextColumn();
-		ImGui::Text("Orientation");
-		ImGui::SliderAngle("X Rotation", &pos.rotX, -180.f, 180.f);
-		ImGui::SliderAngle("Y Rotation", &pos.rotY, -180.f, 180.f);
-		ImGui::SliderAngle("Z Rotation", &pos.rotZ, -180.f, 180.f);
-
-		ImGui::Text("Position");
-		ImGui::SliderFloat("X", &pos.x, -20.f, 20.f);
-		ImGui::SliderFloat("Y", &pos.y, -20.f, 20.f);
-		ImGui::SliderFloat("Z", &pos.z, -20.f, 20.f);
-	}
-	ImGui::End();
+Model::~Model() noexcept
+{
 }
 
 std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
@@ -199,3 +303,5 @@ std::unique_ptr<Node> Model::ParseNode(const aiNode& node) noexcept
 
 	return pNode;
 }
+
+
