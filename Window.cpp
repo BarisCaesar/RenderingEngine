@@ -95,16 +95,20 @@ void Window::SetTitle(const std::string& title)
 	}
 }
 
-void Window::EnableCursor()
+void Window::EnableCursor() noexcept
 {
 	cursorEnabled = true;
 	ShowCursor();
+	EnableImGuiMouse();
+	FreeCursor();
 }
 
-void Window::DisableCursor()
+void Window::DisableCursor() noexcept
 {
 	cursorEnabled = false;
 	HideCursor();
+	DisableImGuiMouse();
+	ConfineCursor();
 }
 
 std::optional<int> Window::ProcessMessages() noexcept
@@ -135,14 +139,37 @@ Graphics& Window::Gfx()
 	return *pGfx;
 }
 
-void Window::HideCursor()
+void Window::ConfineCursor() noexcept
+{
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	MapWindowPoints(hWnd, nullptr, reinterpret_cast<POINT*>(&rect), 2);
+	ClipCursor(&rect);
+}
+
+void Window::FreeCursor() noexcept
+{
+	ClipCursor(nullptr);
+}
+
+void Window::HideCursor() noexcept
 {
 	while (::ShowCursor(FALSE) >= 0);
 }
 
-void Window::ShowCursor()
+void Window::ShowCursor() noexcept
 {
 	while (::ShowCursor(TRUE) < 0);
+}
+
+void Window::EnableImGuiMouse() noexcept
+{
+	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+}
+
+void Window::DisableImGuiMouse() noexcept
+{
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 }
 
 LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
