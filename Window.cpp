@@ -220,18 +220,17 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		kbd.ClearState();
 		break;
 	case WM_ACTIVATE:
-		OutputDebugString("activate\n");
 		if (!cursorEnabled)
 		{
 			if (wParam & (WA_ACTIVE | WA_CLICKACTIVE))
 			{
-				OutputDebugString("activate -> Confine\n");
 				ConfineCursor();
+				HideCursor();
 			}
 			else
 			{
-				OutputDebugString("activate -> Free\n");
 				FreeCursor();
+				ShowCursor();
 			}
 		}
 		break;
