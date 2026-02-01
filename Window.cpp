@@ -219,7 +219,22 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_KILLFOCUS:
 		kbd.ClearState();
 		break;
-
+	case WM_ACTIVATE:
+		OutputDebugString("activate\n");
+		if (!cursorEnabled)
+		{
+			if (wParam & (WA_ACTIVE | WA_CLICKACTIVE))
+			{
+				OutputDebugString("activate -> Confine\n");
+				ConfineCursor();
+			}
+			else
+			{
+				OutputDebugString("activate -> Free\n");
+				FreeCursor();
+			}
+		}
+		break;
 		/*KEYBOARD MESSAGES*/
 	case WM_KEYDOWN:
 	// syskey commands need to be handled to track ALT key (VK_MENU)
