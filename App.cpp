@@ -1,5 +1,4 @@
 #include "App.h"
-#include "AssimpTest.h"
 #include <memory>
 #include <algorithm>
 #include "RMath.h"
