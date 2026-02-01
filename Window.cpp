@@ -95,6 +95,18 @@ void Window::SetTitle(const std::string& title)
 	}
 }
 
+void Window::EnableCursor()
+{
+	cursorEnabled = true;
+	ShowCursor();
+}
+
+void Window::DisableCursor()
+{
+	cursorEnabled = false;
+	HideCursor();
+}
+
 std::optional<int> Window::ProcessMessages() noexcept
 {
 	MSG msg;
@@ -121,6 +133,16 @@ Graphics& Window::Gfx()
 		throw RHWND_NOGFX_EXCEPT();
 	}
 	return *pGfx;
+}
+
+void Window::HideCursor()
+{
+	while (::ShowCursor(FALSE) >= 0);
+}
+
+void Window::ShowCursor()
+{
+	while (::ShowCursor(TRUE) < 0);
 }
 
 LRESULT Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
@@ -209,6 +231,17 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		/*MOUSE MESSAGES*/
 	case WM_MOUSEMOVE:
 	{
+		// if cursor is not enabled make sure the mouse is captured even when it is outside the window
+		if (!cursorEnabled)
+		{
+			if (!mouse.IsInWindow())
+			{
+				SetCapture(hWnd);
+				mouse.OnMouseEnter();
+				HideCursor();
+			}
+			break;
+		}
 		// stifle this mouse message if imgui wants to capture
 		if (imio.WantCaptureMouse)
 		{
