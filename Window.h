@@ -58,6 +58,7 @@ public:
 	void SetTitle(const std::string& title);
 	void EnableCursor() noexcept;
 	void DisableCursor() noexcept;
+	bool CursorEnabled() const noexcept;
 	static std::optional<int> ProcessMessages() noexcept;
 	Graphics& Gfx();
 private:

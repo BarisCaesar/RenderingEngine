@@ -39,6 +39,22 @@ bool Mouse::RightIsPressed() const noexcept
 {
 	return rightIsPressed;
 }
+void Mouse::Flush() noexcept
+{
+	buffer = std::queue<Event>();
+}
+void Mouse::EnableRawInput() noexcept
+{
+	rawInputEnabled = true;
+}
+void Mouse::DisableRawInput() noexcept
+{
+	rawInputEnabled = false;
+}
+bool Mouse::RawInputEnabled() noexcept
+{
+	return rawInputEnabled;
+}
 void Mouse::OnMouseMove(int newX, int newY) noexcept
 {
 	x = newX;

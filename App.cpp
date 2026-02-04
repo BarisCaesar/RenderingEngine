@@ -39,15 +39,16 @@ void App::DoFrame()
 	{
 		if (e->IsPress() && e->GetCode() == VK_INSERT)
 		{
-			if (cursorEnabled)
+			if (wnd.CursorEnabled())
 			{
 				wnd.DisableCursor();
-				cursorEnabled = false;
+				wnd.mouse.EnableRawInput();
+				
 			}
 			else
 			{
 				wnd.EnableCursor();
-				cursorEnabled = true;
+				wnd.mouse.DisableRawInput();
 			}
 		}
 	}
@@ -82,6 +83,7 @@ void App::ShowRawInputWindow()
 	if (ImGui::Begin("Raw Input"))
 	{
 		ImGui::Text("Raw Input: X: %d, Y: %d", x, y);
+		ImGui::Text("Cursor: %s", wnd.CursorEnabled() ? "enabled" : "disabled");
 	}
 	ImGui::End();
 }
