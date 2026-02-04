@@ -18,7 +18,6 @@ App::App()
 {
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
-	wnd.DisableCursor();
 	
 }
 
@@ -36,13 +35,29 @@ void App::DoFrame()
 
 	light.Draw(wnd.Gfx());
 
-	static char buffer[1024];
+	while (const auto e = wnd.kbd.ReadKey())
+	{
+		if (e->IsPress() && e->GetCode() == VK_INSERT)
+		{
+			if (cursorEnabled)
+			{
+				wnd.DisableCursor();
+				cursorEnabled = false;
+			}
+			else
+			{
+				wnd.EnableCursor();
+				cursorEnabled = true;
+			}
+		}
+	}
 	
 	// imgui windows
 	cam.SpawnControlWindow();
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 	nano.ShowWindow();
+	ShowRawInputWindow();
 	
 	// present
 	wnd.Gfx().EndFrame();
@@ -55,6 +70,20 @@ void App::ShowImguiDemoWindow()
 	{
 		ImGui::ShowDemoWindow(&show_demo_window);
 	}
+}
+
+void App::ShowRawInputWindow()
+{
+	while (const auto d = wnd.mouse.ReadRawDelta())
+	{
+		x += d->x;
+		y += d->y;
+	}
+	if (ImGui::Begin("Raw Input"))
+	{
+		ImGui::Text("Raw Input: X: %d, Y: %d", x, y);
+	}
+	ImGui::End();
 }
 
 
