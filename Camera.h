@@ -13,7 +13,8 @@ public:
 private:
 	DirectX::XMFLOAT3 pos;
 	float xRotation;
-	float zRotation;
+	float yRotation;
+	DirectX::XMFLOAT3 rot;
 	static constexpr float travelSpeed = 12.f;
 	static constexpr float rotationSpeed = 0.004f;
 };

@@ -11,7 +11,7 @@ Camera::Camera() noexcept
 DirectX::XMMATRIX Camera::GetMatrix() const noexcept
 {
 	return dx::XMMatrixTranslation(-pos.x, -pos.y, -pos.z) *
-		dx::XMMatrixRotationRollPitchYaw(-xRotation, -zRotation, 0.0f);
+		dx::XMMatrixRotationRollPitchYaw(-xRotation, -yRotation, 0.0f);
 }
 
 void Camera::SpawnControlWindow() noexcept
@@ -24,7 +24,7 @@ void Camera::SpawnControlWindow() noexcept
 		ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f");
 		ImGui::Text("Orientation");
 		ImGui::SliderAngle("Rotation X", &xRotation, -90.0f, 90.0f);
-		ImGui::SliderAngle("Rotation Z", &zRotation, -180.0f, 180.0f);
+		ImGui::SliderAngle("Rotation Y", &yRotation, -180.0f, 180.0f);
 		if (ImGui::Button("Reset"))
 		{
 			Reset();
@@ -37,20 +37,21 @@ void Camera::Reset() noexcept
 {
 	pos = { 0.0f,7.5f,-18.0f };
 	xRotation = 0.0f;
-	zRotation = 0.0f;
+	yRotation = 0.0f;
 }
 
 void Camera::Rotate(float dx, float dy) noexcept
 {
-	zRotation = wrap_angle(zRotation + dx * rotationSpeed);
+	yRotation = wrap_angle(yRotation + dx * rotationSpeed);
 	xRotation = std::clamp(xRotation + dy * rotationSpeed, -PI / 2.0f, PI / 2.0f);
+
 }
 
 void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 {
 	dx::XMStoreFloat3(&translation, dx::XMVector3Transform(
 		dx::XMLoadFloat3(&translation),
-		dx::XMMatrixRotationRollPitchYaw(xRotation, zRotation, 0.f) *
+		dx::XMMatrixRotationRollPitchYaw(xRotation, yRotation, 0.f) *
 		dx::XMMatrixScaling(travelSpeed, travelSpeed, travelSpeed)
 	));
 	pos = {
