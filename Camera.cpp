@@ -32,7 +32,7 @@ void Camera::SpawnControlWindow() noexcept
 		ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.0f, "%.1f");
 		ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f");
 		ImGui::Text("Orientation");
-		ImGui::SliderAngle("Rotation X", &xRotation, -90.0f, 90.0f);
+		ImGui::SliderAngle("Rotation X", &xRotation, 0.995 * -90.0f, 0.995 * 90.0f);
 		ImGui::SliderAngle("Rotation Y", &yRotation, -180.0f, 180.0f);
 		if (ImGui::Button("Reset"))
 		{
@@ -52,7 +52,7 @@ void Camera::Reset() noexcept
 void Camera::Rotate(float dx, float dy) noexcept
 {
 	yRotation = wrap_angle(yRotation + dx * rotationSpeed);
-	xRotation = std::clamp(xRotation + dy * rotationSpeed, -PI / 2.0f, PI / 2.0f);
+	xRotation = std::clamp(xRotation + dy * rotationSpeed, 0.995f * -PI / 2.0f, 0.995f * PI / 2.0f);
 
 }
 
