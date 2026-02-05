@@ -10,8 +10,17 @@ Camera::Camera() noexcept
 }
 DirectX::XMMATRIX Camera::GetMatrix() const noexcept
 {
-	return dx::XMMatrixTranslation(-pos.x, -pos.y, -pos.z) *
-		dx::XMMatrixRotationRollPitchYaw(-xRotation, -yRotation, 0.0f);
+	using namespace dx;
+	const XMVECTOR forwardBaseVector = XMVectorSet(0.f, 0.f, 1.f, 0.f);
+	const auto lookVector = XMVector3Transform(forwardBaseVector,
+		XMMatrixRotationRollPitchYaw(xRotation, yRotation, 0.f)
+	);
+	// generate camera transform (applied to all objects to arrange them relative
+	// to camera position/orientation in world) from cam position and directon
+	// camera "top" always faces towards +Y (cannot do a barrel roll)
+	const auto camPosition = XMLoadFloat3(&pos);
+	const auto camTarget = camPosition + lookVector;
+	return XMMatrixLookAtLH(camPosition, camTarget, XMVectorSet(0.f, 1.f, 0.f, 0.f));
 }
 
 void Camera::SpawnControlWindow() noexcept
