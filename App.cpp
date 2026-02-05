@@ -32,7 +32,6 @@ void App::DoFrame()
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
 	nano.Draw(wnd.Gfx());
-
 	light.Draw(wnd.Gfx());
 
 	while (const auto e = wnd.kbd.ReadKey())
@@ -96,7 +95,7 @@ void App::DoFrame()
 	{
 		if (!wnd.CursorEnabled())
 		{
-			cam.Rotate(delta->x, delta->y);
+			cam.Rotate((float)delta->x, (float)delta->y);
 		}
 	}
 	
@@ -105,6 +104,7 @@ void App::DoFrame()
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 	nano.ShowWindow();
+
 	
 	// present
 	wnd.Gfx().EndFrame();
