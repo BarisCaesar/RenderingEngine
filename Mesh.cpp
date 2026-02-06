@@ -145,7 +145,7 @@ public:
 		
 		int nodeIndexTracker = 0;
 
-		if (ImGui::Begin(windowName));
+		if (ImGui::Begin(windowName))
 		{
 			ImGui::Columns(2, nullptr, true);
 			root.ShowTree( pSelectedNode);
@@ -269,6 +269,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 	std::vector<std::unique_ptr<Bind::Bindable>> bindablePtrs;
 
+	bool hasSpecularMap = false;
 	if (mesh.mMaterialIndex >= 0)
 	{
 		auto& material = *pMaterials[mesh.mMaterialIndex];
@@ -284,6 +285,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
 			bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()), 1));
+			hasSpecularMap = true;
 		}
 		
 		bindablePtrs.push_back(std::make_unique < Bind::Sampler>(gfx));
@@ -297,14 +299,15 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 	auto pvsbc = pvs->GetBytecode();
 	bindablePtrs.push_back(std::move(pvs));
 
-	bindablePtrs.push_back(std::make_unique<Bind::PixelShader>(gfx, L"PhongPS.cso"));
+	const auto pixelShaderFileName = hasSpecularMap ? L"PhongPSSpecMap.cso" : L"PhongPS.cso";
+	bindablePtrs.push_back(std::make_unique<Bind::PixelShader>(gfx, pixelShaderFileName));
 
 	bindablePtrs.push_back(std::make_unique<Bind::InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
 
 	struct PSMaterialConstant
 	{
-		float specularIntensity = 0.6f;
-		float specularPower = 30.0f;
+		float specularIntensity = 1.6f;
+		float specularPower = 50.0f;
 		float padding[2];
 	} pmc;
 	bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 1u));
