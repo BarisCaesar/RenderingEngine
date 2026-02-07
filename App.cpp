@@ -5,6 +5,7 @@
 #include "Surface.h"
 #include "GDIPlusManager.h"
 #include "imgui/imgui.h"
+#include "VertexBuffer.h"
 
 namespace dx = DirectX;
 
