@@ -41,6 +41,7 @@ namespace Bind
 	}
 	std::shared_ptr<IndexBuffer> IndexBuffer::Resolve(Graphics& gfx, const std::string& tag, const std::vector<unsigned short>& indices)
 	{
+		assert(tag != "?" && "Tag cannot be '?'");
 		return Codex::Resolve<IndexBuffer>(gfx, tag, indices);
 	}
 	std::string IndexBuffer::GenerateUID_(const std::string& tag)
