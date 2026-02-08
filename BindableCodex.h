@@ -12,7 +12,7 @@ namespace Bind
 	{
 	public:
 		template<class T, typename...Params>
-		static std::shared_ptr<Bindable> Resolve(Graphics& gfx, Params&&... params) noxnd
+		static std::shared_ptr<T> Resolve(Graphics& gfx, Params&&... params) noxnd
 		{
 			static_assert(std::is_base_of<Bindable, T>::value, "can only resolve classes derived from Bindable");
 			return Get().Resolve_<T>(gfx, std::forward<Params>(params)...);
@@ -20,7 +20,7 @@ namespace Bind
 	
 	private:
 		template<class T, typename...Params>
-		std::shared_ptr<Bindable> Resolve_(Graphics& gfx, Params&&... params) noxnd
+		std::shared_ptr<T> Resolve_(Graphics& gfx, Params&&... params) noxnd
 		{
 			const auto key = T::GenerateUID(std::forward<Params>(params)...);
 			const auto i = binds.find(key);
@@ -32,7 +32,7 @@ namespace Bind
 			}
 			else
 			{
-				return i->second;
+				return std::static_pointer_cast<T>(i->second);
 			}
 		}
 		static Codex& Get()
