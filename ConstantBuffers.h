@@ -70,13 +70,22 @@ namespace Bind
 		{
 			GetContext(gfx)->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
-		static std::shared_ptr<Bindable> Resolve(Graphics& gfx)
+		static std::shared_ptr<Bindable> Resolve(Graphics& gfx, const C& consts, UINT slot = 0)
 		{
-			return Codex::Resolve<VertexConstantBuffer>(gfx);
+			return Codex::Resolve<VertexConstantBuffer>(gfx, consts, slot);
 		}
-		static std::string GenerateUID()
+		static std::shared_ptr<Bindable> Resolve(Graphics& gfx, UINT slot = 0)
 		{
-			return typeid(VertexConstantBuffer).name();
+			return Codex::Resolve<VertexConstantBuffer>(gfx, slot);
+		}
+		static std::string GenerateUID(const C&, UINT slot)
+		{
+			return GenerateUID(slot);
+		}
+		static std::string GenerateUID(UINT slot)
+		{
+			using namespace std::string_literals;
+			return typeid(VertexConstantBuffer).name() + "#"s + slot;
 		}
 		std::string GetUID() const noexcept override
 		{
