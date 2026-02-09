@@ -29,7 +29,7 @@ float4 main(float3 worldPos : Position, float3 n : Normal, float2 tc : Texcoord)
     {
         const float3 normalSample = nmap.Sample(samplerState, tc).xyz;
         n.x = normalSample.x * 2.f - 1.f;
-        n.y = normalSample.y * 2.f - 1.f;
+        n.y = -normalSample.y * 2.f + 1.f;
         n.z = -normalSample.z;
     }
 	// fragment to light vector data
