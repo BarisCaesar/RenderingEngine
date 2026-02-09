@@ -164,6 +164,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Topology.cpp" />
     <ClCompile Include="TransformCBuf.cpp" />
+    <ClCompile Include="TransformCBufExtended.cpp" />
     <ClCompile Include="Vertex.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
     <ClCompile Include="VertexShader.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Topology.h" />
     <ClInclude Include="TransformCBuf.h" />
+    <ClInclude Include="TransformCBufExtended.h" />
     <ClInclude Include="VertexBuffer.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VertexShader.h" />
