@@ -21,10 +21,10 @@ Texture2D tex;
 SamplerState samplerState;
 
 
-float4 main(float3 worldPos : Position, float3 n : Normal, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 viewPos : Position, float3 n : Normal, float2 tc : Texcoord) : SV_TARGET
 {
 	// fragment to light vector data
-	const float3 vToL = lightPos - worldPos;
+    const float3 vToL = lightPos - viewPos;
 	const float3 distToL = length(vToL);
 	const float3 dirToL = vToL / distToL;
 	//attenuation
@@ -35,7 +35,7 @@ float4 main(float3 worldPos : Position, float3 n : Normal, float2 tc : Texcoord)
     const float3 w = n * dot(vToL, n);
     const float3 r = w * 2.f - vToL;
     //calculate specular intensity based on angle between viewing vector and reflection
-    const float3 specular = att * (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.f, dot(normalize(-r), normalize(worldPos))), specularPower);
+    const float3 specular = att * (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.f, dot(normalize(-r), normalize(viewPos))), specularPower);
 	// final color
     return float4(saturate((diffuse + ambient) * tex.Sample(samplerState, tc).rbg + specular), 1.f);
 }
