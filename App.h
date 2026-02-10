@@ -27,8 +27,8 @@ private:
 	float speedFactor = 1.f;
 	Camera cam;
 	PointLight light;
-	Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj" };
-	Model nano2{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj" };
-	TestPlane plane;
+	//Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj" };
+	Model wall{ wnd.Gfx(),"Models\\brick_wall\\brick_wall.obj" };
+
 };
 
