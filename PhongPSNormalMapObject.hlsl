@@ -36,18 +36,8 @@ float4 main(float3 viewPos : Position, float3 n : Normal, float2 tc : Texcoord) 
     {
         // unpack normal data
         const float3 normalSample = nmap.Sample(samplerState, tc).xyz;
-        n.x = normalSample.x * 2.0f - 1.0f;
-        n.y = -normalSample.y * 2.0f + 1.0f;
-        n.z = -normalSample.z;
-        n = mul(n, (float3x3) modelView);
-    }
-    else
-    {
-         // unpack normal data
-        const float3 normalSample = nmap.Sample(samplerState, tc).xyz;
-        n.x = normalSample.x * 2.0f - 1.0f;
-        n.y = -normalSample.y * 2.0f + 1.0f;
-        n.z = -normalSample.z * 2.f + 1.f;
+        n = normalSample * 2.f - 1.f;
+        n.y = -n.y;
         n = mul(n, (float3x3) modelView);
     }
 	// fragment to light vector data

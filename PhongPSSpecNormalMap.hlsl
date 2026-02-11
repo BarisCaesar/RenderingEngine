@@ -35,9 +35,8 @@ float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, 
         );
         // unpack normal data
         const float3 normalSample = nmap.Sample(samplerState, tc).xyz;
-        n.x = normalSample.x * 2.0f - 1.0f;
-        n.y = -normalSample.y * 2.0f + 1.0f;
-        n.z = normalSample.z;
+        n = normalSample * 2.f - 1.f;
+        n.y = -n.y;
         // bring normal from tanspace into view space
         n = mul(n, tanToView);
     }
