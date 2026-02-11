@@ -245,6 +245,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 	const auto base = "Models\\goblin\\"s;
 
 	bool hasSpecularMap = false;
+	bool hasAlphaGloss = false;
 	bool hasNormalMap = false;
 	bool hasDiffuseMap = false;
 	float shininess = 35.0f;
@@ -263,8 +264,14 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 1));
+			auto tex = Texture::Resolve(gfx, base + texFileName.C_Str(), 1);
+			hasAlphaGloss = tex->HasAlpha();
+			bindablePtrs.push_back(std::move(tex));
 			hasSpecularMap = true;
+		}
+		if (!hasAlphaGloss)
+		{
+			material.Get(AI_MATKEY_SHININESS, shininess);
 		}
 		else
 		{
@@ -273,7 +280,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		if (material.GetTexture(aiTextureType_NORMALS, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 2));
+			auto tex = Texture::Resolve(gfx, base + texFileName.C_Str(), 2);
+			hasAlphaGloss = tex->HasAlpha();
+			bindablePtrs.push_back(std::move(tex));
 			hasNormalMap = true;
 		}
 
@@ -335,8 +344,12 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		struct PSMaterialConstantFullmonte
 		{
 			BOOL  normalMapEnabled = TRUE;
-			float padding[3];
+			BOOL hasGlossMap;
+			float specularPower;
+			float padding[1];
 		} pmc;
+		pmc.specularPower = shininess;
+		pmc.hasGlossMap = hasAlphaGloss ? TRUE : FALSE;
 		// this is CLEARLY an issue... all meshes will share same mat const, but may have different
 		// Ns (specular power) specified for each in the material properties... bad conflict
 		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantFullmonte>::Resolve(gfx, pmc, 1u));
@@ -492,7 +505,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		struct PSMaterialConstantNotex
 		{
-			dx::XMFLOAT4 materialColor = { 0.65f,0.65f,0.85f,1.0f };
+			dx::XMFLOAT4 materialColor = { 0.45f,0.45f,0.85f,1.0f };
 			float specularIntensity = 0.18f;
 			float specularPower;
 			float padding[2];
