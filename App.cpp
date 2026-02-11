@@ -108,7 +108,7 @@ void App::DoFrame()
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 
-	goblin.ShowWindow("Goblin");
+	goblin.ShowWindow(wnd.Gfx(), "Goblin");
 	//wall.ShowWindow("Wall");
 	//plane.SpawnControlWindow(wnd.Gfx());
 	//nano.ShowWindow("Model 1");
