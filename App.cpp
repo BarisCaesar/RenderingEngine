@@ -17,8 +17,8 @@ App::App()
 	wnd(1280, 720, "Basic App"),
 	light(wnd.Gfx())
 {
-	wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
-	plane.SetPos({ 1.5f,0.0f,0.0f });
+	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
+	//plane.SetPos({ 1.5f,0.0f,0.0f });
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
 }
 
@@ -32,9 +32,10 @@ void App::DoFrame()
 	wnd.Gfx().SetCamera(cam.GetMatrix());
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
-	wall.Draw(wnd.Gfx());
-	plane.Draw(wnd.Gfx());
+	//wall.Draw(wnd.Gfx());
+	//plane.Draw(wnd.Gfx());
 	//nano.Draw(wnd.Gfx());
+	goblin.Draw(wnd.Gfx());
 	light.Draw(wnd.Gfx());
 
 	while (const auto e = wnd.kbd.ReadKey())
@@ -107,8 +108,9 @@ void App::DoFrame()
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 
-	wall.ShowWindow("Wall");
-	plane.SpawnControlWindow(wnd.Gfx());
+	goblin.ShowWindow("Goblin");
+	//wall.ShowWindow("Wall");
+	//plane.SpawnControlWindow(wnd.Gfx());
 	//nano.ShowWindow("Model 1");
 
 	// present
