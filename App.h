@@ -29,6 +29,7 @@ private:
 	PointLight light;
 	//Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj" };
 	Model wall{ wnd.Gfx(),"Models\\brick_wall\\brick_wall.obj" };
+	TestPlane plane{ wnd.Gfx(), 1.f };
 
 };
 

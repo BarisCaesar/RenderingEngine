@@ -225,6 +225,11 @@ void Model::ShowWindow(const char* windowName) noexcept
 	pWindow->Show(windowName, *pRoot);
 }
 
+void Model::SetRootTransform(DirectX::FXMMATRIX transform) noexcept
+{
+	pRoot->SetAppliedTransform(transform);
+}
+
 Model::~Model() noexcept
 {
 }

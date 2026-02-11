@@ -12,12 +12,12 @@ public:
 private:
 	struct PSMaterialConstant
 	{
-		float specularIntensity = 0.1f;
-		float specularPower = 20.f;
+		float specularIntensity = 0.18f;
+		float specularPower = 18.f;
 		BOOL normalMappingEnabled = TRUE;
 		float padding[1];
 	}pmc;
-	DirectX::XMFLOAT3 pos = { 1.0f,1.0f,1.0f };
+	DirectX::XMFLOAT3 pos = { 0.0f,0.0f,0.0f };
 	float xRotation = 0.0f;
 	float yRotation = 0.0f;
 	float zRotation = 0.0f;
