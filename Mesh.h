@@ -64,7 +64,7 @@ public:
 	{
 		if (meshPtrs.empty())
 		{
-			return;
+			return false;
 		}
 
 		if constexpr (std::is_same<T, PSMaterialConstantFullmonte>::value)
