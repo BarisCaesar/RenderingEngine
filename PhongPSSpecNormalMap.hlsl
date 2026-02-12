@@ -1,6 +1,6 @@
 cbuffer LightCBuf
 {
-    float3 LightPos;
+    float3 viewLightPos;
     float3 ambient;
     float3 diffuseColor;
     float diffuseIntensity;
@@ -54,7 +54,7 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : 
         viewNormal = normalize(viewNormal);
     }
 	// fragment to light vector data
-    const float3 vToL = lightPos - viewPos;
+    const float3 vToL = viewLightPos - viewPos;
     const float distToL = length(vToL);
     const float3 dirToL = vToL / distToL;
 	// attenuation
