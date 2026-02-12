@@ -1,6 +1,6 @@
 cbuffer LightCBuf
 {
-    float3 lightPos;
+    float3 viewLightPos;
     float3 ambient;
     float3 diffuseColor;
     float diffuseIntensity;
@@ -25,24 +25,28 @@ Texture2D nmap;
 
 SamplerState samplerState;
 
+float3 MapNormalViewSpace(const float3 tan, const float3 bitan, const float3 viewNormal, const float2 tc, Texture2D nmap, SamplerState samplerState)
+{
+    // build the tranform (rotation) into tangent space
+    const float3x3 tanToView = float3x3(
+            normalize(tan),
+            normalize(bitan),
+            normalize(viewNormal)
+        );
+        // sample and unpack normal data
+    const float3 normalSample = nmap.Sample(samplerState, tc).xyz;
+    const float3 tanNormal = normalSample * 2.f - 1.f;
+        // bring normal from tanspace into view space
+    return normalize(mul(tanNormal, tanToView));
+}
+
 
 float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_Target
 {
     // sample normal from map if normal mapping enabled
     if (normalMapEnabled)
     {
-        // build the tranform (rotation) into tangent space
-        const float3x3 tanToView = float3x3(
-            normalize(tan),
-            normalize(bitan),
-            normalize(viewNormal)
-        );
-        // sample and unpack normal data
-        const float3 normalSample = nmap.Sample(samplerState, tc).xyz;
-        float3 tanNormal;
-        tanNormal = normalSample * 2.f - 1.f;
-        // bring normal from tanspace into view space
-        viewNormal = normalize(mul(tanNormal, tanToView));
+        viewNormal = MapNormalViewSpace(tan, bitan, viewNormal, tc, nmap, samplerState);
     }
     else
     {
