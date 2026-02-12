@@ -1,6 +1,6 @@
 cbuffer LightCBuf
 {
-    float3 viewLightPos;
+    float3 LightPos;
     float3 ambient;
     float3 diffuseColor;
     float diffuseIntensity;
