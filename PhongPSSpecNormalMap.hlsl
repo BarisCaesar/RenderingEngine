@@ -34,15 +34,11 @@ float3 MapNormal(
     uniform SamplerState samplerState)
 {
     // build the tranform (rotation) into same space as tan/bitan/normal (target space)
-    const float3x3 tanToTarget = float3x3(
-            normalize(tan),
-            normalize(bitan),
-            normalize(normal)
-        );
-        // sample and unpack normal data
+    const float3x3 tanToTarget = float3x3(tan, bitan, normal);
+    // sample and unpack normal data
     const float3 normalSample = nmap.Sample(samplerState, tc).xyz;
     const float3 tanNormal = normalSample * 2.f - 1.f;
-        // bring normal from tanspace into target space
+    // bring normal from tanspace into target space
     return normalize(mul(tanNormal, tanToTarget));
 }
 
@@ -82,25 +78,17 @@ float3 Speculate(
 
 float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 viewTan : Tangent, float3 viewBitan : Bitangent, float2 tc : Texcoord) : SV_Target
 {
+    // normalize the mesh normal
+    viewNormal = normalize(viewNormal);
     // sample normal from map if normal mapping enabled
     if (normalMapEnabled)
     {
-        viewNormal = MapNormal(viewTan, viewBitan, viewNormal, tc, nmap, samplerState);
-    }
-    else
-    {
-        // renormalize interpolated normal
-        viewNormal = normalize(viewNormal);
+        viewNormal = MapNormal(normalize(viewTan), normalize(viewBitan), viewNormal, tc, nmap, samplerState);
     }
 	// fragment to light vector data
     const float3 viewFragToL = viewLightPos - viewPos;
     const float distFragToL = length(viewFragToL);
     const float3 viewDirFragToL = viewFragToL / distFragToL;
-	// attenuation
-    const float att = Attenuate(attConst, attLin, attQuad, distFragToL);
-	// diffuse light
-    const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, viewDirFragToL, viewNormal);
-    
     // specular parameter determination (mapped or uniform)
     float3 specularReflectionColor;
     float specularPower = specularPowerConst;
@@ -118,6 +106,12 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 viewTa
     {
         specularReflectionColor = specularColor;
     }
+    
+    // attenuation
+    const float att = Attenuate(attConst, attLin, attQuad, distFragToL);
+	// diffuse light
+    const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, viewDirFragToL, viewNormal);
+    
     // specular reflected
     const float3 specularReflected = Speculate(specularColor, 1.f, viewNormal, viewFragToL, viewPos, att, specularPower);
 	// final color attenuate diffuse & ambient by diffuse texture color and add specular reflected
