@@ -37,12 +37,17 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : 
             normalize(bitan),
             normalize(viewNormal)
         );
-        // unpack normal data
+        // sample and unpack normal data
         const float3 normalSample = nmap.Sample(samplerState, tc).xyz;
         float3 tanNormal;
         tanNormal = normalSample * 2.f - 1.f;
         // bring normal from tanspace into view space
-        viewNormal = mul(tanNormal, tanToView);
+        viewNormal = normalize(mul(tanNormal, tanToView));
+    }
+    else
+    {
+        // renormalize interpolated normal
+        viewNormal = normalize(viewNormal);
     }
 	// fragment to light vector data
     const float3 vToL = lightPos - viewPos;

@@ -23,6 +23,8 @@ SamplerState samplerState;
 
 float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float2 tc : Texcoord) : SV_TARGET
 {
+    // renormalize interpolated normal
+    viewNormal = normalize(viewNormal);
 	// fragment to light vector data
     const float3 vToL = lightPos - viewPos;
 	const float3 distToL = length(vToL);
