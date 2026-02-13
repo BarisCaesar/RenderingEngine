@@ -3,6 +3,7 @@
 #include "Surface.h"
 #include <unordered_map>
 #include <sstream>
+#include <filesystem>
 
 namespace dx = DirectX;
 
@@ -195,12 +196,12 @@ private:
 	std::unordered_map<int, TransformParameters> transforms;
 };
 // Model
-Model::Model(Graphics& gfx, const std::string fileName)
+Model::Model(Graphics& gfx, const std::string& pathString)
 	:
 	pWindow(std::make_unique<ModelWindow>())
 {
 	Assimp::Importer imp;
-	const auto pScene = imp.ReadFile(fileName.c_str(),
+	const auto pScene = imp.ReadFile(pathString.c_str(),
 		aiProcess_Triangulate |
 		aiProcess_JoinIdenticalVertices |
 		aiProcess_ConvertToLeftHanded |
@@ -215,7 +216,7 @@ Model::Model(Graphics& gfx, const std::string fileName)
 
 	for (size_t i = 0; i < pScene->mNumMeshes; i++)
 	{
-		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i], pScene->mMaterials));
+		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i], pScene->mMaterials, pathString));
 	}
 	int nextId = 0;
 	pRoot = ParseNode(nextId, *pScene->mRootNode);
@@ -243,15 +244,15 @@ Model::~Model() noexcept
 {
 }
 
-std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterials)
+std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterials, const std::filesystem::path& path)
 {
 	using namespace std::string_literals;
 	using DynamicVertex::VertexLayout;
 	using namespace Bind;
 
-	std::vector<std::shared_ptr<Bindable>> bindablePtrs;
+	const auto rootPath = path.parent_path().string() + "\\";
 
-	const auto base = "Models\\goblin\\"s;
+	std::vector<std::shared_ptr<Bindable>> bindablePtrs;
 
 	bool hasSpecularMap = false;
 	bool hasAlphaGloss = false;
@@ -269,7 +270,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		if (material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str()));
+			bindablePtrs.push_back(Texture::Resolve(gfx, rootPath + texFileName.C_Str()));
 			hasDiffuseMap = true;
 		}
 		else
@@ -279,7 +280,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			auto tex = Texture::Resolve(gfx, base + texFileName.C_Str(), 1);
+			auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str(), 1);
 			hasAlphaGloss = tex->HasAlpha();
 			bindablePtrs.push_back(std::move(tex));
 			hasSpecularMap = true;
@@ -299,7 +300,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		if (material.GetTexture(aiTextureType_NORMALS, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			auto tex = Texture::Resolve(gfx, base + texFileName.C_Str(), 2);
+			auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str(), 2);
 			hasAlphaGloss = tex->HasAlpha();
 			bindablePtrs.push_back(std::move(tex));
 			hasNormalMap = true;
@@ -311,7 +312,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		}
 	}
 
-	const auto meshTag = base + "%" + mesh.mName.C_Str();
+	const auto meshTag = path.string() + "%" + mesh.mName.C_Str();
 
 	const float scale = 6.0f;
 
