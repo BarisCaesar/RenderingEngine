@@ -12,7 +12,7 @@
 class App
 {
 public:
-	App();
+	App(const std::string& commandLine = "");
 	// master frame / message loop
 	int Go();
 	~App();
@@ -20,6 +20,7 @@ private:
 	void DoFrame();
 	void ShowImguiDemoWindow();
 private:
+	std::string commandLine;
 	bool showDemoWindow = false;
 	ImguiManager imgui;
 	Window wnd;
