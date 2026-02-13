@@ -18,7 +18,10 @@ App::App()
 	light(wnd.Gfx())
 {
 	wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
-	plane.SetPos({ 1.5f,0.0f,0.0f });
+	plane.SetPos({ 12.0f,0.0f,0.0f });
+	goblin.SetRootTransform(dx::XMMatrixTranslation(0.f, 0.f, -4.f));
+	nano.SetRootTransform(dx::XMMatrixTranslation(0.f, -7.f, 6.f));
+
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
 }
 
