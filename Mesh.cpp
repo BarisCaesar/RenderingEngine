@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <sstream>
 #include <filesystem>
+#include "RXM.h"
 
 namespace dx = DirectX;
 
@@ -126,6 +127,11 @@ void Node::SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept
 	dx::XMStoreFloat4x4(&appliedTransform, transform);
 }
 
+const DirectX::XMFLOAT4X4& Node::GetAppliedTransform() const noexcept
+{
+	return appliedTransform;
+}
+
 int Node::GetId() const noexcept
 {
 	return id;
@@ -148,7 +154,23 @@ public:
 			ImGui::NextColumn();
 			if (pSelectedNode != nullptr)
 			{
-				auto& transform = transforms[pSelectedNode->GetId()];
+				const auto id = pSelectedNode->GetId();
+				auto i = transforms.find(id);
+				if (i == transforms.end())
+				{
+					const auto& applied = pSelectedNode->GetAppliedTransform();
+					const auto angles = ExtractEulerAngles(applied);
+					const auto translation = ExtractTranslation(applied);
+					TransformParameters tp;
+					tp.rotX = angles.x;
+					tp.rotY = angles.y;
+					tp.rotZ = angles.z;
+					tp.x = translation.x;
+					tp.y = translation.y;
+					tp.z = translation.z;
+					std::tie(i, std::ignore) = transforms.insert({ id,tp });
+				}
+				auto& transform = i->second;
 				ImGui::Text("Orientation");
 				ImGui::SliderAngle("X Rotation", &transform.rotX, -180.f, 180.f);
 				ImGui::SliderAngle("Y Rotation", &transform.rotY, -180.f, 180.f);
