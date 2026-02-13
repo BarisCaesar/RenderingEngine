@@ -156,6 +156,7 @@
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="RException.cpp" />
+    <ClCompile Include="RXM.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="SolidSphere.cpp" />
     <ClCompile Include="Surface.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="RException.h" />
     <ClInclude Include="RMath.h" />
+    <ClInclude Include="RXM.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="SolidSphere.h" />
     <ClInclude Include="Sphere.h" />
