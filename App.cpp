@@ -37,10 +37,10 @@ App::App(const std::string& commandLine)
 			throw std::runtime_error("Normal map processed successfully. Just kidding about that whole runtime error thing.");
 		}
 	}
-	wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
-	plane.SetPos({ 12.0f,0.0f,0.0f });
-	goblin.SetRootTransform(dx::XMMatrixTranslation(0.f, 0.f, -4.f));
-	nano.SetRootTransform(dx::XMMatrixTranslation(0.f, -7.f, 6.f));
+	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
+	//plane.SetPos({ 12.0f,0.0f,0.0f });
+	//goblin.SetRootTransform(dx::XMMatrixTranslation(0.f, 0.f, -4.f));
+	//nano.SetRootTransform(dx::XMMatrixTranslation(0.f, -7.f, 6.f));
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
 }
@@ -55,11 +55,12 @@ void App::DoFrame()
 	wnd.Gfx().SetCamera(cam.GetMatrix());
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
-	wall.Draw(wnd.Gfx());
-	plane.Draw(wnd.Gfx());
-	nano.Draw(wnd.Gfx());
-	goblin.Draw(wnd.Gfx());
+	//wall.Draw(wnd.Gfx());
+	//plane.Draw(wnd.Gfx());
+	//nano.Draw(wnd.Gfx());
+	//goblin.Draw(wnd.Gfx());
 	light.Draw(wnd.Gfx());
+	sponza.Draw(wnd.Gfx());
 
 	while (const auto e = wnd.kbd.ReadKey())
 	{
@@ -131,10 +132,11 @@ void App::DoFrame()
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 
-	goblin.ShowWindow(wnd.Gfx(), "Goblin");
-	wall.ShowWindow(wnd.Gfx(), "Wall");
-	plane.SpawnControlWindow(wnd.Gfx());
-	nano.ShowWindow(wnd.Gfx(), "Model 1");
+	//goblin.ShowWindow(wnd.Gfx(), "Goblin");
+	//wall.ShowWindow(wnd.Gfx(), "Wall");
+	//plane.SpawnControlWindow(wnd.Gfx());
+	//nano.ShowWindow(wnd.Gfx(), "Model 1");
+	sponza.ShowWindow(wnd.Gfx(), "Sponza");
 
 	// present
 	wnd.Gfx().EndFrame();

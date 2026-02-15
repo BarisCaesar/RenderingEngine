@@ -28,10 +28,11 @@ private:
 	float speedFactor = 1.f;
 	Camera cam;
 	PointLight light;
-	Model goblin{ wnd.Gfx(), "Models\\goblin\\GoblinX.obj", 6.f };
-	Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj", 2.f};
-	Model wall{ wnd.Gfx(),"Models\\brick_wall\\brick_wall.obj", 6.f };
-	TestPlane plane{ wnd.Gfx(), 6.f };
+	Model sponza{ wnd.Gfx(), "Models\\sponza\\sponza.obj", 1.f / 20.f };
+	//Model goblin{ wnd.Gfx(), "Models\\goblin\\GoblinX.obj", 6.f };
+	//Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj", 2.f};
+	//Model wall{ wnd.Gfx(),"Models\\brick_wall\\brick_wall.obj", 6.f };
+	//TestPlane plane{ wnd.Gfx(), 6.f };
 
 };
 
