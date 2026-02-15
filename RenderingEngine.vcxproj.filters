@@ -162,6 +162,9 @@
     <ClCompile Include="RXM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TexturePreprocessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowsMessageMap.h">
@@ -326,10 +329,10 @@
     <ClInclude Include="TestCube.h">
       <Filter>Header Files\Drawable</Filter>
     </ClInclude>
-    <ClInclude Include="NormalMapTweaker.h">
+    <ClInclude Include="RXM.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RXM.h">
+    <ClInclude Include="TexturePreprocessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
