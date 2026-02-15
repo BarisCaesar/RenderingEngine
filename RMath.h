@@ -13,17 +13,8 @@ constexpr T sq(const T& x)
 template <typename T>
 T wrap_angle(T theta)
 {
-	constexpr T twoPi = (T)2 * (T)PI_D;
-	const T mod = fmod(theta, twoPi);
-	if (mod > (T)PI_D)
-	{
-		return mod - twoPi;
-	}
-	else if (mod < (T)PI_D)
-	{
-		return mod + twoPi;
-	}
-	return mod;
+	const T modded = fmod(theta, (T)2.0 * (T)PI_D);
+	return modded < T(0) ? modded + (T)2.0 * (T)PI_D : modded;
 }
 
 template <typename T>
