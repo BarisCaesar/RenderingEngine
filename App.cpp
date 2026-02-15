@@ -52,7 +52,7 @@ App::App(const std::string& commandLine)
 			);
 		}
 	}
-	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
+	stripey.SetRootTransform(dx::XMMatrixTranslation(-13.5f, 6.0f, 3.5f));
 	//plane.SetPos({ 12.0f,0.0f,0.0f });
 	//goblin.SetRootTransform(dx::XMMatrixTranslation(0.f, 0.f, -4.f));
 	//nano.SetRootTransform(dx::XMMatrixTranslation(0.f, -7.f, 6.f));
@@ -70,12 +70,12 @@ void App::DoFrame()
 	wnd.Gfx().SetCamera(cam.GetMatrix());
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
-	//wall.Draw(wnd.Gfx());
 	//plane.Draw(wnd.Gfx());
 	//nano.Draw(wnd.Gfx());
 	//goblin.Draw(wnd.Gfx());
 	light.Draw(wnd.Gfx());
 	sponza.Draw(wnd.Gfx());
+	stripey.Draw(wnd.Gfx());
 
 	while (const auto e = wnd.kbd.ReadKey())
 	{
@@ -148,7 +148,7 @@ void App::DoFrame()
 	ShowImguiDemoWindow();
 
 	//goblin.ShowWindow(wnd.Gfx(), "Goblin");
-	//wall.ShowWindow(wnd.Gfx(), "Wall");
+	stripey.ShowWindow(wnd.Gfx(), "Stripey");
 	//plane.SpawnControlWindow(wnd.Gfx());
 	//nano.ShowWindow(wnd.Gfx(), "Model 1");
 	sponza.ShowWindow(wnd.Gfx(), "Sponza");
