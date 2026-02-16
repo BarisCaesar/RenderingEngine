@@ -615,6 +615,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 	// need a better way to determine this in the future
 	bindablePtrs.push_back(Rasterizer::Resolve(gfx, hasAlphaDiffuse));
 
+	bindablePtrs.push_back(Blender::Resolve(gfx, false));
+
 	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
 }
 std::unique_ptr<Node> Model::ParseNode(int& nextId, const aiNode& node) noexcept
