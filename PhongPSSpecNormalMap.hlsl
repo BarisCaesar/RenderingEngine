@@ -24,6 +24,8 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float3 vi
 {
     // sample diffuse texture
     float4 dtex = tex.Sample(samplerState, tc);
+    
+    #ifdef NORM_MASK
     // clip the pixel if it is highly translucent
     clip(dtex.a < 0.1 ? -1 : 1); // aborts the pixel shader if the given value is below zero
     
@@ -32,6 +34,7 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float3 vi
     {
         viewNormal = -viewNormal;
     }
+    #endif
     
     // normalize the mesh normal
     viewNormal = normalize(viewNormal);

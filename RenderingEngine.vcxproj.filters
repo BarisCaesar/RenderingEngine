@@ -415,5 +415,8 @@
     <FxCompile Include="PhongPSSpec.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="PhongPSSpecNormMask.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
