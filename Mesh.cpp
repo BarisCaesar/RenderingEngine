@@ -609,7 +609,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 	{
 		throw std::runtime_error("terrible combination of textures in material");
 	}
-	bindablePtrs.push_back(Rasterizer::Resolve(gfx, false));
+	// anything with alpha is two sided in sponza scene,
+	// need a better way to determine this in the future
+	bindablePtrs.push_back(Rasterizer::Resolve(gfx, hasAlphaDiffuse));
 
 	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
 }
