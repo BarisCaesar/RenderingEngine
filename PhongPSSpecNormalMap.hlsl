@@ -22,9 +22,16 @@ SamplerState samplerState;
 
 float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float3 viewTan : Tangent, float3 viewBitan : Bitangent, float2 tc : Texcoord) : SV_Target
 {
-    // do alpha test
+    // sample diffuse texture
     float4 dtex = tex.Sample(samplerState, tc);
+    // clip the pixel if it is highly translucent
     clip(dtex.a < 0.1 ? -1 : 1); // aborts the pixel shader if the given value is below zero
+    
+    // flip normal when backface
+    if(dot(viewNormal, viewFragPos) >= 0.f)
+    {
+        viewNormal = -viewNormal;
+    }
     
     // normalize the mesh normal
     viewNormal = normalize(viewNormal);
