@@ -8,7 +8,7 @@ public:
 	void SetPos(DirectX::XMFLOAT3 pos) noexcept;
 	void SetRotation(float xRotation, float yRotation, float zRotation) noexcept;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
-	void SpawnControlWindow(Graphics& gfx) noexcept;
+	void SpawnControlWindow(Graphics& gfx, const std::string& name) noexcept;
 private:
 	struct PSMaterialConstant
 	{
