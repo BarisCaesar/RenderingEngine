@@ -162,6 +162,7 @@
     <ClCompile Include="PointLight.cpp" />
     <ClCompile Include="Rasterizer.cpp" />
     <ClCompile Include="RException.cpp" />
+    <ClCompile Include="RUtil.cpp" />
     <ClCompile Include="RXM.cpp" />
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="SolidSphere.cpp" />
@@ -220,6 +221,7 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="RException.h" />
     <ClInclude Include="RMath.h" />
+    <ClInclude Include="RUtil.h" />
     <ClInclude Include="RXM.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="SolidSphere.h" />
