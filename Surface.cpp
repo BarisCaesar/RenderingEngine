@@ -5,6 +5,7 @@
 #include <cassert>
 #include <sstream>
 #include <filesystem>
+#include "ScriptCommander.h"
 
 
 
@@ -185,6 +186,7 @@ Surface::Exception::Exception(int line, const char* file, std::string filename, 
 		note = "[Error String] " + Window::Exception::TranslateErrorCode(*hr) + note;
 	}
 }
+
 
 const char* Surface::Exception::what() const noexcept
 {

@@ -165,6 +165,7 @@
     <ClCompile Include="RUtil.cpp" />
     <ClCompile Include="RXM.cpp" />
     <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="ScriptCommander.cpp" />
     <ClCompile Include="SolidSphere.cpp" />
     <ClCompile Include="Surface.cpp" />
     <ClCompile Include="TestCube.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="IndexedTriangleList.h" />
     <ClInclude Include="InputLayout.h" />
+    <ClInclude Include="json.hpp" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mouse.h" />
@@ -224,6 +226,7 @@
     <ClInclude Include="RUtil.h" />
     <ClInclude Include="RXM.h" />
     <ClInclude Include="Sampler.h" />
+    <ClInclude Include="ScriptCommander.h" />
     <ClInclude Include="SolidSphere.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Surface.h" />

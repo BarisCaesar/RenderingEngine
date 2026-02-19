@@ -5,9 +5,7 @@
 #include "Surface.h"
 #include "imgui/imgui.h"
 #include "VertexBuffer.h"
-#include "TexturePreprocessor.h"
-#include <shellapi.h>
-#include <dxtex/DirectXTex.h>
+#include "RUtil.h"
 
 namespace dx = DirectX;
 
@@ -17,40 +15,10 @@ App::App(const std::string& commandLine)
 	:
 	commandLine(commandLine),
 	wnd(1280, 720, "Basic App"),
+	scriptCommander(TokenizeQuoted(commandLine)),
 	light(wnd.Gfx())
 {
-	// makeshift cli for doing some preprocessing bullshit (so many hacks here)
-	if (this->commandLine != "")
-	{
-		int nArgs;
-		const auto pLineW = GetCommandLineW();
-		const auto pArgs = CommandLineToArgvW(pLineW, &nArgs);
-		if (nArgs >= 3 && std::wstring(pArgs[1]) == L"--twerk-objnorm")
-		{
-			const std::wstring pathInWide = pArgs[2];
-			TexturePreprocessor::FlipYAllNormalMapsInObj(
-				std::string(pathInWide.begin(), pathInWide.end())
-			);
-		}
-		else if (nArgs >= 3 && std::wstring(pArgs[1]) == L"--twerk-flipy")
-		{
-			const std::wstring pathInWide = pArgs[2];
-			const std::wstring pathOutWide = pArgs[3];
-			TexturePreprocessor::FlipYNormalMap(
-				std::string(pathInWide.begin(), pathInWide.end()),
-				std::string(pathOutWide.begin(), pathOutWide.end())
-			);
-		}
-		else if (nArgs >= 4 && std::wstring(pArgs[1]) == L"--twerk-validate")
-		{
-			const std::wstring minWide = pArgs[2];
-			const std::wstring maxWide = pArgs[3];
-			const std::wstring pathWide = pArgs[4];
-			TexturePreprocessor::ValidateNormalMap(
-				std::string(pathWide.begin(), pathWide.end()), std::stof(minWide), std::stof(maxWide)
-			);
-		}
-	}
+	
 	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
 	//plane.SetPos({ 12.0f,0.0f,0.0f });
 	//goblin.SetRootTransform(dx::XMMatrixTranslation(0.f, 0.f, -4.f));
