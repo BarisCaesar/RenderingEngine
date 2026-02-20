@@ -179,14 +179,45 @@ namespace DynamicConstBuf
 		std::unique_ptr<LayoutElement> pElement;
 	};
 
+	class Layout
+	{
+	public:
+		Layout()
+			:
+			pLayout(std::make_shared<Struct>(0))
+		{}
+		LayoutElement& operator[](const char* key)
+		{
+			assert(!finalized && "cannot modify finalized layout");
+			return (*pLayout)[key];
+		}
+		size_t GetSizeInBytes() const noexcept
+		{
+			return pLayout->GetSizeInBytes();
+		}
+		template<typename T>
+		LayoutElement& Add(const std::string& key) noxnd
+		{
+			assert(!finalized && "cannot modify finalized layout");
+			return pLayout->Add<T>(key);
+		}
+		std::shared_ptr<LayoutElement> Finalize()
+		{
+			finalized = true;
+			return pLayout;
+		}
+	private:
+		bool finalized = false;
+		std::shared_ptr<LayoutElement> pLayout;
+	};
+
 	class ElementRef
 	{
 	public:
-		class ElementPtr
+		class Ptr
 		{
 		public:
-			// ElementPtr (const ElementPtr&) = delete;
-			ElementPtr(ElementRef& ref)
+			Ptr(ElementRef& ref)
 				:
 				ref(ref)
 			{}
@@ -214,7 +245,7 @@ namespace DynamicConstBuf
 			const auto& t = pLayout->T();
 			return { &t,pBytes,offset + t.GetSizeInBytes() * index };
 		}
-		ElementPtr operator&() noxnd
+		Ptr operator&() noxnd
 		{
 			return { *this };
 		}
@@ -234,9 +265,9 @@ namespace DynamicConstBuf
 	class Buffer
 	{
 	public:
-		Buffer(std::shared_ptr<Struct> pLayout)
+		Buffer(Layout& layout)
 			:
-			pLayout(pLayout),
+			pLayout(std::static_pointer_cast<Struct>(layout.Finalize())),
 			bytes(pLayout->GetOffsetEnd())
 		{}
 		const char* GetData() const noexcept

@@ -19,8 +19,8 @@ App::App(const std::string& commandLine)
 	scriptCommander(TokenizeQuoted(commandLine)),
 	light(wnd.Gfx())
 {
-	auto ps = std::make_shared<DynamicConstBuf::Struct>(0);
-	DynamicConstBuf::Struct& s = *ps;
+	DynamicConstBuf::Layout s;
+
 	s.Add<DynamicConstBuf::Struct>("structboi");
 	s["structboi"].Add<DynamicConstBuf::Float3>("float3boi");
 	s["structboi"].Add<DynamicConstBuf::Float>("floatboi");
@@ -33,7 +33,7 @@ App::App(const std::string& commandLine)
 	s["arr"].T().Add<DynamicConstBuf::Array>("meta");
 	s["arr"].T()["meta"].Set<DynamicConstBuf::Array>(6);
 	s["arr"].T()["meta"].T().Set<DynamicConstBuf::Matrix>(4);
-	DynamicConstBuf::Buffer b(std::move(ps));
+	DynamicConstBuf::Buffer b(s);
 	b["structboi"]["float3boi"] = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
 	b["structboi"]["floatboi"] = 420.f;
 	b["woot"] = 42.0f;
