@@ -227,6 +227,10 @@ namespace DynamicConstBuf
 		{
 			return { &(*pLayout)[key], bytes.data(), 0u};
 		}
+		std::shared_ptr<LayoutElement> CloneLayout() const
+		{
+			return pLayout;
+		}
 	private:
 		std::shared_ptr<Struct> pLayout;
 		std::vector<char> bytes;
