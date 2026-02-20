@@ -43,6 +43,8 @@ systype& operator=( const systype& rhs ) noxnd \
 
 namespace DynamicConstBuf
 {
+	class Struct;
+
 	namespace dx = DirectX;
 	class LayoutElement
 	{
@@ -66,7 +68,8 @@ namespace DynamicConstBuf
 			return offset;
 		}
 		virtual size_t GetOffsetEnd() const noexcept = 0;
-		class Struct& AsStruct() noxnd;
+		template<typename T>
+		Struct& Add(const std::string& key) noxnd;
 
 		RESOLVE_BASE(Float3)
 		RESOLVE_BASE(Float)
@@ -144,10 +147,12 @@ namespace DynamicConstBuf
 		std::vector<char> bytes;
 	};
 
-	Struct& LayoutElement::AsStruct() noxnd
+	// must come after definition of struct
+	template<typename T>
+	Struct& LayoutElement::Add(const std::string& key) noxnd
 	{
 		auto ps = dynamic_cast<Struct*>(this);
 		assert(ps != nullptr);
-		return *ps;
+		return ps->Add<T>(key);
 	}
 }

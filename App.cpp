@@ -21,8 +21,8 @@ App::App(const std::string& commandLine)
 {
 	DynamicConstBuf::Struct s(0);
 	s.Add<DynamicConstBuf::Struct>("structboi");
-	s["structboi"].AsStruct().Add<DynamicConstBuf::Float3>("float3boi");
-	s["structboi"].AsStruct().Add<DynamicConstBuf::Float>("floatboi");
+	s["structboi"].Add<DynamicConstBuf::Float3>("float3boi");
+	s["structboi"].Add<DynamicConstBuf::Float>("floatboi");
 	DynamicConstBuf::Buffer b(s);
 	b["structboi"]["float3boi"] = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
 	b["structboi"]["floatboi"] = 420.f;
