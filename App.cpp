@@ -31,18 +31,21 @@ App::App(const std::string& commandLine)
 	s["arr"].T()["werk"].Set<DynamicConstBuf::Float>(6);
 	s["arr"].T().Add<DynamicConstBuf::Array>("meta");
 	s["arr"].T()["meta"].Set<DynamicConstBuf::Array>(6);
-	s["arr"].T()["meta"].T().Set<DynamicConstBuf::Float>(4);
+	s["arr"].T()["meta"].T().Set<DynamicConstBuf::Matrix>(4);
 	DynamicConstBuf::Buffer b(s);
 	b["structboi"]["float3boi"] = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
 	b["structboi"]["floatboi"] = 420.f;
 	b["woot"] = 42.0f;
 	b["arr"][2]["werk"][5] = 111.0f;
-	b["arr"][2]["meta"][5][3] = 222.0f;
+	dx::XMStoreFloat4x4(
+		&(dx::XMFLOAT4X4&)b["arr"][2]["meta"][5][3],
+		dx::XMMatrixIdentity()
+	);
 	float k = b["woot"];
 	dx::XMFLOAT3 v = b["structboi"]["float3boi"];
 	float u = b["structboi"]["floatboi"];
 	float er = b["arr"][2]["werk"][5];
-	float eq = b["arr"][2]["meta"][5][3];
+	dx::XMFLOAT4X4 eq = b["arr"][2]["meta"][5][3];
 
 	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
 	//plane.SetPos({ 12.0f,0.0f,0.0f });
