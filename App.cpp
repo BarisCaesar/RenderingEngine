@@ -23,12 +23,27 @@ App::App(const std::string& commandLine)
 	s.Add<DynamicConstBuf::Struct>("structboi");
 	s["structboi"].Add<DynamicConstBuf::Float3>("float3boi");
 	s["structboi"].Add<DynamicConstBuf::Float>("floatboi");
+	s.Add<DynamicConstBuf::Float>("woot");
+	s.Add<DynamicConstBuf::Array>("arr");
+	s["arr"].Set<DynamicConstBuf::Struct>(4);
+	s["arr"].T().Add<DynamicConstBuf::Float3>("twerk");
+	s["arr"].T().Add<DynamicConstBuf::Array>("werk");
+	s["arr"].T()["werk"].Set<DynamicConstBuf::Float>(6);
+	s["arr"].T().Add<DynamicConstBuf::Array>("meta");
+	s["arr"].T()["meta"].Set<DynamicConstBuf::Array>(6);
+	s["arr"].T()["meta"].T().Set<DynamicConstBuf::Float>(4);
 	DynamicConstBuf::Buffer b(s);
 	b["structboi"]["float3boi"] = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
 	b["structboi"]["floatboi"] = 420.f;
+	b["woot"] = 42.0f;
+	b["arr"][2]["werk"][5] = 111.0f;
+	b["arr"][2]["meta"][5][3] = 222.0f;
+	float k = b["woot"];
 	dx::XMFLOAT3 v = b["structboi"]["float3boi"];
 	float u = b["structboi"]["floatboi"];
-	
+	float er = b["arr"][2]["werk"][5];
+	float eq = b["arr"][2]["meta"][5][3];
+
 	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
 	//plane.SetPos({ 12.0f,0.0f,0.0f });
 	//goblin.SetRootTransform(dx::XMMatrixTranslation(0.f, 0.f, -4.f));
