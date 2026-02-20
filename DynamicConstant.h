@@ -206,17 +206,29 @@ namespace DynamicConstBuf
 	class Buffer
 	{
 	public:
-		Buffer(const Struct& pLayout)
+		Buffer(std::shared_ptr<Struct> pLayout)
 			:
-			pLayout(&pLayout),
-			bytes(pLayout.GetOffsetEnd())
+			pLayout(pLayout),
+			bytes(pLayout->GetOffsetEnd())
 		{}
+		const char* GetData() const noexcept
+		{
+			return bytes.data();
+		}
+		size_t GetSizeInBytes() const noexcept
+		{
+			return bytes.size();
+		}
+		const LayoutElement& GetLayout() const noexcept
+		{
+			return *pLayout;
+		}
 		ElementRef operator[](const char* key) noxnd
 		{
 			return { &(*pLayout)[key], bytes.data(), 0u};
 		}
 	private:
-		const class Struct* pLayout;
+		std::shared_ptr<Struct> pLayout;
 		std::vector<char> bytes;
 	};
 

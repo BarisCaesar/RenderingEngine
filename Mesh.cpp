@@ -5,6 +5,8 @@
 #include <sstream>
 #include <filesystem>
 #include "RXM.h"
+#include "DynamicConstant.h"
+#include "ConstantBuffersEx.h"
 
 namespace dx = DirectX;
 
@@ -438,18 +440,17 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		bindablePtrs.push_back(Bind::InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
-		struct PSMaterialConstantDiffnorm
-		{
-			float specularIntensity;
-			float specularPower;
-			BOOL  normalMapEnabled = TRUE;
-			float padding[1];
-		} pmc;
-		pmc.specularPower = shininess;
-		pmc.specularIntensity = (specularColor.x + specularColor.y + specularColor.z) / 3.f;
-		// this is CLEARLY an issue... all meshes will share same mat const, but may have different
-		// Ns (specular power) specified for each in the material properties... bad conflict
-		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantDiffnorm>::Resolve(gfx, pmc, 1u));
+		auto layout = std::make_shared<DynamicConstBuf::Struct>(0);
+		layout->Add<DynamicConstBuf::Float>("specularIntensity");
+		layout->Add<DynamicConstBuf::Float>("specularPower");
+		layout->Add<DynamicConstBuf::Bool>("normalMapEnabled");
+		layout->Add<DynamicConstBuf::Float>("padding");
+
+		DynamicConstBuf::Buffer cbuf{ std::move(layout) };
+		cbuf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
+		cbuf["specularPower"] = shininess;
+		cbuf["normalMapEnabled"] = TRUE;
+		bindablePtrs.push_back(std::make_shared<PixelConstantBufferEX>(gfx, cbuf, 1u));
 	}
 	else if (hasDiffuseMap && !hasNormalMap && hasSpecularMap)
 	{
