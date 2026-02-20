@@ -21,10 +21,13 @@ App::App(const std::string& commandLine)
 {
 	DynamicConstBuf::Struct s(0);
 	s.Add<DynamicConstBuf::Struct>("structboi");
-	static_cast<DynamicConstBuf::Struct&>(s["structboi"]).Add<DynamicConstBuf::Float3>("floatboi");
+	s["structboi"].AsStruct().Add<DynamicConstBuf::Float3>("float3boi");
+	s["structboi"].AsStruct().Add<DynamicConstBuf::Float>("floatboi");
 	DynamicConstBuf::Buffer b(s);
-	b["structboi"]["floatboi"] = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
-	dx::XMFLOAT3 v = b["structboi"]["floatboi"];
+	b["structboi"]["float3boi"] = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
+	b["structboi"]["floatboi"] = 420.f;
+	dx::XMFLOAT3 v = b["structboi"]["float3boi"];
+	float u = b["structboi"]["floatboi"];
 	
 	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
 	//plane.SetPos({ 12.0f,0.0f,0.0f });
