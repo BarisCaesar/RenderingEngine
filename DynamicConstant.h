@@ -61,7 +61,8 @@ namespace DynamicConstBuf
 			:
 			offset(offset)
 		{}
-
+		virtual ~LayoutElement()
+		{}
 		virtual LayoutElement& operator[](const char*)
 		{
 			assert(false && "cannot access member on non Struct");
