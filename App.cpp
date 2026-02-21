@@ -7,10 +7,99 @@
 #include "VertexBuffer.h"
 #include "RUtil.h"
 #include "DynamicConstant.h"
+#include <cstring>
 
 namespace dx = DirectX;
 
+void TestDynamicConstant()
+{
+	// data control tests
+	{
+		DynamicConstBuf::Layout s;
 
+		s.Add<DynamicConstBuf::Struct>("structboi");
+		s["structboi"].Add<DynamicConstBuf::Float3>("float3boi");
+		s["structboi"].Add<DynamicConstBuf::Float>("floatboi");
+		s.Add<DynamicConstBuf::Float>("woot");
+		s.Add<DynamicConstBuf::Array>("arr");
+		s["arr"].Set<DynamicConstBuf::Struct>(4);
+		s["arr"].T().Add<DynamicConstBuf::Float3>("twerk");
+		s["arr"].T().Add<DynamicConstBuf::Array>("werk");
+		s["arr"].T()["werk"].Set<DynamicConstBuf::Float>(6);
+		s["arr"].T().Add<DynamicConstBuf::Array>("meta");
+		s["arr"].T()["meta"].Set<DynamicConstBuf::Array>(6);
+		s["arr"].T()["meta"].T().Set<DynamicConstBuf::Matrix>(4);
+		DynamicConstBuf::Buffer b(s);
+		{
+			auto exp = 42.0f;
+			b["woot"] = exp;
+			float act = b["woot"];
+			assert(act == exp);
+		}
+		{
+			auto exp = 420.0f;
+			b["structboi"]["floatboi"] = exp;
+			float act = b["structboi"]["floatboi"];
+			assert(act == exp);
+		}
+		{
+			auto exp = 111.0f;
+			b["arr"][2]["werk"][5] = exp;
+			float act = b["arr"][2]["werk"][5];
+			assert(act == exp);
+		}
+		{
+			auto exp = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
+			b["structboi"]["float3boi"] = exp;
+			dx::XMFLOAT3 act = b["structboi"]["float3boi"];
+			assert(!std::memcmp(&exp, &act, sizeof(DirectX::XMFLOAT3)));
+		}
+		{
+			DirectX::XMFLOAT4X4 exp;
+			dx::XMStoreFloat4x4(
+				&exp,
+				dx::XMMatrixIdentity()
+			);
+			b["arr"][2]["meta"][5][3] = exp;
+			dx::XMFLOAT4X4 act = b["arr"][2]["meta"][5][3];
+			assert(!std::memcmp(&exp, &act, sizeof(DirectX::XMFLOAT4X4)));
+		}
+	}
+	// size test array of arrays
+	{
+		DynamicConstBuf::Layout s;
+		s.Add<DynamicConstBuf::Array>("arr");
+		s["arr"].Set<DynamicConstBuf::Array>(6);
+		s["arr"].T().Set<DynamicConstBuf::Matrix>(4);
+		DynamicConstBuf::Buffer b(s);
+
+		auto act = b.GetSizeInBytes();
+		assert(act == 16u * 4u * 4u * 6u);
+	}
+	// size test array of structs with padding
+	{
+		DynamicConstBuf::Layout s;
+		s.Add<DynamicConstBuf::Array>("arr");
+		s["arr"].Set<DynamicConstBuf::Struct>(6);
+		s["arr"].T().Add<DynamicConstBuf::Float2>("a");
+		s["arr"].T().Add<DynamicConstBuf::Float3>("b");
+		s["arr"].T().ComputeSize();
+		DynamicConstBuf::Buffer b(s);
+
+		auto act = b.GetSizeInBytes();
+		assert(act == 16u * 2u * 6u);
+	}
+	// size test array of primitive that needs padding
+	{
+		DynamicConstBuf::Layout s;
+		s.Add<DynamicConstBuf::Array>("arr");
+		s["arr"].Set<DynamicConstBuf::Float3>(6);
+		DynamicConstBuf::Buffer b(s);
+
+		auto act = b.GetSizeInBytes();
+		assert(act == 16u * 6u);
+	}
+}
 
 App::App(const std::string& commandLine)
 	:
@@ -19,35 +108,8 @@ App::App(const std::string& commandLine)
 	scriptCommander(TokenizeQuoted(commandLine)),
 	light(wnd.Gfx())
 {
-	DynamicConstBuf::Layout s;
-
-	s.Add<DynamicConstBuf::Struct>("structboi");
-	s["structboi"].Add<DynamicConstBuf::Float3>("float3boi");
-	s["structboi"].Add<DynamicConstBuf::Float>("floatboi");
-	s.Add<DynamicConstBuf::Float>("woot");
-	s.Add<DynamicConstBuf::Array>("arr");
-	s["arr"].Set<DynamicConstBuf::Struct>(4);
-	s["arr"].T().Add<DynamicConstBuf::Float3>("twerk");
-	s["arr"].T().Add<DynamicConstBuf::Array>("werk");
-	s["arr"].T()["werk"].Set<DynamicConstBuf::Float>(6);
-	s["arr"].T().Add<DynamicConstBuf::Array>("meta");
-	s["arr"].T()["meta"].Set<DynamicConstBuf::Array>(6);
-	s["arr"].T()["meta"].T().Set<DynamicConstBuf::Matrix>(4);
-	DynamicConstBuf::Buffer b(s);
-	b["structboi"]["float3boi"] = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
-	b["structboi"]["floatboi"] = 420.f;
-	b["woot"] = 42.0f;
-	b["arr"][2]["werk"][5] = 111.0f;
-	dx::XMStoreFloat4x4(
-		&b["arr"][2]["meta"][5][3],
-		dx::XMMatrixIdentity()
-	);
-	float k = b["woot"];
-	dx::XMFLOAT3 v = b["structboi"]["float3boi"];
-	float u = b["structboi"]["floatboi"];
-	float er = b["arr"][2]["werk"][5];
-	dx::XMFLOAT4X4 eq = b["arr"][2]["meta"][5][3];
-
+	
+	TestDynamicConstant();
 	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
 	//plane.SetPos({ 12.0f,0.0f,0.0f });
 	//goblin.SetRootTransform(dx::XMMatrixTranslation(0.f, 0.f, -4.f));

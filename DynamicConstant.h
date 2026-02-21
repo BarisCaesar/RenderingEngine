@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <type_traits>
 #include <string>
+#include <numeric>
 
 #define RESOLVE_BASE(eltype) \
 virtual size_t Resolve ## eltype() const noxnd \
@@ -27,13 +28,17 @@ public: \
 	} \
 	size_t GetOffsetEnd() const noexcept override final \
 	{ \
-		return GetOffsetBegin() + sizeof( systype ); \
+		return GetOffsetBegin() + ComputeSize(); \
 	} \
 protected: \
-	size_t Finalize( size_t offset_in ) override \
+	size_t Finalize( size_t offset_in ) override final\
 	{ \
 		offset = offset_in; \
-		return offset_in + sizeof( systype ); \
+		return offset_in + ComputeSize(); \
+	} \
+	size_t ComputeSize() const noxnd override final \
+	{ \
+		return sizeof(SystemType); \
 	} \
 };
 
@@ -69,6 +74,7 @@ namespace DynamicConstBuf
 	public:
 		virtual ~LayoutElement()
 		{}
+		// [] only works for Structs; access member by name;
 		virtual LayoutElement& operator[](const char*)
 		{
 			assert(false && "cannot access member on non Struct");
@@ -79,6 +85,7 @@ namespace DynamicConstBuf
 			assert(false && "cannot access member on non Struct");
 			return *this;
 		}
+		// T() only works for Arrays; gets the array type layout object
 		virtual LayoutElement& T()
 		{
 			assert(false);
@@ -89,19 +96,31 @@ namespace DynamicConstBuf
 			assert(false);
 			return *this;
 		}
+
+		// offset based- functions only work after finalization
 		size_t GetOffsetBegin() const noexcept
 		{
 			return offset;
 		}
 		virtual size_t GetOffsetEnd() const noexcept = 0;
+		// get size in bytes derived from offsets
 		size_t GetSizeInBytes() const noexcept
 		{
 			return GetOffsetEnd() - GetOffsetBegin();
 		}
+		// only works for Structs; add LayoutElement
 		template<typename T1>
 		Struct& Add(const std::string& key) noxnd;
+
+		// only works for Arrays; set the type and the # of elements
 		template<typename T1>
 		Array& Set(size_t size) noxnd;
+
+		// returns the value of offset bumped up to the next 16-byte boundary (if not already on one)
+		static size_t GetNextBoundaryOffset(size_t offset)
+		{
+			return offset + (16 - offset % 16u) % 16u;
+		}
 
 		RESOLVE_BASE(Matrix)
 		RESOLVE_BASE(Float4)
@@ -109,8 +128,11 @@ namespace DynamicConstBuf
 		RESOLVE_BASE(Float2)
 		RESOLVE_BASE(Float)
 		RESOLVE_BASE(Bool)
-	protected:
+	public:
+		// sets all offsets for element and subelements, returns offset directly after this element
 		virtual size_t Finalize(size_t offset) = 0;
+		// computes the size of this element in bytes, considering padding on Arrays and Structs
+		virtual size_t ComputeSize() const noxnd = 0;
 	protected:
 		size_t offset = 0u;
 	};
@@ -135,7 +157,8 @@ namespace DynamicConstBuf
 		}
 		size_t GetOffsetEnd() const noexcept override final
 		{
-			return elements.empty() ? GetOffsetBegin() : elements.back()->GetOffsetEnd();
+			// bump up to next boundary (because structs are multiple of 16 in size)
+			return LayoutElement::GetNextBoundaryOffset(elements.back()->GetOffsetEnd());
 		}
 
 		template<typename T>
@@ -148,8 +171,8 @@ namespace DynamicConstBuf
 			}
 			return *this;
 		}
-	protected:
-		size_t Finalize(size_t offset_in) override
+	public:
+		size_t Finalize(size_t offset_in) override final
 		{
 			assert(elements.size() != 0u);
 			offset = offset_in;
@@ -160,7 +183,28 @@ namespace DynamicConstBuf
 			}
 			return GetOffsetEnd();
 		}
+		size_t ComputeSize() const noxnd override final
+		{
+			// compute offsets of all elements by summing size+padding
+			size_t offsetNext = 0u;
+			for (auto& el : elements)
+			{
+				const auto elSize = el->ComputeSize();
+				offsetNext += CalculatePaddingBeforeElement(offsetNext, elSize) + elSize;
+			}
+			// struct size must be multiple of 16 bytes
+			return GetNextBoundaryOffset(offsetNext);
+		}
 	private:
+		static size_t CalculatePaddingBeforeElement(size_t offset, size_t size) noexcept
+		{
+			// advance to next boundary if straddling 16-byte boundary
+			if (offset / 16u != (offset + size - 1) / 16u)
+			{
+				return GetNextBoundaryOffset(offset) - offset;
+			}
+			return offset;
+		}
 		std::unordered_map<std::string, LayoutElement*> map;
 		std::vector<std::unique_ptr<LayoutElement>> elements;
 	};
@@ -172,7 +216,7 @@ namespace DynamicConstBuf
 		size_t GetOffsetEnd() const noexcept override final
 		{
 			assert(pElement);
-			return GetOffsetBegin() + pElement->GetSizeInBytes() * size;
+			return GetOffsetBegin() + LayoutElement::GetNextBoundaryOffset(pElement->GetSizeInBytes()) * size;
 		}
 
 		template<typename T>
@@ -192,12 +236,17 @@ namespace DynamicConstBuf
 			return *pElement;
 		}
 	protected:
-		size_t Finalize(size_t offset_in) override
+		size_t Finalize(size_t offset_in) override final
 		{
 			assert(size != 0u && pElement);
 			offset = offset_in;
 			pElement->Finalize(offset_in);
-			return offset + pElement->GetSizeInBytes() * size;
+			return GetOffsetEnd();
+		}
+		size_t ComputeSize() const noxnd override final
+		{
+			// arrays are not packed in hlsl
+			return LayoutElement::GetNextBoundaryOffset(pElement->ComputeSize()) * size;
 		}
 	private:
 		size_t size = 0u;
@@ -269,7 +318,8 @@ namespace DynamicConstBuf
 		ElementRef operator[](size_t index) noxnd
 		{
 			const auto& t = pLayout->T();
-			return { &t,pBytes,offset + t.GetSizeInBytes() * index };
+			const auto elementSize = LayoutElement::GetNextBoundaryOffset(t.GetSizeInBytes());
+			return { &t,pBytes,offset + elementSize * index };
 		}
 		Ptr operator&() noxnd
 		{

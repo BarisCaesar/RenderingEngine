@@ -444,7 +444,6 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		layout.Add<DynamicConstBuf::Float>("specularIntensity");
 		layout.Add<DynamicConstBuf::Float>("specularPower");
 		layout.Add<DynamicConstBuf::Bool>("normalMapEnabled");
-		layout.Add<DynamicConstBuf::Float>("padding");
 
 		DynamicConstBuf::Buffer cbuf{ layout };
 		cbuf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
