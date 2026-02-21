@@ -13,6 +13,7 @@ namespace dx = DirectX;
 
 void TestDynamicConstant()
 {
+	using namespace std::string_literals;
 	// data control tests
 	{
 		DynamicConstBuf::Layout s;
@@ -94,8 +95,8 @@ void TestDynamicConstant()
 		DynamicConstBuf::Layout s;
 		s.Add<DynamicConstBuf::Array>("arr");
 		s["arr"].Set<DynamicConstBuf::Struct>(6);
-		s["arr"].T().Add<DynamicConstBuf::Float2>("a");
-		s["arr"].T().Add<DynamicConstBuf::Float3>("b");
+		s["arr"s].T().Add<DynamicConstBuf::Float2>("a");
+		s["arr"].T().Add<DynamicConstBuf::Float3>("b"s);
 		s["arr"].T().ComputeSize();
 		DynamicConstBuf::Buffer b(s);
 

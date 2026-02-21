@@ -77,12 +77,12 @@ namespace DynamicConstBuf
 		virtual ~LayoutElement()
 		{}
 		// [] only works for Structs; access member by name;
-		virtual LayoutElement& operator[](const char*)
+		virtual LayoutElement& operator[](const std::string&)
 		{
 			assert(false && "cannot access member on non Struct");
 			return *this;
 		}
-		virtual const LayoutElement& operator[](const char* key) const
+		virtual const LayoutElement& operator[](const std::string&) const
 		{
 			assert(false && "cannot access member on non Struct");
 			return *this;
@@ -149,11 +149,11 @@ namespace DynamicConstBuf
 	class Struct : public LayoutElement
 	{
 	public:
-		LayoutElement& operator[](const char* key) override final
+		LayoutElement& operator[](const std::string& key) override final
 		{
 			return *map.at(key);
 		}
-		const LayoutElement& operator[](const char* key) const override final
+		const LayoutElement& operator[](const std::string& key) const override final
 		{
 			return *map.at(key);
 		}
@@ -266,7 +266,7 @@ namespace DynamicConstBuf
 			:
 			pLayout(std::move(pLayout))
 		{}
-		LayoutElement& operator[](const char* key)
+		LayoutElement& operator[](const std::string& key)
 		{
 			assert(!finalized && "cannot modify finalized layout");
 			return (*pLayout)[key];
@@ -317,7 +317,7 @@ namespace DynamicConstBuf
 			pLayout(pLayout),
 			pBytes(pBytes)
 		{}
-		ElementRef operator[](const char* key) noxnd
+		ElementRef operator[](const std::string& key) noxnd
 		{
 			return { &(*pLayout)[key], pBytes, offset };
 		}
@@ -364,7 +364,7 @@ namespace DynamicConstBuf
 		{
 			return *pLayout;
 		}
-		ElementRef operator[](const char* key) noxnd
+		ElementRef operator[](const std::string& key) noxnd
 		{
 			return { &(*pLayout)[key], bytes.data(), 0u};
 		}
