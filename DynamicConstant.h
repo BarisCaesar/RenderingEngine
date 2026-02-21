@@ -10,66 +10,37 @@
 #include <string>
 #include <numeric>
 
-#define RESOLVE_BASE(eltype) \
-virtual size_t Resolve ## eltype() const noxnd \
-{\
-	assert(false && "Cannot resolve to" #eltype); return 0u; \
-}
+#define DCB_RESOLVE_BASE(eltype) \
+virtual size_t Resolve ## eltype() const noxnd;
 
-#define LEAF_ELEMENT_IMPL(eltype, systype, hlslSize) \
+#define DCB_LEAF_ELEMENT_IMPL(eltype, systype, hlslSize) \
 class eltype : public LayoutElement \
 { \
 public: \
 	using SystemType = systype; \
-	using LayoutElement::LayoutElement; \
-	size_t Resolve ## eltype() const noxnd override final \
-	{ \
-		return GetOffsetBegin(); \
-	} \
-	size_t GetOffsetEnd() const noexcept override final \
-	{ \
-		return GetOffsetBegin() + ComputeSize(); \
-	} \
+	size_t Resolve ## eltype() const noxnd override final;\
+	size_t GetOffsetEnd() const noexcept override final;\
 protected: \
-	size_t Finalize( size_t offset_in ) override final\
-	{ \
-		offset = offset_in; \
-		return offset_in + ComputeSize(); \
-	} \
-	size_t ComputeSize() const noxnd override final \
-	{ \
-		return (hlslSize); \
-	} \
+	size_t Finalize( size_t offset_in ) override final;\
+	size_t ComputeSize() const noxnd override;\
 };
 
-#define LEAF_ELEMENT(eltype,systype) LEAF_ELEMENT_IMPL(eltype,systype,sizeof(systype))
+#define DCB_LEAF_ELEMENT(eltype,systype) DCB_LEAF_ELEMENT_IMPL(eltype,systype,sizeof(systype))
 
-#define REF_CONVERSION(eltype, ...) \
-operator __VA_ARGS__ eltype::SystemType&() noxnd \
-{ \
-	return *reinterpret_cast<eltype::SystemType*>(pBytes + offset + pLayout->Resolve ## eltype()); \
-} 
-#define REF_ASSIGN(eltype) \
-eltype::SystemType& operator=( const eltype::SystemType& rhs ) noxnd \
-{ \
-	return static_cast<eltype::SystemType&>(*this) = rhs; \
-}
+#define DCB_REF_CONVERSION(eltype, ...) \
+operator __VA_ARGS__ eltype::SystemType&() noxnd;
+#define DCB_REF_ASSIGN(eltype) \
+eltype::SystemType& operator=( const eltype::SystemType& rhs ) noxnd;
 
-#define REF_NONCONST(eltype) REF_CONVERSION(eltype) REF_ASSIGN(eltype)
-#define REF_CONST(eltype) REF_CONVERSION(eltype,const)
+#define DCB_REF_NONCONST(eltype) DCB_REF_CONVERSION(eltype) DCB_REF_ASSIGN(eltype)
+#define DCB_REF_CONST(eltype) DCB_REF_CONVERSION(eltype,const)
 
-#define PTR_CONVERSION(eltype, ...) \
-operator __VA_ARGS__ eltype::SystemType*() noxnd \
-{ \
-	return &static_cast<__VA_ARGS__ eltype::SystemType&>(ref); \
-}
+#define DCB_PTR_CONVERSION(eltype, ...) \
+operator __VA_ARGS__ eltype::SystemType*() noxnd;
 
 
 namespace DynamicConstBuf
 {
-	class Struct;
-	class Array;
-	class Layout;
 
 	namespace dx = DirectX;
 	class LayoutElement
@@ -78,42 +49,19 @@ namespace DynamicConstBuf
 		friend class Array;
 		friend class Struct;
 	public:
-		virtual ~LayoutElement()
-		{}
+		virtual ~LayoutElement();
 		// [] only works for Structs; access member by name;
-		virtual LayoutElement& operator[](const std::string&)
-		{
-			assert(false && "cannot access member on non Struct");
-			return *this;
-		}
-		virtual const LayoutElement& operator[](const std::string&) const
-		{
-			assert(false && "cannot access member on non Struct");
-			return *this;
-		}
+		virtual LayoutElement& operator[](const std::string&);
+		virtual const LayoutElement& operator[](const std::string&) const;
 		// T() only works for Arrays; gets the array type layout object
-		virtual LayoutElement& T()
-		{
-			assert(false);
-			return *this;
-		}
-		virtual const LayoutElement& T() const
-		{
-			assert(false);
-			return *this;
-		}
+		virtual LayoutElement& T();
+		virtual const LayoutElement& T() const;
 
 		// offset based- functions only work after finalization
-		size_t GetOffsetBegin() const noexcept
-		{
-			return offset;
-		}
+		size_t GetOffsetBegin() const noexcept;
 		virtual size_t GetOffsetEnd() const noexcept = 0;
 		// get size in bytes derived from offsets
-		size_t GetSizeInBytes() const noexcept
-		{
-			return GetOffsetEnd() - GetOffsetBegin();
-		}
+		size_t GetSizeInBytes() const noexcept;
 		// only works for Structs; add LayoutElement
 		template<typename T1>
 		LayoutElement& Add(const std::string& key) noxnd;
@@ -123,17 +71,14 @@ namespace DynamicConstBuf
 		LayoutElement& Set(size_t size) noxnd;
 
 		// returns the value of offset bumped up to the next 16-byte boundary (if not already on one)
-		static size_t GetNextBoundaryOffset(size_t offset)
-		{
-			return offset + (16 - offset % 16u) % 16u;
-		}
+		static size_t GetNextBoundaryOffset(size_t offset) noexcept;
 
-		RESOLVE_BASE(Matrix)
-		RESOLVE_BASE(Float4)
-		RESOLVE_BASE(Float3)
-		RESOLVE_BASE(Float2)
-		RESOLVE_BASE(Float)
-		RESOLVE_BASE(Bool)
+		DCB_RESOLVE_BASE(Matrix)
+		DCB_RESOLVE_BASE(Float4)
+		DCB_RESOLVE_BASE(Float3)
+		DCB_RESOLVE_BASE(Float2)
+		DCB_RESOLVE_BASE(Float)
+		DCB_RESOLVE_BASE(Bool)
 	protected:
 		// sets all offsets for element and subelements, returns offset directly after this element
 		virtual size_t Finalize(size_t offset) = 0;
@@ -143,73 +88,30 @@ namespace DynamicConstBuf
 		size_t offset = 0u;
 	};
 
-	LEAF_ELEMENT(Matrix, dx::XMFLOAT4X4)
-	LEAF_ELEMENT(Float4, dx::XMFLOAT4)
-	LEAF_ELEMENT(Float3, dx::XMFLOAT3)
-	LEAF_ELEMENT(Float2, dx::XMFLOAT2)
-	LEAF_ELEMENT(Float, float)
-	LEAF_ELEMENT_IMPL(Bool, bool, 4u)
+	DCB_LEAF_ELEMENT(Matrix, dx::XMFLOAT4X4)
+	DCB_LEAF_ELEMENT(Float4, dx::XMFLOAT4)
+	DCB_LEAF_ELEMENT(Float3, dx::XMFLOAT3)
+	DCB_LEAF_ELEMENT(Float2, dx::XMFLOAT2)
+	DCB_LEAF_ELEMENT(Float, float)
+	DCB_LEAF_ELEMENT_IMPL(Bool, bool, 4u)
 
 	class Struct : public LayoutElement
 	{
 	public:
-		LayoutElement& operator[](const std::string& key) override final
-		{
-			return *map.at(key);
-		}
+		LayoutElement& operator[](const std::string& key) override final;
 		const LayoutElement& operator[](const std::string& key) const override final
 		{
 			return *map.at(key);
 		}
-		size_t GetOffsetEnd() const noexcept override final
-		{
-			// bump up to next boundary (because structs are multiple of 16 in size)
-			return LayoutElement::GetNextBoundaryOffset(elements.back()->GetOffsetEnd());
-		}
+		size_t GetOffsetEnd() const noexcept override final;
 
 		
-		void Add(const std::string& name, std::unique_ptr<LayoutElement> pElement) noxnd
-		{
-			elements.push_back(std::move(pElement));
-			if (!map.emplace(name, elements.back().get()).second)
-			{
-				assert(false);
-			}
-		}
+		void Add(const std::string& name, std::unique_ptr<LayoutElement> pElement) noxnd;
 	protected:
-		size_t Finalize(size_t offset_in) override final
-		{
-			assert(elements.size() != 0u);
-			offset = offset_in;
-			auto offsetNext = offset;
-			for (auto& el : elements)
-			{
-				offsetNext = (*el).Finalize(offsetNext);
-			}
-			return GetOffsetEnd();
-		}
-		size_t ComputeSize() const noxnd override final
-		{
-			// compute offsets of all elements by summing size+padding
-			size_t offsetNext = 0u;
-			for (auto& el : elements)
-			{
-				const auto elSize = el->ComputeSize();
-				offsetNext += CalculatePaddingBeforeElement(offsetNext, elSize) + elSize;
-			}
-			// struct size must be multiple of 16 bytes
-			return GetNextBoundaryOffset(offsetNext);
-		}
+		size_t Finalize(size_t offset_in) override final;
+		size_t ComputeSize() const noxnd override final;
 	private:
-		static size_t CalculatePaddingBeforeElement(size_t offset, size_t size) noexcept
-		{
-			// advance to next boundary if straddling 16-byte boundary
-			if (offset / 16u != (offset + size - 1) / 16u)
-			{
-				return GetNextBoundaryOffset(offset) - offset;
-			}
-			return offset;
-		}
+		static size_t CalculatePaddingBeforeElement(size_t offset, size_t size) noexcept;
 		std::unordered_map<std::string, LayoutElement*> map;
 		std::vector<std::unique_ptr<LayoutElement>> elements;
 	};
@@ -217,40 +119,12 @@ namespace DynamicConstBuf
 	class Array : public LayoutElement
 	{
 	public:
-		using LayoutElement::LayoutElement;
-		size_t GetOffsetEnd() const noexcept override final
-		{
-			assert(pElement);
-			return GetOffsetBegin() + LayoutElement::GetNextBoundaryOffset(pElement->GetSizeInBytes()) * size;
-		}
-
-		void Set(std::unique_ptr<LayoutElement> pElement_in, size_t size_in) noxnd
-		{
-			pElement = std::move(pElement_in);
-			size = size_in;
-		}
-
-		LayoutElement& T() override final
-		{
-			return *pElement;
-		}
-		const LayoutElement& T() const override final
-		{
-			return *pElement;
-		}
+		size_t GetOffsetEnd() const noexcept override final;
+		void Set(std::unique_ptr<LayoutElement> pElement_in, size_t size_in) noxnd;
+		LayoutElement& T() override final;	
 	protected:
-		size_t Finalize(size_t offset_in) override final
-		{
-			assert(size != 0u && pElement);
-			offset = offset_in;
-			pElement->Finalize(offset_in);
-			return GetOffsetEnd();
-		}
-		size_t ComputeSize() const noxnd override final
-		{
-			// arrays are not packed in hlsl
-			return LayoutElement::GetNextBoundaryOffset(pElement->ComputeSize()) * size;
-		}
+		size_t Finalize(size_t offset_in) override final;
+		size_t ComputeSize() const noxnd override final;
 	private:
 		size_t size = 0u;
 		std::unique_ptr<LayoutElement> pElement;
@@ -259,35 +133,17 @@ namespace DynamicConstBuf
 	class Layout
 	{
 	public:
-		Layout()
-			:
-			pLayout(std::make_shared<Struct>())
-		{}
-		Layout(std::shared_ptr<LayoutElement> pLayout)
-			:
-			pLayout(std::move(pLayout))
-		{}
-		LayoutElement& operator[](const std::string& key)
-		{
-			assert(!finalized && "cannot modify finalized layout");
-			return (*pLayout)[key];
-		}
-		size_t GetSizeInBytes() const noexcept
-		{
-			return pLayout->GetSizeInBytes();
-		}
+		Layout();
+		Layout(std::shared_ptr<LayoutElement> pLayout);
+		LayoutElement& operator[](const std::string& key);
+		size_t GetSizeInBytes() const noexcept;
 		template<typename T>
 		LayoutElement& Add(const std::string& key) noxnd
 		{
 			assert(!finalized && "cannot modify finalized layout");
 			return pLayout->Add<T>(key);
 		}
-		std::shared_ptr<LayoutElement> Finalize()
-		{
-			pLayout->Finalize(0);
-			finalized = true;
-			return pLayout;
-		}
+		std::shared_ptr<LayoutElement> Finalize();
 	private:
 		bool finalized = false;
 		std::shared_ptr<LayoutElement> pLayout;
@@ -299,49 +155,29 @@ namespace DynamicConstBuf
 		class Ptr
 		{
 		public:
-			Ptr(ConstElementRef& ref)
-				:
-				ref(ref)
-			{}
+			Ptr(ConstElementRef& ref);
 
-			PTR_CONVERSION(Matrix, const)
-				PTR_CONVERSION(Float4, const)
-				PTR_CONVERSION(Float3, const)
-				PTR_CONVERSION(Float2, const)
-				PTR_CONVERSION(Float, const)
-				PTR_CONVERSION(Bool, const)
+			DCB_PTR_CONVERSION(Matrix, const)
+			DCB_PTR_CONVERSION(Float4, const)
+			DCB_PTR_CONVERSION(Float3, const)
+			DCB_PTR_CONVERSION(Float2, const)
+			DCB_PTR_CONVERSION(Float, const)
+			DCB_PTR_CONVERSION(Bool, const)
 		private:
 			ConstElementRef& ref;
 		};
 	public:
-		ConstElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset)
-			:
-			offset(offset),
-			pLayout(pLayout),
-			pBytes(pBytes)
-		{}
-		ConstElementRef operator[](const std::string& key) noxnd
-		{
-			return { &(*pLayout)[key],pBytes,offset };
-		}
-		ConstElementRef operator[](size_t index) noxnd
-		{
-			const auto& t = pLayout->T();
-			// arrays are not packed in hlsl
-			const auto elementSize = LayoutElement::GetNextBoundaryOffset(t.GetSizeInBytes());
-			return { &t,pBytes,offset + elementSize * index };
-		}
-		Ptr operator&() noxnd
-		{
-			return { *this };
-		}
+		ConstElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
+		ConstElementRef operator[](const std::string& key) noxnd;
+		ConstElementRef operator[](size_t index) noxnd;
+		Ptr operator&() noxnd;
 
-		REF_CONST(Matrix)
-		REF_CONST(Float4)
-		REF_CONST(Float3)
-		REF_CONST(Float2)
-		REF_CONST(Float)
-		REF_CONST(Bool)
+		DCB_REF_CONST(Matrix)
+		DCB_REF_CONST(Float4)
+		DCB_REF_CONST(Float3)
+		DCB_REF_CONST(Float2)
+		DCB_REF_CONST(Float)
+		DCB_REF_CONST(Bool)
 	private:
 		size_t offset;
 		const class LayoutElement* pLayout;
@@ -354,50 +190,28 @@ namespace DynamicConstBuf
 		class Ptr
 		{
 		public:
-			Ptr(ElementRef& ref)
-				:
-				ref(ref)
-			{}
-			PTR_CONVERSION(Matrix)
-			PTR_CONVERSION(Float4)
-			PTR_CONVERSION(Float3)
-			PTR_CONVERSION(Float2)
-			PTR_CONVERSION(Float)
-			PTR_CONVERSION(Bool)
+			Ptr(ElementRef& ref);
+			DCB_PTR_CONVERSION(Matrix)
+			DCB_PTR_CONVERSION(Float4)
+			DCB_PTR_CONVERSION(Float3)
+			DCB_PTR_CONVERSION(Float2)
+			DCB_PTR_CONVERSION(Float)
+			DCB_PTR_CONVERSION(Bool)
 		private:
 			ElementRef& ref;
 		};
-		ElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset)
-			:
-			offset(offset),
-			pLayout(pLayout),
-			pBytes(pBytes)
-		{}
-		operator ConstElementRef()
-		{
-			return { pLayout, pBytes, offset };
-		}
-		ElementRef operator[](const std::string& key) noxnd
-		{
-			return { &(*pLayout)[key], pBytes, offset };
-		}
-		ElementRef operator[](size_t index) noxnd
-		{
-			const auto& t = pLayout->T();
-			const auto elementSize = LayoutElement::GetNextBoundaryOffset(t.GetSizeInBytes());
-			return { &t,pBytes,offset + elementSize * index };
-		}
-		Ptr operator&() noxnd
-		{
-			return { *this };
-		}
+		ElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
+		operator ConstElementRef() const noexcept;
+		ElementRef operator[](const std::string& key) noxnd;
+		ElementRef operator[](size_t index) noxnd;
+		Ptr operator&() noxnd;
 
-		REF_NONCONST(Matrix)
-		REF_NONCONST(Float4)
-		REF_NONCONST(Float3)
-		REF_NONCONST(Float2)
-		REF_NONCONST(Float)
-		REF_NONCONST(Bool)
+		DCB_REF_NONCONST(Matrix)
+		DCB_REF_NONCONST(Float4)
+		DCB_REF_NONCONST(Float3)
+		DCB_REF_NONCONST(Float2)
+		DCB_REF_NONCONST(Float)
+		DCB_REF_NONCONST(Bool)
 	private:
 		size_t offset;
 		const class LayoutElement* pLayout;
@@ -407,35 +221,13 @@ namespace DynamicConstBuf
 	class Buffer
 	{
 	public:
-		Buffer(Layout& layout)
-			:
-			pLayout(std::static_pointer_cast<Struct>(layout.Finalize())),
-			bytes(pLayout->GetOffsetEnd())
-		{}
-		const char* GetData() const noexcept
-		{
-			return bytes.data();
-		}
-		size_t GetSizeInBytes() const noexcept
-		{
-			return bytes.size();
-		}
-		const LayoutElement& GetLayout() const noexcept
-		{
-			return *pLayout;
-		}
-		ElementRef operator[](const std::string& key) noxnd
-		{
-			return { &(*pLayout)[key], bytes.data(), 0u};
-		}
-		ConstElementRef operator[](const std::string& key) const noxnd
-		{
-			return const_cast<Buffer&>(*this)[key];
-		}
-		std::shared_ptr<LayoutElement> CloneLayout() const
-		{
-			return pLayout;
-		}
+		Buffer(Layout& layout);
+		const char* GetData() const noexcept;
+		size_t GetSizeInBytes() const noexcept;
+		const LayoutElement& GetLayout() const noexcept;
+		ElementRef operator[](const std::string& key) noxnd;
+		ConstElementRef operator[](const std::string& key) const noxnd;
+		std::shared_ptr<LayoutElement> CloneLayout() const;
 	private:
 		std::shared_ptr<Struct> pLayout;
 		std::vector<char> bytes;
@@ -460,3 +252,12 @@ namespace DynamicConstBuf
 		return *this;
 	}
 }
+
+#undef DCB_RESOLVE_BASE
+#undef DCB_LEAF_ELEMENT_IMPL
+#undef DCB_LEAF_ELEMENT
+#undef DCB_REF_CONVERSION
+#undef DCB_REF_ASSIGN
+#undef DCB_REF_NONCONST
+#undef DCB_REF_CONST
+#undef DCB_PTR_CONVERSION

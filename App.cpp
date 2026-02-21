@@ -46,7 +46,7 @@ void TestDynamicConstant()
 		}
 		{
 			auto exp = 111.0f;
-			b["arr"][2]["werk"][5] = exp;
+			b["arr"s][2]["werk"s][5] = exp;
 			float act = b["arr"][2]["werk"][5];
 			assert(act == exp);
 		}
