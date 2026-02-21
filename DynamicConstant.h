@@ -260,6 +260,10 @@ namespace DynamicConstBuf
 			:
 			pLayout(std::make_shared<Struct>())
 		{}
+		Layout(std::shared_ptr<LayoutElement> pLayout)
+			:
+			pLayout(std::move(pLayout))
+		{}
 		LayoutElement& operator[](const char* key)
 		{
 			assert(!finalized && "cannot modify finalized layout");
