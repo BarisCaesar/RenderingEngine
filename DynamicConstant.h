@@ -116,11 +116,11 @@ namespace DynamicConstBuf
 		}
 		// only works for Structs; add LayoutElement
 		template<typename T1>
-		Struct& Add(const std::string& key) noxnd;
+		LayoutElement& Add(const std::string& key) noxnd;
 
 		// only works for Arrays; set the type and the # of elements
 		template<typename T1>
-		Array& Set(size_t size) noxnd;
+		LayoutElement& Set(size_t size) noxnd;
 
 		// returns the value of offset bumped up to the next 16-byte boundary (if not already on one)
 		static size_t GetNextBoundaryOffset(size_t offset)
@@ -134,7 +134,7 @@ namespace DynamicConstBuf
 		RESOLVE_BASE(Float2)
 		RESOLVE_BASE(Float)
 		RESOLVE_BASE(Bool)
-	public:
+	protected:
 		// sets all offsets for element and subelements, returns offset directly after this element
 		virtual size_t Finalize(size_t offset) = 0;
 		// computes the size of this element in bytes, considering padding on Arrays and Structs
@@ -167,17 +167,16 @@ namespace DynamicConstBuf
 			return LayoutElement::GetNextBoundaryOffset(elements.back()->GetOffsetEnd());
 		}
 
-		template<typename T>
-		Struct& Add(const std::string& name) noxnd
+		
+		void Add(const std::string& name, std::unique_ptr<LayoutElement> pElement) noxnd
 		{
-			elements.push_back(std::make_unique<T>());
+			elements.push_back(std::move(pElement));
 			if (!map.emplace(name, elements.back().get()).second)
 			{
 				assert(false);
 			}
-			return *this;
 		}
-	public:
+	protected:
 		size_t Finalize(size_t offset_in) override final
 		{
 			assert(elements.size() != 0u);
@@ -225,12 +224,10 @@ namespace DynamicConstBuf
 			return GetOffsetBegin() + LayoutElement::GetNextBoundaryOffset(pElement->GetSizeInBytes()) * size;
 		}
 
-		template<typename T>
-		Array& Set(size_t size_in) noxnd
+		void Set(std::unique_ptr<LayoutElement> pElement_in, size_t size_in) noxnd
 		{
-			pElement = std::make_unique<T>();
+			pElement = std::move(pElement_in);
 			size = size_in;
-			return *this;
 		}
 
 		LayoutElement& T() override final
@@ -446,18 +443,20 @@ namespace DynamicConstBuf
 
 	// must come after Definitions of Struct and Array
 	template<typename T1>
-	Struct& LayoutElement::Add(const std::string& key) noxnd
+	LayoutElement& LayoutElement::Add(const std::string& key) noxnd
 	{
 		auto ps = dynamic_cast<Struct*>(this);
 		assert(ps != nullptr);
-		return ps->Add<T1>(key);
+		ps->Add(key, std::make_unique<T1>());
+		return *this;
 	}
 
 	template<typename T1>
-	Array& LayoutElement::Set(size_t size) noxnd
+	LayoutElement& LayoutElement::Set(size_t size) noxnd
 	{
 		auto pa = dynamic_cast<Array*>(this);
 		assert(pa != nullptr);
-		return pa->Set<T1>(size);
+		pa->Set(std::make_unique<T1>(), size);
+		return *this;
 	}
 }

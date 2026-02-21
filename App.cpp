@@ -105,7 +105,6 @@ void TestDynamicConstant()
 		s["arr"].Set<DynamicConstBuf::Struct>(6);
 		s["arr"s].T().Add<DynamicConstBuf::Float2>("a");
 		s["arr"].T().Add<DynamicConstBuf::Float3>("b"s);
-		s["arr"].T().ComputeSize();
 		DynamicConstBuf::Buffer b(s);
 
 		auto act = b.GetSizeInBytes();
