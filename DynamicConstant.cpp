@@ -290,6 +290,7 @@ namespace DynamicConstBuf
 	ConstElementRef ConstElementRef::operator[](size_t index) noxnd
 	{
 		const auto& t = pLayout->T();
+		assert(static_cast<const Array&>(*pLayout).IndexInBounds(index));
 		// arrays are not packed in hlsl
 		const auto elementSize = LayoutElement::GetNextBoundaryOffset(t.GetSizeInBytes());
 		return { &t,pBytes,offset + elementSize * index };

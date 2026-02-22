@@ -96,6 +96,9 @@ void TestDynamicConstant()
 		}
 		// this doesn't compile: buffer is const
 		// cb["arr"][2]["booler"] = true;
+
+		// this fails assertion: array out of bounds
+		// cb["arr"s][200];
 	}
 	// size test array of arrays
 	{
