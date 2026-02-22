@@ -31,6 +31,13 @@ void TestDynamicConstant()
 		s["arr"s].T()["meta"s].Set<DynamicConstBuf::Array>(6);
 		s["arr"s].T()["meta"s].T().Set<DynamicConstBuf::Matrix>(4);
 		s["arr"s].T().Add<DynamicConstBuf::Bool>("booler"s);
+
+		// fails: duplicate symbol name
+		//s.Add<DynamicConstBuf::Bool>( "arr"s );
+
+		// fails: bad symbol name
+		//s.Add<DynamicConstBuf::Bool>( "120man" );
+
 		DynamicConstBuf::Buffer b(s);
 
 		const auto sig = b.GetSignature();

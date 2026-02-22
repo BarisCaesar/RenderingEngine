@@ -1,6 +1,7 @@
 #include "DynamicConstant.h"
 #include <string>
 #include <algorithm>
+#include <cctype>
 
 #define DCB_RESOLVE_BASE(eltype) \
 size_t LayoutElement::Resolve ## eltype() const noxnd \
@@ -156,13 +157,25 @@ namespace DynamicConstBuf
 		// bump up to next boundary (because structs are multiple of 16 in size)
 		return LayoutElement::GetNextBoundaryOffset(elements.back()->GetOffsetEnd());
 	}
+	bool ValidateSymbolName(const std::string& name) noexcept
+	{
+		// symbols can contain alphanumeric and underscore, must not start with digit
+		return !name.empty() && !std::isdigit(name.front()) &&
+			std::all_of(name.begin(), name.end(), [](char c) {
+			return std::isalnum(c) || c == '_';
+				}
+			);
+	}
 	
 	void Struct::Add(const std::string& name, std::unique_ptr<LayoutElement> pElement) noxnd
 	{
+		assert(ValidateSymbolName(name) && "invalid symbol name in Struct");
 		elements.push_back(std::move(pElement));
+
+		// do not allow overwritin of existing symbol
 		if (!map.emplace(name, elements.back().get()).second)
 		{
-			assert(false);
+			assert(false && "duplicate symbol name in struct");
 		}
 	}
 
@@ -205,6 +218,7 @@ namespace DynamicConstBuf
 		auto sig = "Struct{"s;
 		for (const auto& el : elements)
 		{
+			// lookup element name in the map (reverse lookup)
 			auto i = std::find_if(
 				map.begin(), map.end(),
 				[&el](const std::pair<std::string, LayoutElement*>& v)
