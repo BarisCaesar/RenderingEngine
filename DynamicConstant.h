@@ -56,10 +56,7 @@ namespace DynamicConstBuf
 		// get a string signature for this element (recursive)
 		virtual std::string GetSignature() const noxnd = 0;
 		// Check the integrity of the element.
-		virtual bool Exists() const noexcept
-		{
-			return true;
-		}
+		virtual bool Exists() const noexcept;
 		// [] only works for Structs; access member by name;
 		virtual LayoutElement& operator[](const std::string&) noxnd;
 		const LayoutElement& operator[](const std::string& key) const noxnd;
