@@ -38,7 +38,7 @@ void TestDynamicConstant()
 		// fails: bad symbol name
 		//s.Add<DynamicConstBuf::Bool>( "120man" );
 
-		DynamicConstBuf::Buffer b(s);
+		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer::Make(s);
 
 		const auto sig = b.GetSignature();
 		{
@@ -114,7 +114,7 @@ void TestDynamicConstant()
 		s.Add<DynamicConstBuf::Array>("arr");
 		s["arr"].Set<DynamicConstBuf::Array>(6);
 		s["arr"].T().Set<DynamicConstBuf::Matrix>(4);
-		DynamicConstBuf::Buffer b(s);
+		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer::Make(s);
 
 		auto act = b.GetSizeInBytes();
 		assert(act == 16u * 4u * 4u * 6u);
@@ -126,7 +126,7 @@ void TestDynamicConstant()
 		s["arr"].Set<DynamicConstBuf::Struct>(6);
 		s["arr"s].T().Add<DynamicConstBuf::Float2>("a");
 		s["arr"].T().Add<DynamicConstBuf::Float3>("b"s);
-		DynamicConstBuf::Buffer b(s);
+		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer::Make(s);
 
 		auto act = b.GetSizeInBytes();
 		assert(act == 16u * 2u * 6u);
@@ -136,7 +136,7 @@ void TestDynamicConstant()
 		DynamicConstBuf::Layout s;
 		s.Add<DynamicConstBuf::Array>("arr");
 		s["arr"].Set<DynamicConstBuf::Float3>(6);
-		DynamicConstBuf::Buffer b(s);
+		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer::Make(s);
 
 		auto act = b.GetSizeInBytes();
 		assert(act == 16u * 6u);

@@ -2,6 +2,7 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include "LayoutCodex.h"
 
 #define DCB_RESOLVE_BASE(eltype) \
 size_t LayoutElement::Resolve ## eltype() const noxnd \
@@ -287,7 +288,8 @@ namespace DynamicConstBuf
 
 	Layout::Layout(std::shared_ptr<LayoutElement> pLayout)
 		:
-		pLayout(std::move(pLayout))
+		pLayout(std::move(pLayout)),
+		finalized(true)
 	{}
 
 	LayoutElement& Layout::operator[](const std::string& key)
@@ -300,16 +302,25 @@ namespace DynamicConstBuf
 	{
 		return pLayout->GetSizeInBytes();
 	}
-	std::shared_ptr<LayoutElement> Layout::Finalize()
+	void Layout::Finalize()
 	{
-		pLayout->Finalize(0);
+		pLayout->Finalize(0u);
 		finalized = true;
-		return pLayout;
+	}
+	bool Layout::IsFinalized() const noexcept
+	{
+		return finalized;
 	}
 	std::string Layout::GetSignature() const noxnd
 	{
+		assert(finalized);
 		return pLayout->GetSignature();
 	}
+	std::shared_ptr<LayoutElement> Layout::ShareRoot() const noexcept 
+	{
+		return pLayout;
+	}
+
 
 
 
@@ -412,9 +423,17 @@ namespace DynamicConstBuf
 	DCB_REF_NONCONST(ElementRef, Bool)
 
 
+	Buffer Buffer::Make(Layout& lay) noxnd
+	{
+		return {LayoutCodex::Resolve(lay)};
+	}
+	Buffer::Buffer(Layout&& lay)
+		:
+		Buffer(lay)
+	{}
 	Buffer::Buffer(Layout& layout)
 		:
-		pLayout(std::static_pointer_cast<Struct>(layout.Finalize())),
+		pLayout(layout.ShareRoot()),
 		bytes(pLayout->GetOffsetEnd())
 	{}
 	const char* Buffer::GetData() const noexcept
@@ -429,6 +448,7 @@ namespace DynamicConstBuf
 	{
 		return *pLayout;
 	}
+	
 	ElementRef Buffer::operator[](const std::string& key) noxnd
 	{
 		return { &(*pLayout)[key], bytes.data(), 0u };
@@ -437,7 +457,7 @@ namespace DynamicConstBuf
 	{
 		return const_cast<Buffer&>(*this)[key];
 	}
-	std::shared_ptr<LayoutElement> Buffer::CloneLayout() const
+	std::shared_ptr<LayoutElement> Buffer::ShareLayout() const
 	{
 		return pLayout;
 	}
