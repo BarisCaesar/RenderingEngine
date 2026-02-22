@@ -47,7 +47,7 @@ namespace DynamicConstBuf
 	namespace dx = DirectX;
 	class LayoutElement
 	{
-		friend class Layout;
+		friend class RawLayout;
 		friend class Array;
 		friend class Struct;
 	public:
@@ -144,26 +144,42 @@ namespace DynamicConstBuf
 		friend class LayoutCodex;
 		friend class Buffer;
 	public:
-		Layout() noexcept;
-		LayoutElement& operator[](const std::string& key) noxnd;
 		size_t GetSizeInBytes() const noexcept;
+		std::string GetSignature() const noxnd;
+	protected:
+		Layout() noexcept;
+		Layout(std::shared_ptr<LayoutElement> pRoot) noexcept;
+		std::shared_ptr<LayoutElement> pRoot;
+	};
+	class RawLayout : public Layout
+	{
+		friend class LayoutCodex;
+	public:
+		RawLayout() = default;
+		LayoutElement& operator[](const std::string& key) noxnd;
 		template<typename T>
 		LayoutElement& Add(const std::string& key) noxnd
 		{
-			assert(!finalized && "cannot modify finalized layout");
-			return pLayout->Add<T>(key);
+			return pRoot->Add<T>(key);
 		}
-		void Finalize() noxnd;
-		bool IsFinalized() const noexcept;
-		std::string GetSignature() const noxnd;
 	private:
-		// this ctor creates finalized layouts only;
-		Layout(std::shared_ptr<LayoutElement> pLayout) noexcept;
-	private:
-		std::shared_ptr<LayoutElement> ShareRoot() const noexcept;
-		bool finalized = false;
-		std::shared_ptr<LayoutElement> pLayout;
+		std::shared_ptr<LayoutElement> DeliverRoot() noexcept;
+		void ClearRoot() noexcept;
 	};
+
+	class CookedLayout : public Layout
+	{
+		friend class LayoutCodex;
+		friend class Buffer;
+	public:
+		const LayoutElement& operator[](const std::string& key) const noxnd;
+	private:
+		// this ctor used by Codex to return cooked layouts
+		CookedLayout(std::shared_ptr<LayoutElement> pRoot) noexcept;
+		// used by buffer to add reference to shared ptr to layout tree root
+		std::shared_ptr<LayoutElement> ShareRoot() const noexcept;
+	};
+
 
 	class ConstElementRef
 	{
@@ -244,7 +260,8 @@ namespace DynamicConstBuf
 	class Buffer
 	{
 	public:
-		static Buffer Make(Layout& lay) noxnd;
+		static Buffer Make(RawLayout&& lay) noxnd;
+		static Buffer Make(const CookedLayout& lay) noxnd;
 		ElementRef operator[](const std::string& key) noxnd;
 		ConstElementRef operator[](const std::string& key) const noxnd;
 		const char* GetData() const noexcept;
@@ -253,8 +270,7 @@ namespace DynamicConstBuf
 		std::shared_ptr<LayoutElement> ShareLayout() const noexcept;
 		std::string GetSignature() const noxnd;
 	private:
-		Buffer(Layout& layout) noexcept;
-		Buffer(Layout&& layout) noexcept;
+		Buffer(const CookedLayout& layout) noexcept;
 		std::shared_ptr<LayoutElement> pLayout;
 		std::vector<char> bytes;
 	};

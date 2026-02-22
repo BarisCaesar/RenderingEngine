@@ -10,7 +10,7 @@ namespace DynamicConstBuf
 	class LayoutCodex
 	{
 	public:
-		static Layout Resolve(Layout& layout) noxnd;
+		static CookedLayout Resolve(RawLayout&& layout) noxnd;
 	private:
 		static LayoutCodex& Get_() noexcept;
 	private:

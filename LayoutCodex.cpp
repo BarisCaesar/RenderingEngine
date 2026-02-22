@@ -2,18 +2,18 @@
 
 namespace DynamicConstBuf
 {
-	Layout LayoutCodex::Resolve(Layout& layout) noxnd
+	CookedLayout LayoutCodex::Resolve(RawLayout&& layout) noxnd
 	{
-		layout.Finalize();
 		auto sig = layout.GetSignature();
 		auto& map = Get_().map;
 		const auto i = map.find(sig);
 		if (i != map.end())
 		{
+			layout.ClearRoot();
 			return { i->second };
 		}
 		// add layout root element to map
-		auto result = map.insert({ std::move(sig), layout.ShareRoot() });
+		auto result = map.insert({ std::move(sig), layout.DeliverRoot()});
 
 		return { result.first->second };
 	}

@@ -441,13 +441,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		bindablePtrs.push_back(Bind::InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
-		DynamicConstBuf::Layout layout;
+		DynamicConstBuf::RawLayout layout;
 	
 		layout.Add<DynamicConstBuf::Float>("specularIntensity");
 		layout.Add<DynamicConstBuf::Float>("specularPower");
 		layout.Add<DynamicConstBuf::Bool>("normalMapEnabled");
 		
-		DynamicConstBuf::Buffer cbuf = DynamicConstBuf::Buffer::Make(layout);
+		DynamicConstBuf::Buffer cbuf = DynamicConstBuf::Buffer::Make(std::move(layout));
 		cbuf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
 		cbuf["specularPower"] = shininess;
 		cbuf["normalMapEnabled"] = true;
