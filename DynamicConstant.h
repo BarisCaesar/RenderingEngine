@@ -172,7 +172,7 @@ namespace DynamicConstBuf
 		};
 	public:
 		ConstElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
-		std::optional<ConstElementRef> Exists() const noexcept;
+		bool Exists() const noexcept;
 		ConstElementRef operator[](const std::string& key) noxnd;
 		ConstElementRef operator[](size_t index) noxnd;
 		Ptr operator&() noxnd;
@@ -206,7 +206,7 @@ namespace DynamicConstBuf
 			ElementRef& ref;
 		};
 		ElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
-		std::optional<ElementRef> Exists() const noexcept;
+		bool Exists() const noexcept;
 		operator ConstElementRef() const noexcept;
 		ElementRef operator[](const std::string& key) noxnd;
 		ElementRef operator[](size_t index) noxnd;

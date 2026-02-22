@@ -274,13 +274,9 @@ namespace DynamicConstBuf
 		pLayout(pLayout),
 		pBytes(pBytes)
 	{}
-	std::optional<ConstElementRef> ConstElementRef::Exists() const noexcept
+	bool ConstElementRef::Exists() const noexcept
 	{
-		if (pLayout->Exists())
-		{
-			return ConstElementRef(pLayout, pBytes, offset);
-		}
-		return std::nullopt;
+		return pLayout->Exists();
 	}
 	ConstElementRef ConstElementRef::operator[](const std::string& key) noxnd
 	{
@@ -326,13 +322,9 @@ namespace DynamicConstBuf
 		pLayout(pLayout),
 		pBytes(pBytes)
 	{}
-	std::optional<ElementRef> ElementRef::Exists() const noexcept
+	bool ElementRef::Exists() const noexcept
 	{
-		if (pLayout->Exists())
-		{
-			return ElementRef(pLayout, pBytes, offset);
-		}
-		return std::nullopt;
+		return pLayout->Exists();
 	}
 	ElementRef::operator ConstElementRef() const noexcept
 	{

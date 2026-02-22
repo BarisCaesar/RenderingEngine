@@ -82,9 +82,8 @@ void TestDynamicConstant()
 		{
 			assert(b["structboi"s]["float3boi"s].Exists());
 			assert(!b["structboi"s]["fubar"s].Exists());
-			if (auto opt = b["structboi"s]["float3boi"s].Exists())
+			if (auto ref = b["structboi"s]["float3boi"s]; ref.Exists())
 			{
-				auto& ref = *opt;
 				dx::XMFLOAT3 f = ref;
 				assert(f.x == 69.0f);
 			}
