@@ -184,10 +184,10 @@ public:
 				ImGui::SliderFloat("Y", &transform.y, -20.f, 20.f);
 				ImGui::SliderFloat("Z", &transform.z, -20.f, 20.f);
 
-				if (!pSelectedNode->ControlMaterial(gfx, skinMaterial))
+				/*if (!pSelectedNode->ControlMaterial(gfx, skinMaterial))
 				{
 					pSelectedNode->ControlMaterial(gfx, ringMaterial);
-				}
+				}*/
 			}
 			
 		}
@@ -215,8 +215,8 @@ private:
 		float y = 0.0f;
 		float z = 0.0f;
 	};
-	Node::PSMaterialConstantFullmonte skinMaterial;
-	Node::PSMaterialConstantNotex ringMaterial;
+	//Node::PSMaterialConstantFullmonte skinMaterial;
+	//Node::PSMaterialConstantNotex ringMaterial;
 
 	std::unordered_map<int, TransformParameters> transforms;
 };
@@ -389,12 +389,23 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
-		Node::PSMaterialConstantFullmonte pmc;
-		pmc.specularPower = shininess;
-		pmc.hasGlossMap = hasAlphaGloss ? TRUE : FALSE;
-		// this is CLEARLY an issue... all meshes will share same mat const, but may have different
-		// Ns (specular power) specified for each in the material properties... bad conflict
-		bindablePtrs.push_back(PixelConstantBuffer<Node::PSMaterialConstantFullmonte>::Resolve(gfx, pmc, 1u));
+		DynamicConstBuf::RawLayout lay;
+		lay.Add<DynamicConstBuf::Bool>("normalMapEnabled");
+		lay.Add<DynamicConstBuf::Bool>("specularMapEnabled");
+		lay.Add<DynamicConstBuf::Bool>("hasGlossMap");
+		lay.Add<DynamicConstBuf::Float>("specularPower");
+		lay.Add<DynamicConstBuf::Float3>("specularColor");
+		lay.Add<DynamicConstBuf::Float>("specularMapWeight");
+
+		auto buf = DynamicConstBuf::Buffer::Make(std::move(lay));
+		buf["normalMapEnabled"] = true;
+		buf["specularMapEnabled"] = true;
+		buf["hasGlossMap"] = hasAlphaGloss;
+		buf["specularPower"] = shininess;
+		buf["specularColor"] = dx::XMFLOAT3{ 0.75f,0.75f,0.75f };
+		buf["specularMapWeight"] = 0.671f;
+
+		bindablePtrs.push_back(std::make_shared<PixelConstantBufferEX>(gfx, buf, 1u));
 	}
 	else if (hasDiffuseMap && hasNormalMap)
 	{
@@ -451,6 +462,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		cbuf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
 		cbuf["specularPower"] = shininess;
 		cbuf["normalMapEnabled"] = true;
+
 		bindablePtrs.push_back(std::make_shared<PixelConstantBufferEX>(gfx, cbuf, 1u));
 
 	
@@ -496,20 +508,18 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
-		struct PSMaterialConstantDiffuseSpec
-		{
-			float specularPowerConst;
-			BOOL hasGloss;
-			float specularMapWeight;
-			float padding;
-		} pmc;
-		pmc.specularPowerConst = shininess;
-		pmc.hasGloss = hasAlphaGloss ? TRUE : FALSE;
-		pmc.specularMapWeight = 1.0f;
-		// this is CLEARLY an issue... all meshes will share same mat const, but may have different
-		// Ns (specular power) specified for each in the material properties... bad conflict
-		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantDiffuseSpec>::Resolve(gfx, pmc, 1u));
-		}
+		DynamicConstBuf::RawLayout lay;
+		lay.Add<DynamicConstBuf::Float>("specularPowerConst");
+		lay.Add<DynamicConstBuf::Bool>("hasGloss");
+		lay.Add<DynamicConstBuf::Float>("specularMapWeight");
+
+		auto buf = DynamicConstBuf::Buffer::Make(std::move(lay));
+		buf["specularPowerConst"] = shininess;
+		buf["hasGloss"] = hasAlphaGloss;
+		buf["specularMapWeight"] = 1.0f;
+
+		bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBufferEX>(gfx, buf, 1u));
+	}
 	else if (hasDiffuseMap)
 	{
 		DynamicVertex::VertexBuffer vbuf(std::move(
@@ -551,17 +561,16 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
-		struct PSMaterialConstantDiffuse
-		{
-			float specularIntensity;
-			float specularPower;
-			float padding[2];
-		} pmc;
-		pmc.specularPower = shininess;
-		pmc.specularIntensity = (specularColor.x + specularColor.y + specularColor.z) / 3.f;
-		// this is CLEARLY an issue... all meshes will share same mat const, but may have different
-		// Ns (specular power) specified for each in the material properties... bad conflict
-		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantDiffuse>::Resolve(gfx, pmc, 1u));
+		DynamicConstBuf::RawLayout lay;
+		lay.Add<DynamicConstBuf::Float>("specularIntensity");
+		lay.Add<DynamicConstBuf::Float>("specularPower");
+
+		auto buf = DynamicConstBuf::Buffer::Make(std::move(lay));
+		buf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
+		buf["specularPower"] = shininess;
+		buf["specularMapWeight"] = 1.0f;
+
+		bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBufferEX>(gfx, buf, 1u));
 		
 	}
 	else if (!hasDiffuseMap && !hasNormalMap && !hasSpecularMap)
@@ -603,13 +612,17 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
-		Node::PSMaterialConstantNotex pmc;
-		pmc.specularPower = shininess;
-		pmc.specularColor = specularColor;
-		pmc.materialColor = diffuseColor;
-		// this is CLEARLY an issue... all meshes will share same mat const, but may have different
-		// Ns (specular power) specified for each in the material properties... bad conflict
-		bindablePtrs.push_back(PixelConstantBuffer<Node::PSMaterialConstantNotex>::Resolve(gfx, pmc, 1u));
+		DynamicConstBuf::RawLayout lay;
+		lay.Add<DynamicConstBuf::Float4>("materialColor");
+		lay.Add<DynamicConstBuf::Float4>("specularColor");
+		lay.Add<DynamicConstBuf::Float>("specularPower");
+
+		auto buf = DynamicConstBuf::Buffer::Make(std::move(lay));
+		buf["specularPower"] = shininess;
+		buf["specularColor"] = specularColor;
+		buf["materialColor"] = diffuseColor;
+
+		bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBufferEX>(gfx, buf, 1u));
 		}
 	else
 	{

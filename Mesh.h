@@ -37,23 +37,7 @@ class Node
 {
 	friend class Model;
 public:
-	struct PSMaterialConstantFullmonte
-	{
-		BOOL  normalMapEnabled = TRUE;
-		BOOL  specularMapEnabled = TRUE;
-		BOOL  hasGlossMap = FALSE;
-		float specularPower = 3.1f;
-		DirectX::XMFLOAT3 specularColor = { 0.75f,0.75f,0.75f };
-		float specularMapWeight = 0.671f;
-	};
-	struct PSMaterialConstantNotex
-	{
-		DirectX::XMFLOAT4 materialColor = { 0.447970f,0.327254f,0.176283f,1.0f };
-		DirectX::XMFLOAT4 specularColor = { 0.65f,0.65f,0.65f,1.0f };
-		float specularPower = 120.0f;
-		float padding[3];
-	};
-public:
+
 	Node(int id,const std::string& name, std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd;
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd;
 	void SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept;
@@ -61,7 +45,7 @@ public:
 	int GetId() const noexcept;
 	void ShowTree(Node*& selectedNode) const noexcept;
 
-	template<class T>
+	/*template<class T>
 	bool ControlMaterial(Graphics& gfx, T& c)
 	{
 		if (meshPtrs.empty())
@@ -116,7 +100,7 @@ public:
 		}
 		return false;
 		
-	}
+	}*/
 private:
 	void AddChild(std::unique_ptr<Node> pChild) noxnd;
 private:
