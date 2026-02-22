@@ -444,6 +444,12 @@ namespace DynamicConstBuf
 		pLayout(layout.ShareRoot()),
 		bytes(pLayout->GetOffsetEnd())
 	{}
+	Buffer::Buffer(const Buffer& buf) noexcept
+		:
+		pLayout(buf.ShareLayout()),
+		bytes(buf.bytes)
+	{
+	}
 	const char* Buffer::GetData() const noexcept
 	{
 		return bytes.data();
@@ -456,7 +462,11 @@ namespace DynamicConstBuf
 	{
 		return *pLayout;
 	}
-	
+	void Buffer::CopyFrom(const Buffer& other) noxnd
+	{
+		assert(&GetLayout() == &other.GetLayout());
+		std::copy(other.bytes.begin(), other.bytes.end(), bytes.begin());
+	}
 	ElementRef Buffer::operator[](const std::string& key) noxnd
 	{
 		return { &(*pLayout)[key], bytes.data(), 0u };
