@@ -32,6 +32,8 @@ void TestDynamicConstant()
 		s["arr"s].T()["meta"s].T().Set<DynamicConstBuf::Matrix>(4);
 		s["arr"s].T().Add<DynamicConstBuf::Bool>("booler"s);
 		DynamicConstBuf::Buffer b(s);
+
+		const auto sig = b.GetSignature();
 		{
 			auto exp = 42.0f;
 			b["woot"s] = exp;

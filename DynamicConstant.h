@@ -21,6 +21,7 @@ public: \
 	using SystemType = systype; \
 	size_t Resolve ## eltype() const noxnd override final;\
 	size_t GetOffsetEnd() const noexcept override final;\
+	std::string GetSignature() const noxnd final; \
 protected: \
 	size_t Finalize( size_t offset_in ) override final;\
 	size_t ComputeSize() const noxnd override;\
@@ -51,6 +52,9 @@ namespace DynamicConstBuf
 		friend class Struct;
 	public:
 		virtual ~LayoutElement();
+
+		// get a string signature for this element (recursive)
+		virtual std::string GetSignature() const noxnd = 0;
 		// Check the integrity of the element.
 		virtual bool Exists() const noexcept
 		{
@@ -106,6 +110,7 @@ namespace DynamicConstBuf
 	public:
 		LayoutElement& operator[](const std::string& key) override final;
 		size_t GetOffsetEnd() const noexcept override final;
+		std::string GetSignature() const noxnd final;
 		void Add(const std::string& name, std::unique_ptr<LayoutElement> pElement) noxnd;
 	protected:
 		size_t Finalize(size_t offset_in) override final;
@@ -121,11 +126,10 @@ namespace DynamicConstBuf
 	public:
 		size_t GetOffsetEnd() const noexcept override final;
 		void Set(std::unique_ptr<LayoutElement> pElement_in, size_t size_in) noxnd;
-		LayoutElement& T() override final;	
-		bool IndexInBounds(size_t index) const noexcept
-		{
-			return index < size;
-		}
+		LayoutElement& T() override final;
+		const LayoutElement& T() const;
+		std::string GetSignature() const noxnd final;
+		bool IndexInBounds(size_t index) const noexcept;
 	protected:
 		size_t Finalize(size_t offset_in) override final;
 		size_t ComputeSize() const noxnd override final;
@@ -148,6 +152,7 @@ namespace DynamicConstBuf
 			return pLayout->Add<T>(key);
 		}
 		std::shared_ptr<LayoutElement> Finalize();
+		std::string GetSignature() const noxnd;
 	private:
 		bool finalized = false;
 		std::shared_ptr<LayoutElement> pLayout;
@@ -234,6 +239,7 @@ namespace DynamicConstBuf
 		size_t GetSizeInBytes() const noexcept;
 		const LayoutElement& GetLayout() const noexcept;
 		std::shared_ptr<LayoutElement> CloneLayout() const;
+		std::string GetSignature() const noxnd;
 	private:
 		std::shared_ptr<Struct> pLayout;
 		std::vector<char> bytes;
