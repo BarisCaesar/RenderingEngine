@@ -189,56 +189,64 @@ public:
 					tp.z = translation.z;
 					auto pMatConst = pSelectedNode->GetMaterialConstants();
 					auto buf = pMatConst != nullptr ? std::optional<DynamicConstBuf::Buffer>{*pMatConst} : std::optional<DynamicConstBuf::Buffer>{};
-					std::tie(i, std::ignore) = transforms.insert({ id,{tp, std::move(buf)}});
+					std::tie(i, std::ignore) = transforms.insert({ id,{tp, false, std::move(buf), false}});
 				}
 				// link imgui control to our cached transform params
 				auto& transform = i->second.transformParams;
+				// dirty check
+				auto& dirty = i->second.transformParamsDirty;
+				const auto dcheck = [&dirty](bool changed) {dirty = dirty || changed; };
+				// widgets
 				ImGui::Text("Orientation");
-				ImGui::SliderAngle("X Rotation", &transform.rotX, -180.f, 180.f);
-				ImGui::SliderAngle("Y Rotation", &transform.rotY, -180.f, 180.f);
-				ImGui::SliderAngle("Z Rotation", &transform.rotZ, -180.f, 180.f);
-
+				dcheck(ImGui::SliderAngle("X Rotation", &transform.rotX, -180.f, 180.f));
+				dcheck(ImGui::SliderAngle("Y Rotation", &transform.rotY, -180.f, 180.f));
+				dcheck(ImGui::SliderAngle("Z Rotation", &transform.rotZ, -180.f, 180.f));
+				
 				ImGui::Text("Position");
-				ImGui::SliderFloat("X", &transform.x, -20.f, 20.f);
-				ImGui::SliderFloat("Y", &transform.y, -20.f, 20.f);
-				ImGui::SliderFloat("Z", &transform.z, -20.f, 20.f);
+				dcheck(ImGui::SliderFloat("X", &transform.x, -20.f, 20.f));
+				dcheck(ImGui::SliderFloat("Y", &transform.y, -20.f, 20.f));
+				dcheck(ImGui::SliderFloat("Z", &transform.z, -20.f, 20.f));
 
 				// link imgui control to our cached transform params
 				if (i->second.materialCBuf)
 				{
 					auto& mat = *i->second.materialCBuf;
+					// dirty check
+					auto& dirty = i->second.materialCBufDirty;
+					const auto dcheck = [&dirty](bool changed) {dirty = dirty || changed; };
+					// widgets
 					ImGui::Text("Material");
 					if (auto v = mat["normalMapEnabled"]; v.Exists())
 					{
-						ImGui::Checkbox("Norm Map", &v);
+						dcheck(ImGui::Checkbox("Norm Map", &v));
 					}
 					if (auto v = mat["specularMapEnabled"]; v.Exists())
 					{
-						ImGui::Checkbox("Spec Map", &v);
+						dcheck(ImGui::Checkbox("Spec Map", &v));
 					}
 					if (auto v = mat["hasGlossMap"]; v.Exists())
 					{
-						ImGui::Checkbox("Gloss Map", &v);
+						dcheck(ImGui::Checkbox("Gloss Map", &v));
 					}
 					if (auto v = mat["materialColor"]; v.Exists())
 					{
-						ImGui::ColorPicker3("Diff Color", reinterpret_cast<float*>(&static_cast<dx::XMFLOAT3&>(v)));
+						dcheck(ImGui::ColorPicker3("Diff Color", reinterpret_cast<float*>(&static_cast<dx::XMFLOAT3&>(v))));
 					}
 					if (auto v = mat["specularPower"]; v.Exists())
 					{
-						ImGui::SliderFloat("Spec Power", &v, 0.0f, 100.0f, "%.1f", 1.5f);
+						dcheck(ImGui::SliderFloat("Spec Power", &v, 0.0f, 100.0f, "%.1f", 1.5f));
 					}
 					if (auto v = mat["specularColor"]; v.Exists())
 					{
-						ImGui::ColorPicker3("Spec Color", reinterpret_cast<float*>(&static_cast<dx::XMFLOAT3&>(v)));
+						dcheck(ImGui::ColorPicker3("Spec Color", reinterpret_cast<float*>(&static_cast<dx::XMFLOAT3&>(v))));
 					}
 					if (auto v = mat["specularMapWeight"]; v.Exists())
 					{
-						ImGui::SliderFloat("Spec Weight", &v, 0.0f, 4.0f);
+						dcheck(ImGui::SliderFloat("Spec Weight", &v, 0.0f, 4.0f));
 					}
 					if (auto v = mat["specularIntensity"]; v.Exists())
 					{
-						ImGui::SliderFloat("Spec Intens", &v, 0.0f, 1.0f);
+						dcheck(ImGui::SliderFloat("Spec Intens", &v, 0.0f, 1.0f));
 					}
 				}
 			}
@@ -246,22 +254,54 @@ public:
 		}
 		ImGui::End();
 	}
-	dx::XMMATRIX GetTransform() const noexcept
+	void ApplyParameters() noxnd
+	{
+		if (TransformDirty())
+		{
+			pSelectedNode->SetAppliedTransform(GetTransform());
+			ResetTransformDirty();
+		}
+		if (MaterialDirty())
+		{
+			pSelectedNode->SetMaterialConstants(GetMaterial());
+			ResetMaterialDirty();
+		}
+	}
+private:
+	dx::XMMATRIX GetTransform() const noxnd
 	{
 		assert(pSelectedNode != nullptr);
 		const auto& transform = transforms.at(pSelectedNode->GetId()).transformParams;
 		return dx::XMMatrixRotationRollPitchYaw(transform.rotX, transform.rotY, transform.rotZ) *
 			DirectX::XMMatrixTranslation(transform.x, transform.y, transform.z);
 	}
-	const DynamicConstBuf::Buffer* GetMaterial() const noexcept
+	const DynamicConstBuf::Buffer& GetMaterial() const noxnd
 	{
 		assert(pSelectedNode != nullptr);
 		const auto& mat = transforms.at(pSelectedNode->GetId()).materialCBuf;
-		return mat ? &*mat : nullptr;
+		assert(mat);
+		return *mat;
 	}
-	Node* GetSelectedNode() const noexcept
+	bool TransformDirty() const noxnd
 	{
-		return pSelectedNode;
+		return pSelectedNode && transforms.at(pSelectedNode->GetId()).transformParamsDirty;
+	}
+
+	void ResetTransformDirty() noxnd
+	{
+		transforms.at(pSelectedNode->GetId()).transformParamsDirty = false;
+	}
+	bool MaterialDirty() const noxnd
+	{
+		return pSelectedNode && transforms.at(pSelectedNode->GetId()).materialCBufDirty;
+	}
+	void ResetMaterialDirty() noxnd
+	{
+		transforms.at(pSelectedNode->GetId()).materialCBufDirty = false;
+	}
+	bool IsDirty() const noxnd
+	{
+		return TransformDirty() || MaterialDirty();
 	}
 private:
 	Node* pSelectedNode;
@@ -277,11 +317,10 @@ private:
 	struct NodeData
 	{
 		TransformParameters transformParams;
+		bool transformParamsDirty;
 		std::optional<DynamicConstBuf::Buffer> materialCBuf;
+		bool materialCBufDirty;
 	};
-	//Node::PSMaterialConstantFullmonte skinMaterial;
-	//Node::PSMaterialConstantNotex ringMaterial;
-
 	std::unordered_map<int, NodeData> transforms;
 };
 // Model
@@ -312,14 +351,7 @@ Model::Model(Graphics& gfx, const std::string& pathString, float scale)
 }
 void Model::Draw(Graphics& gfx) const noxnd
 {
-	if (auto node = pWindow->GetSelectedNode())
-	{
-		node->SetAppliedTransform(pWindow->GetTransform());
-		if (auto mat = pWindow->GetMaterial())
-		{
-			node->SetMaterialConstants(*mat);
-		}
-	}
+	pWindow->ApplyParameters();
 	pRoot->Draw(gfx, dx::XMMatrixIdentity());
 }
 
