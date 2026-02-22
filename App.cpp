@@ -18,42 +18,42 @@ void TestDynamicConstant()
 	{
 		DynamicConstBuf::Layout s;
 
-		s.Add<DynamicConstBuf::Struct>("structboi");
-		s["structboi"].Add<DynamicConstBuf::Float3>("float3boi");
-		s["structboi"].Add<DynamicConstBuf::Float>("floatboi");
-		s.Add<DynamicConstBuf::Float>("woot");
-		s.Add<DynamicConstBuf::Array>("arr");
-		s["arr"].Set<DynamicConstBuf::Struct>(4);
-		s["arr"].T().Add<DynamicConstBuf::Float3>("twerk");
-		s["arr"].T().Add<DynamicConstBuf::Array>("werk");
-		s["arr"].T()["werk"].Set<DynamicConstBuf::Float>(6);
-		s["arr"].T().Add<DynamicConstBuf::Array>("meta");
-		s["arr"].T()["meta"].Set<DynamicConstBuf::Array>(6);
-		s["arr"].T()["meta"].T().Set<DynamicConstBuf::Matrix>(4);
-		s["arr"].T().Add<DynamicConstBuf::Bool>("booler");
+		s.Add<DynamicConstBuf::Struct>("structboi"s);
+		s["structboi"].Add<DynamicConstBuf::Float3>("float3boi"s);
+		s["structboi"].Add<DynamicConstBuf::Float>("floatboi"s);
+		s.Add<DynamicConstBuf::Float>("woot"s);
+		s.Add<DynamicConstBuf::Array>("arr"s);
+		s["arr"s].Set<DynamicConstBuf::Struct>(4);
+		s["arr"s].T().Add<DynamicConstBuf::Float3>("twerk"s);
+		s["arr"s].T().Add<DynamicConstBuf::Array>("werk"s);
+		s["arr"s].T()["werk"s].Set<DynamicConstBuf::Float>(6);
+		s["arr"s].T().Add<DynamicConstBuf::Array>("meta"s);
+		s["arr"s].T()["meta"s].Set<DynamicConstBuf::Array>(6);
+		s["arr"s].T()["meta"s].T().Set<DynamicConstBuf::Matrix>(4);
+		s["arr"s].T().Add<DynamicConstBuf::Bool>("booler"s);
 		DynamicConstBuf::Buffer b(s);
 		{
 			auto exp = 42.0f;
-			b["woot"] = exp;
-			float act = b["woot"];
+			b["woot"s] = exp;
+			float act = b["woot"s];
 			assert(act == exp);
 		}
 		{
 			auto exp = 420.0f;
-			b["structboi"]["floatboi"] = exp;
-			float act = b["structboi"]["floatboi"];
+			b["structboi"s]["floatboi"s] = exp;
+			float act = b["structboi"s]["floatboi"s];
 			assert(act == exp);
 		}
 		{
 			auto exp = 111.0f;
 			b["arr"s][2]["werk"s][5] = exp;
-			float act = b["arr"][2]["werk"][5];
+			float act = b["arr"s][2]["werk"s][5];
 			assert(act == exp);
 		}
 		{
 			auto exp = DirectX::XMFLOAT3{ 69.0f,0.0f,0.0f };
-			b["structboi"]["float3boi"] = exp;
-			dx::XMFLOAT3 act = b["structboi"]["float3boi"];
+			b["structboi"s]["float3boi"s] = exp;
+			dx::XMFLOAT3 act = b["structboi"s]["float3boi"s];
 			assert(!std::memcmp(&exp, &act, sizeof(DirectX::XMFLOAT3)));
 		}
 		{
@@ -62,26 +62,36 @@ void TestDynamicConstant()
 				&exp,
 				dx::XMMatrixIdentity()
 			);
-			b["arr"][2]["meta"][5][3] = exp;
-			dx::XMFLOAT4X4 act = b["arr"][2]["meta"][5][3];
+			b["arr"s][2]["meta"s][5][3] = exp;
+			dx::XMFLOAT4X4 act = b["arr"s][2]["meta"s][5][3];
 			assert(!std::memcmp(&exp, &act, sizeof(DirectX::XMFLOAT4X4)));
 		}
 		{
 			auto exp = true;
-			b["arr"][2]["booler"] = exp;
-			bool act = b["arr"][2]["booler"];
+			b["arr"s][2]["booler"s] = exp;
+			bool act = b["arr"s][2]["booler"s];
 			assert(act == exp);
 		}
 		{
 			auto exp = false;
-			b["arr"][2]["booler"] = exp;
-			bool act = b["arr"][2]["booler"];
+			b["arr"s][2]["booler"s] = exp;
+			bool act = b["arr"s][2]["booler"s];
 			assert(act == exp);
 		}
-
+		// exists
+		{
+			assert(b["structboi"s]["float3boi"s].Exists());
+			assert(!b["structboi"s]["fubar"s].Exists());
+			if (auto opt = b["structboi"s]["float3boi"s].Exists())
+			{
+				auto& ref = *opt;
+				dx::XMFLOAT3 f = ref;
+				assert(f.x == 69.0f);
+			}
+		}
 		const auto& cb = b;
 		{
-			dx::XMFLOAT4X4 act = cb["arr"][2]["meta"][5][3];
+			dx::XMFLOAT4X4 act = cb["arr"s][2]["meta"s][5][3];
 			assert(act._11 == 1.0f);
 		}
 		// this doesn't compile: buffer is const

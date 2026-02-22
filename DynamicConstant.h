@@ -9,6 +9,7 @@
 #include <type_traits>
 #include <string>
 #include <numeric>
+#include <optional>
 
 #define DCB_RESOLVE_BASE(eltype) \
 virtual size_t Resolve ## eltype() const noxnd;
@@ -50,12 +51,17 @@ namespace DynamicConstBuf
 		friend class Struct;
 	public:
 		virtual ~LayoutElement();
+		// Check the integrity of the element.
+		virtual bool Exists() const noexcept
+		{
+			return true;
+		}
 		// [] only works for Structs; access member by name;
 		virtual LayoutElement& operator[](const std::string&);
-		virtual const LayoutElement& operator[](const std::string&) const;
+		const LayoutElement& operator[](const std::string& key) const;
 		// T() only works for Arrays; gets the array type layout object
 		virtual LayoutElement& T();
-		virtual const LayoutElement& T() const;
+		const LayoutElement& T() const;
 
 		// offset based- functions only work after finalization
 		size_t GetOffsetBegin() const noexcept;
@@ -99,13 +105,7 @@ namespace DynamicConstBuf
 	{
 	public:
 		LayoutElement& operator[](const std::string& key) override final;
-		const LayoutElement& operator[](const std::string& key) const override final
-		{
-			return *map.at(key);
-		}
 		size_t GetOffsetEnd() const noexcept override final;
-
-		
 		void Add(const std::string& name, std::unique_ptr<LayoutElement> pElement) noxnd;
 	protected:
 		size_t Finalize(size_t offset_in) override final;
@@ -168,6 +168,7 @@ namespace DynamicConstBuf
 		};
 	public:
 		ConstElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
+		std::optional<ConstElementRef> Exists() const noexcept;
 		ConstElementRef operator[](const std::string& key) noxnd;
 		ConstElementRef operator[](size_t index) noxnd;
 		Ptr operator&() noxnd;
@@ -201,6 +202,7 @@ namespace DynamicConstBuf
 			ElementRef& ref;
 		};
 		ElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
+		std::optional<ElementRef> Exists() const noexcept;
 		operator ConstElementRef() const noexcept;
 		ElementRef operator[](const std::string& key) noxnd;
 		ElementRef operator[](size_t index) noxnd;
@@ -222,11 +224,11 @@ namespace DynamicConstBuf
 	{
 	public:
 		Buffer(Layout& layout);
+		ElementRef operator[](const std::string& key) noxnd;
+		ConstElementRef operator[](const std::string& key) const noxnd;
 		const char* GetData() const noexcept;
 		size_t GetSizeInBytes() const noexcept;
 		const LayoutElement& GetLayout() const noexcept;
-		ElementRef operator[](const std::string& key) noxnd;
-		ConstElementRef operator[](const std::string& key) const noxnd;
 		std::shared_ptr<LayoutElement> CloneLayout() const;
 	private:
 		std::shared_ptr<Struct> pLayout;
