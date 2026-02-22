@@ -281,10 +281,11 @@ namespace DynamicConstBuf
 
 
 
-	Layout::Layout()
-		:
-		pLayout(std::make_shared<Struct>())
-	{}
+	Layout::Layout()	
+	{
+		struct Enabler : public Struct{};
+		pLayout = std::make_shared<Enabler>();
+	}
 
 	Layout::Layout(std::shared_ptr<LayoutElement> pLayout)
 		:

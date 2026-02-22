@@ -17,6 +17,7 @@ virtual size_t Resolve ## eltype() const noxnd;
 #define DCB_LEAF_ELEMENT_IMPL(eltype, systype, hlslSize) \
 class eltype : public LayoutElement \
 { \
+	friend LayoutElement; \
 public: \
 	using SystemType = systype; \
 	size_t Resolve ## eltype() const noxnd override final;\
@@ -43,7 +44,6 @@ operator __VA_ARGS__ eltype::SystemType*() noxnd;
 
 namespace DynamicConstBuf
 {
-	class LayoutCodex;
 	namespace dx = DirectX;
 	class LayoutElement
 	{
@@ -107,12 +107,14 @@ namespace DynamicConstBuf
 
 	class Struct : public LayoutElement
 	{
+		friend LayoutElement;
 	public:
 		LayoutElement& operator[](const std::string& key) override final;
 		size_t GetOffsetEnd() const noexcept override final;
 		std::string GetSignature() const noxnd final;
 		void Add(const std::string& name, std::unique_ptr<LayoutElement> pElement) noxnd;
 	protected:
+		Struct() = default;
 		size_t Finalize(size_t offset_in) override final;
 		size_t ComputeSize() const noxnd override final;
 	private:
@@ -123,6 +125,7 @@ namespace DynamicConstBuf
 
 	class Array : public LayoutElement
 	{
+		friend LayoutElement;
 	public:
 		size_t GetOffsetEnd() const noexcept override final;
 		void Set(std::unique_ptr<LayoutElement> pElement_in, size_t size_in) noxnd;
@@ -131,6 +134,7 @@ namespace DynamicConstBuf
 		std::string GetSignature() const noxnd final;
 		bool IndexInBounds(size_t index) const noexcept;
 	protected:
+		Array() = default;
 		size_t Finalize(size_t offset_in) override final;
 		size_t ComputeSize() const noxnd override final;
 	private:
@@ -140,7 +144,7 @@ namespace DynamicConstBuf
 
 	class Layout
 	{
-		friend LayoutCodex;
+		friend class LayoutCodex;
 		friend class Buffer;
 	public:
 		Layout();
@@ -166,11 +170,13 @@ namespace DynamicConstBuf
 
 	class ConstElementRef
 	{
+		friend class ElementRef;
+		friend class Buffer;
 	public:
 		class Ptr
 		{
+			friend ConstElementRef;
 		public:
-			Ptr(ConstElementRef& ref);
 
 			DCB_PTR_CONVERSION(Matrix, const)
 			DCB_PTR_CONVERSION(Float4, const)
@@ -179,10 +185,10 @@ namespace DynamicConstBuf
 			DCB_PTR_CONVERSION(Float, const)
 			DCB_PTR_CONVERSION(Bool, const)
 		private:
+			Ptr(ConstElementRef& ref);
 			ConstElementRef& ref;
 		};
 	public:
-		ConstElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
 		bool Exists() const noexcept;
 		ConstElementRef operator[](const std::string& key) noxnd;
 		ConstElementRef operator[](size_t index) noxnd;
@@ -195,6 +201,7 @@ namespace DynamicConstBuf
 		DCB_REF_CONST(Float)
 		DCB_REF_CONST(Bool)
 	private:
+		ConstElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
 		size_t offset;
 		const class LayoutElement* pLayout;
 		char* pBytes;
@@ -202,11 +209,12 @@ namespace DynamicConstBuf
 
 	class ElementRef
 	{
+		friend class Buffer;
 	public:
 		class Ptr
 		{
+			friend ElementRef;
 		public:
-			Ptr(ElementRef& ref);
 			DCB_PTR_CONVERSION(Matrix)
 			DCB_PTR_CONVERSION(Float4)
 			DCB_PTR_CONVERSION(Float3)
@@ -214,9 +222,9 @@ namespace DynamicConstBuf
 			DCB_PTR_CONVERSION(Float)
 			DCB_PTR_CONVERSION(Bool)
 		private:
+			Ptr(ElementRef& ref);
 			ElementRef& ref;
 		};
-		ElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
 		bool Exists() const noexcept;
 		operator ConstElementRef() const noexcept;
 		ElementRef operator[](const std::string& key) noxnd;
@@ -230,6 +238,7 @@ namespace DynamicConstBuf
 		DCB_REF_NONCONST(Float)
 		DCB_REF_NONCONST(Bool)
 	private:
+		ElementRef(const LayoutElement* pLayout, char* pBytes, size_t offset);
 		size_t offset;
 		const class LayoutElement* pLayout;
 		char* pBytes;
@@ -259,7 +268,9 @@ namespace DynamicConstBuf
 	{
 		auto ps = dynamic_cast<Struct*>(this);
 		assert(ps != nullptr);
-		ps->Add(key, std::make_unique<T1>());
+		// need to allow make_unique access to the ctor
+		struct Enabler : public T1{};
+		ps->Add(key, std::make_unique<Enabler>());
 		return *this;
 	}
 
@@ -268,7 +279,9 @@ namespace DynamicConstBuf
 	{
 		auto pa = dynamic_cast<Array*>(this);
 		assert(pa != nullptr);
-		pa->Set(std::make_unique<T1>(), size);
+		// need to allow make_unique access to ctor
+		struct Enabler : public T1{};
+		pa->Set(std::make_unique<Enabler>(), size);
 		return *this;
 	}
 }
