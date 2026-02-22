@@ -325,6 +325,10 @@ namespace DynamicConstBuf
 		:
 		Layout(std::move(pRoot))
 	{}
+	std::shared_ptr<LayoutElement> CookedLayout::RelinquishRoot()
+	{
+		return std::move(pRoot);
+	}
 	std::shared_ptr<LayoutElement> CookedLayout::ShareRoot() const noexcept
 	{
 		return pRoot;
@@ -431,25 +435,30 @@ namespace DynamicConstBuf
 	DCB_REF_NONCONST(ElementRef, Float)
 	DCB_REF_NONCONST(ElementRef, Bool)
 
-	Buffer Buffer::Make(RawLayout&& lay) noxnd
-	{
-		return { LayoutCodex::Resolve(std::move(lay)) };
-	}
-	Buffer Buffer::Make(const CookedLayout& lay) noxnd
-	{
-		return { lay.ShareRoot() };
-	}
-	Buffer::Buffer(const CookedLayout& layout) noexcept
+	Buffer::Buffer(RawLayout&& lay) noxnd
 		:
-		pLayout(layout.ShareRoot()),
-		bytes(pLayout->GetOffsetEnd())
+		Buffer(LayoutCodex::Resolve(std::move(lay)))
+	{}
+	Buffer::Buffer(const CookedLayout& lay) noxnd
+		:
+		pLayoutRoot(lay.ShareRoot()),
+		bytes(pLayoutRoot->GetOffsetEnd())
+	{}
+	Buffer::Buffer(CookedLayout&& layout) noxnd
+		:
+		pLayoutRoot(layout.RelinquishRoot()),
+		bytes(pLayoutRoot->GetOffsetEnd())
 	{}
 	Buffer::Buffer(const Buffer& buf) noexcept
 		:
-		pLayout(buf.ShareLayout()),
+		pLayoutRoot(buf.pLayoutRoot),
 		bytes(buf.bytes)
-	{
-	}
+	{}
+	Buffer::Buffer(Buffer&& buf) noexcept
+		:
+		pLayoutRoot(std::move(buf.pLayoutRoot)),
+		bytes(std::move(buf.bytes))
+	{}
 	const char* Buffer::GetData() const noexcept
 	{
 		return bytes.data();
@@ -458,30 +467,26 @@ namespace DynamicConstBuf
 	{
 		return bytes.size();
 	}
-	const LayoutElement& Buffer::GetLayout() const noexcept
+	const LayoutElement& Buffer::GetRootLayoutElement() const noexcept
 	{
-		return *pLayout;
+		return *pLayoutRoot;
 	}
 	void Buffer::CopyFrom(const Buffer& other) noxnd
 	{
-		assert(&GetLayout() == &other.GetLayout());
+		assert(&GetRootLayoutElement() == &other.GetRootLayoutElement());
 		std::copy(other.bytes.begin(), other.bytes.end(), bytes.begin());
 	}
 	ElementRef Buffer::operator[](const std::string& key) noxnd
 	{
-		return { &(*pLayout)[key], bytes.data(), 0u };
+		return { &(*pLayoutRoot)[key], bytes.data(), 0u };
 	}
 	ConstElementRef Buffer::operator[](const std::string& key) const noxnd
 	{
 		return const_cast<Buffer&>(*this)[key];
 	}
-	std::shared_ptr<LayoutElement> Buffer::ShareLayout() const noexcept
+	std::shared_ptr<LayoutElement> Buffer::ShareLayoutRoot() const noexcept
 	{
-		return pLayout;
-	}
-	std::string Buffer::GetSignature() const noxnd
-	{
-		return pLayout->GetSignature();
+		return pLayoutRoot;
 	}
 }
 

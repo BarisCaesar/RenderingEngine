@@ -178,7 +178,8 @@ namespace DynamicConstBuf
 	private:
 		// this ctor used by Codex to return cooked layouts
 		CookedLayout(std::shared_ptr<LayoutElement> pRoot) noexcept;
-		
+		// use to pilfer the layout tree
+		std::shared_ptr<LayoutElement> RelinquishRoot();
 	};
 
 
@@ -261,20 +262,21 @@ namespace DynamicConstBuf
 	class Buffer
 	{
 	public:
-		static Buffer Make(RawLayout&& lay) noxnd;
-		static Buffer Make(const CookedLayout& lay) noxnd;
+		Buffer (RawLayout&& lay) noxnd;
+		Buffer (const CookedLayout& lay) noxnd;
+		Buffer(CookedLayout&& lay) noxnd;
 		Buffer(const Buffer&) noexcept;
+		Buffer(Buffer&&) noexcept;
+
 		ElementRef operator[](const std::string& key) noxnd;
 		ConstElementRef operator[](const std::string& key) const noxnd;
 		const char* GetData() const noexcept;
 		size_t GetSizeInBytes() const noexcept;
-		const LayoutElement& GetLayout() const noexcept;
+		const LayoutElement& GetRootLayoutElement() const noexcept;
 		void CopyFrom(const Buffer&) noxnd;
-		std::shared_ptr<LayoutElement> ShareLayout() const noexcept;
-		std::string GetSignature() const noxnd;
+		std::shared_ptr<LayoutElement> ShareLayoutRoot() const noexcept;
 	private:
-		Buffer(const CookedLayout& layout) noexcept;
-		std::shared_ptr<LayoutElement> pLayout;
+		std::shared_ptr<LayoutElement> pLayoutRoot;
 		std::vector<char> bytes;
 	};
 

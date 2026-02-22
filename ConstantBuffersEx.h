@@ -10,7 +10,7 @@ namespace Bind
 	public:
 		void Update(Graphics& gfx, const DynamicConstBuf::Buffer& buf)
 		{
-			assert(&buf.GetLayout() == &GetLayout());
+			assert(&buf.GetRootLayoutElement() == &GetRootLayoutElement());
 			INFOMAN(gfx);
 
 			D3D11_MAPPED_SUBRESOURCE msr;
@@ -27,7 +27,7 @@ namespace Bind
 		{
 			GetContext(gfx)->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 		}
-		virtual const DynamicConstBuf::LayoutElement& GetLayout() const noexcept = 0;
+		virtual const DynamicConstBuf::LayoutElement& GetRootLayoutElement() const noexcept = 0;
 	protected:
 		PixelConstantBufferEX(Graphics& gfx, const DynamicConstBuf::LayoutElement& layoutRoot, UINT slot, const DynamicConstBuf::Buffer* pBuf)
 			:
@@ -64,16 +64,16 @@ namespace Bind
 		CachingPixelConstantBufferEX(Graphics& gfx, const DynamicConstBuf::CookedLayout& layout, UINT slot)
 			:
 			PixelConstantBufferEX(gfx, *layout.ShareRoot(), slot, nullptr),
-			buf(DynamicConstBuf::Buffer::Make(layout))
+			buf(DynamicConstBuf::Buffer(layout))
 		{}
 		CachingPixelConstantBufferEX(Graphics& gfx, const DynamicConstBuf::Buffer& buf, UINT slot)
 			:
-			PixelConstantBufferEX(gfx, buf.GetLayout(), slot, &buf),
+			PixelConstantBufferEX(gfx, buf.GetRootLayoutElement(), slot, &buf),
 			buf(buf)
 		{}
-		const DynamicConstBuf::LayoutElement& GetLayout() const noexcept override
+		const DynamicConstBuf::LayoutElement& GetRootLayoutElement() const noexcept override
 		{
-			return buf.GetLayout();
+			return buf.GetRootLayoutElement();
 		}
 		const DynamicConstBuf::Buffer& GetBuffer() const noexcept
 		{
@@ -107,10 +107,10 @@ namespace Bind
 		{}
 		NocachePixelConstantBufferEX(Graphics& gfx, const DynamicConstBuf::Buffer& buf, UINT slot)
 			:
-			PixelConstantBufferEX(gfx, buf.GetLayout(), slot, &buf),
-			pLayoutRoot(buf.ShareLayout())
+			PixelConstantBufferEX(gfx, buf.GetRootLayoutElement(), slot, &buf),
+			pLayoutRoot(buf.ShareLayoutRoot())
 		{}
-		const DynamicConstBuf::LayoutElement& GetLayout() const noexcept override
+		const DynamicConstBuf::LayoutElement& GetRootLayoutElement() const noexcept override
 		{
 			return *pLayoutRoot;
 		}

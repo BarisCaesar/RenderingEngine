@@ -31,9 +31,9 @@ void TestDynamicConstant()
 		// fails: bad symbol name
 		//s.Add<DynamicConstBuf::Bool>( "120man" );
 
-		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer::Make(std::move(s));
+		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer(std::move(s));
 
-		const auto sig = b.GetLayout().GetSignature();
+		const auto sig = b.GetRootLayoutElement().GetSignature();
 		{
 			auto exp = 42.0f;
 			b["woot"s] = exp;
@@ -107,7 +107,7 @@ void TestDynamicConstant()
 		s.Add<DynamicConstBuf::Array>("arr");
 		s["arr"].Set<DynamicConstBuf::Array>(6);
 		s["arr"].T().Set<DynamicConstBuf::Matrix>(4);
-		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer::Make(std::move(s));
+		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer(std::move(s));
 
 		auto act = b.GetSizeInBytes();
 		assert(act == 16u * 4u * 4u * 6u);
@@ -119,7 +119,7 @@ void TestDynamicConstant()
 		s["arr"].Set<DynamicConstBuf::Struct>(6);
 		s["arr"s].T().Add<DynamicConstBuf::Float2>("a");
 		s["arr"].T().Add<DynamicConstBuf::Float3>("b"s);
-		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer::Make(std::move(s));
+		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer(std::move(s));
 
 		auto act = b.GetSizeInBytes();
 		assert(act == 16u * 2u * 6u);
@@ -129,7 +129,7 @@ void TestDynamicConstant()
 		DynamicConstBuf::RawLayout s;
 		s.Add<DynamicConstBuf::Array>("arr");
 		s["arr"].Set<DynamicConstBuf::Float3>(6);
-		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer::Make(std::move(s));
+		DynamicConstBuf::Buffer b = DynamicConstBuf::Buffer(std::move(s));
 
 		auto act = b.GetSizeInBytes();
 		assert(act == 16u * 6u);
@@ -144,9 +144,9 @@ void TestDynamicConstant()
 		s.Add<DynamicConstBuf::Float>("arr");
 		// fails to compile, cooked returns const&
 		// cooked["arr"].Add<Dcb::Float>("buttman");
-		auto b1 = DynamicConstBuf::Buffer::Make(cooked);
+		auto b1 = DynamicConstBuf::Buffer(cooked);
 		b1["arr"][0] = dx::XMFLOAT3{ 69.0f,0.0f,0.0f };
-		auto b2 = DynamicConstBuf::Buffer::Make(cooked);
+		auto b2 = DynamicConstBuf::Buffer(cooked);
 		b2["arr"][0] = dx::XMFLOAT3{ 420.0f,0.0f,0.0f };
 		assert(static_cast<dx::XMFLOAT3>(b1["arr"][0]).x == 69.0f);
 		assert(static_cast<dx::XMFLOAT3>(b2["arr"][0]).x == 420.0f);
