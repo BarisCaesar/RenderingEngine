@@ -47,7 +47,7 @@ void App::DoFrame()
 	//nano.Draw(wnd.Gfx());
 	//goblin.Draw(wnd.Gfx());
 	light.Draw(wnd.Gfx());
-	//sponza.Draw(wnd.Gfx());
+	sponza.Draw(wnd.Gfx());
 	bluePlane.Draw(wnd.Gfx());
 	redPlane.Draw(wnd.Gfx());
 
@@ -125,7 +125,7 @@ void App::DoFrame()
 	//wall.ShowWindow(wnd.Gfx(), "Wall");
 	//plane.SpawnControlWindow(wnd.Gfx());
 	//nano.ShowWindow(wnd.Gfx(), "Model 1");
-	//sponza.ShowWindow(wnd.Gfx(), "Sponza");
+	sponza.ShowWindow(wnd.Gfx(), "Sponza");
 	bluePlane.SpawnControlWindow(wnd.Gfx(), "Blue Plane");
 	redPlane.SpawnControlWindow(wnd.Gfx(), "Red Plane");
 
