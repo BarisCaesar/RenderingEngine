@@ -206,4 +206,17 @@ void TestDynamicConstant()
 		*(float*)&b["butts"s]["dank"s] = exp2;
 		assert((float&)b["butts"s]["dank"s] == exp2);
 	}
+	// specific testing scenario (packing error)
+	{
+		DynamicConstBuf::RawLayout lay;
+		lay.Add<DynamicConstBuf::Bool>("normalMapEnabled");
+		lay.Add<DynamicConstBuf::Bool>("specularMapEnabled");
+		lay.Add<DynamicConstBuf::Bool>("hasGlossMap");
+		lay.Add<DynamicConstBuf::Float>("specularPower");
+		lay.Add<DynamicConstBuf::Float3>("specularColor");
+		lay.Add<DynamicConstBuf::Float>("specularMapWeight");
+
+		auto buf = DynamicConstBuf::Buffer(std::move(lay));
+		assert(buf.GetSizeInBytes() == 32u);
+	}
 }
