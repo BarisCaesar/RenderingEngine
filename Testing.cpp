@@ -93,6 +93,13 @@ void TestDynamicConstant()
 				assert(f.x == 69.0f);
 			}
 		}
+		// set if exists
+		{
+			assert(b["structboi"s]["float3boi"s].SetIfExists(dx::XMFLOAT3{ 1.0f,2.0f,3.0f }));
+			auto& f3 = static_cast<const dx::XMFLOAT3&>(b["structboi"s]["float3boi"s]);
+			assert(f3.x == 1.0f && f3.y == 2.0f && f3.z == 3.0f);
+			assert(!b["structboi"s]["phubar"s].SetIfExists(dx::XMFLOAT3{ 2.0f,2.0f,7.0f }));
+		}
 		const auto& cb = b;
 		{
 			dx::XMFLOAT4X4 act = cb["arr"s][2]["meta"s][5][3];
