@@ -269,7 +269,7 @@ namespace DynamicConstBuf
 		:
 		Layout(std::move(pRoot))
 	{}
-	std::shared_ptr<LayoutElement> CookedLayout::RelinquishRoot()
+	std::shared_ptr<LayoutElement> CookedLayout::RelinquishRoot() const noexcept
 	{
 		return std::move(pRoot);
 	}
@@ -397,6 +397,7 @@ namespace DynamicConstBuf
 	{
 		return pLayoutRoot;
 	}
+	
 }
 
 

@@ -5,10 +5,7 @@
 #include <DirectXMath.h>
 #include <vector>
 #include <memory>
-#include <unordered_map>
-#include <type_traits>
 #include <string>
-#include <numeric>
 #include <optional>
 
 #define LEAF_ELEMENT_TYPES \
@@ -17,7 +14,7 @@
 	X(Float3) \
 	X(Float4) \
 	X(Matrix) \
-	X(Bool) \
+	X(Bool) 
 
 namespace DynamicConstBuf
 {
@@ -76,7 +73,7 @@ namespace DynamicConstBuf
 	template<> struct Map<Bool>
 	{
 		using SysType = bool; // type used in CPU side
-		static constexpr size_t hlslSize = sizeof(SysType); // size of type on GPU side
+		static constexpr size_t hlslSize = 4u; // size of type on GPU side
 		static constexpr const char* code = "BL"; // code used when generating signature for layout
 		static constexpr bool valid = true; // flag to check validity of map type
 	};
@@ -229,7 +226,7 @@ namespace DynamicConstBuf
 		// this ctor used by Codex to return cooked layouts
 		CookedLayout(std::shared_ptr<LayoutElement> pRoot) noexcept;
 		// use to pilfer the layout tree
-		std::shared_ptr<LayoutElement> RelinquishRoot();
+		std::shared_ptr<LayoutElement> RelinquishRoot() const noexcept;
 	};
 
 
