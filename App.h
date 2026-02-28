@@ -5,9 +5,11 @@
 #include "Camera.h"
 #include "PointLight.h"
 #include "TestPlane.h"
+#include "TestCube.h"
 #include "Mesh.h"
 #include <set>
 #include "ScriptCommander.h"
+#include "Stencil.h"
 
 
 class App
@@ -30,9 +32,11 @@ private:
 	float speedFactor = 1.f;
 	Camera cam;
 	PointLight light;
+	TestCube cube = { wnd.Gfx(), 4.f };
+	TestCube cube2 = { wnd.Gfx(), 4.f };
 	Model sponza{ wnd.Gfx(), "Models\\sponza\\sponza.obj", 1.f / 20.f };
-	TestPlane bluePlane{ wnd.Gfx(), 6.f, {0.3f, 0.3f, 1.f, 0.f} };
-	TestPlane redPlane{ wnd.Gfx(), 6.f, {1.3f, 0.3f, 0.3f, 0.f} };
+	//TestPlane bluePlane{ wnd.Gfx(), 6.f, {0.3f, 0.3f, 1.f, 0.f} };
+	//TestPlane redPlane{ wnd.Gfx(), 6.f, {1.3f, 0.3f, 0.3f, 0.f} };
 	//Model goblin{ wnd.Gfx(), "Models\\goblin\\GoblinX.obj", 6.f };
 	//Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj", 2.f};
 	//Model wall{ wnd.Gfx(),"Models\\brick_wall\\brick_wall.obj", 6.f };

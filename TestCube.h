@@ -1,5 +1,7 @@
 #pragma once
 #include "Drawable.h"
+#include "Bindable.h"
+#include "IndexBuffer.h"
 
 class TestCube : public Drawable
 {
@@ -8,8 +10,19 @@ public:
 	void SetPos(DirectX::XMFLOAT3 pos) noexcept;
 	void SetRotation(float xRotation, float yRotation, float zRotation) noexcept;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
-	void SpawnControlWindow(Graphics& gfx) noexcept;
+	void SpawnControlWindow(Graphics& gfx, const char* name) noexcept;
+	void DrawOutline(Graphics& gfx) noxnd
+	{
+		outlining = true;
+		for (auto& b : outlineEffect)
+		{
+			b->Bind(gfx);
+		}
+		gfx.DrawIndexed(QueryBindable<Bind::IndexBuffer>()->GetCount());
+		outlining = false;
+	}
 private:
+	std::vector<std::shared_ptr<Bind::Bindable>> outlineEffect;
 	struct PSMaterialConstant
 	{
 		float specularIntensity = 0.1f;
@@ -21,5 +34,6 @@ private:
 	float xRotation = 0.f;
 	float yRotation = 0.f;
 	float zRotation = 0.f;
+	bool outlining = false;
 
 };
