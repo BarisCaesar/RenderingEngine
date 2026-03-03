@@ -27,6 +27,10 @@ namespace Bind
 	{
 		GetContext(gfx)->IASetInputLayout(pInputLayout.Get());
 	}
+	const DynamicVertex::VertexLayout InputLayout::GetLayout() const noexcept
+	{
+		return layout;
+	}
 	std::shared_ptr<InputLayout> InputLayout::Resolve(Graphics& gfx, const DynamicVertex::VertexLayout& layout, ID3DBlob* pVertexShaderByteCode)
 	{
 		return Codex::Resolve<InputLayout>(gfx, layout, pVertexShaderByteCode);

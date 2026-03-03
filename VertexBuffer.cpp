@@ -5,8 +5,9 @@ namespace Bind
 {
 	VertexBuffer::VertexBuffer(Graphics& gfx, const std::string& tag_in, const DynamicVertex::VertexBuffer& vbuf)
 		:
+		stride((UINT)vbuf.GetLayout().Size()),
 		tag(tag_in),
-		stride((UINT)vbuf.GetLayout().Size())
+		layout(vbuf.GetLayout())
 	{
 		INFOMAN(gfx);
 
@@ -30,6 +31,10 @@ namespace Bind
 	{
 		const UINT offset = 0u;
 		GetContext(gfx)->IASetVertexBuffers(0u, 1u, pVertexBuffer.GetAddressOf(), &stride, &offset);
+	}
+	const DynamicVertex::VertexLayout& VertexBuffer::GetLayout() const noexcept
+	{
+		return layout;
 	}
 	std::shared_ptr<VertexBuffer> VertexBuffer::Resolve(Graphics& gfx, const std::string& tag, const DynamicVertex::VertexBuffer& vbuf)
 	{

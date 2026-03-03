@@ -14,14 +14,15 @@ namespace Bind
 			DirectX::XMMATRIX modelViewProj;
 		};
 	public:
-		TransformCBuf(Graphics& gfx, const Drawable& parent, UINT slot = 0u);
+		TransformCBuf(Graphics& gfx, UINT slot = 0u);
 		void Bind(Graphics& gfx) noexcept override;
+		void InitializeParentReference(const Drawable& parent) noexcept override;
 	protected:
 		void UpdateBindImpl(Graphics& gfx, const Transforms& transforms) noexcept;
 		Transforms GetTransforms(Graphics& gfx) noexcept;
 	private:
 		static std::unique_ptr<VertexConstantBuffer<Transforms>> pVcbuf;
-		const Drawable& parent;
+		const Drawable* pParent = nullptr;
 	};
 }
 

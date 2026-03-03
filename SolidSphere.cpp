@@ -15,37 +15,46 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 	auto model = Sphere::Make();
 	model.Transform(dx::XMMatrixScaling(radius, radius, radius));
 	const auto geometryTag = "$sphere." + std::to_string(radius);
-	AddBind(VertexBuffer::Resolve(gfx, geometryTag, model.vertices));
-	AddBind(IndexBuffer::Resolve(gfx,geometryTag, model.indices));
+	pVertices = VertexBuffer::Resolve(gfx, geometryTag, model.vertices);
+	pIndices = IndexBuffer::Resolve(gfx,geometryTag, model.indices);
+	pTopology = Topology::Resolve(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	auto pvs = VertexShader::Resolve(gfx, "SolidVS.cso");
-	auto pvsbc = pvs->GetBytecode();
-	AddBind(std::move(pvs));
-
-	AddBind(PixelShader::Resolve(gfx, "SolidPS.cso"));
-
-	struct PSColorConstant
 	{
-		dx::XMFLOAT3 color = { 1.0f,1.0f,1.0f };
-		float padding;
-	} colorConst;
-	AddBind(PixelConstantBuffer<PSColorConstant>::Resolve(gfx, colorConst, 1u));
+		Technique solid;
+		Step only(0);
 
-	const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
-	{
-		{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-	};
-	AddBind(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
+		auto pvs = VertexShader::Resolve(gfx, "SolidVS.cso");
+		auto pvsbc = pvs->GetBytecode();
+		only.AddBindable(std::move(pvs));
 
-	AddBind(Topology::Resolve(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+		only.AddBindable(PixelShader::Resolve(gfx, "SolidPS.cso"));
 
-	AddBind(std::make_shared<TransformCBuf>(gfx, *this));
+		struct PSColorConstant
+		{
+			dx::XMFLOAT3 color = { 1.0f,1.0f,1.0f };
+			float padding;
+		} colorConst;
+		only.AddBindable(PixelConstantBuffer<PSColorConstant>::Resolve(gfx, colorConst, 1u));
 
-	AddBind(Blender::Resolve(gfx, false));
+		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+		{
+			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		};
+		only.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
 
-	AddBind(Rasterizer::Resolve(gfx, false));
+		only.AddBindable(std::make_shared<TransformCBuf>(gfx));
 
-	AddBind(std::make_shared<Stencil>(gfx, Stencil::Mode::Off));
+		only.AddBindable(Blender::Resolve(gfx, false));
+
+		only.AddBindable(Rasterizer::Resolve(gfx, false));
+
+		only.AddBindable(std::make_shared<Stencil>(gfx, Stencil::Mode::Off));
+
+		solid.AddStep(std::move(only));
+		AddTechnique(std::move(solid));
+		
+	}
+	
 }
 
 

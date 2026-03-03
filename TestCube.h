@@ -11,16 +11,6 @@ public:
 	void SetRotation(float xRotation, float yRotation, float zRotation) noexcept;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	void SpawnControlWindow(Graphics& gfx, const char* name) noexcept;
-	void DrawOutline(Graphics& gfx) noxnd
-	{
-		outlining = true;
-		for (auto& b : outlineEffect)
-		{
-			b->Bind(gfx);
-		}
-		gfx.DrawIndexed(QueryBindable<Bind::IndexBuffer>()->GetCount());
-		outlining = false;
-	}
 private:
 	std::vector<std::shared_ptr<Bind::Bindable>> outlineEffect;
 	struct PSMaterialConstant
@@ -34,6 +24,5 @@ private:
 	float xRotation = 0.f;
 	float yRotation = 0.f;
 	float zRotation = 0.f;
-	bool outlining = false;
 
 };

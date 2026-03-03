@@ -38,25 +38,10 @@ const std::string& ModelException::GetNote() const noexcept
 }
 
 // Mesh
-Mesh::Mesh(Graphics& gfx, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs)
+void Mesh::Submit(FrameCommander& frame, dx::FXMMATRIX accumulatedTranform) const noxnd
 {
-
-	AddBind(Bind::Topology::Resolve(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
-	
-
-	for (auto& pb : bindPtrs)
-	{
-		
-		AddBind(std::move(pb));
-		
-	}
-
-	AddBind(std::make_shared<Bind::TransformCBuf>(gfx, *this));
-}
-void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd
-{
-	DirectX::XMStoreFloat4x4(&transform, accumulatedTransform);
-	Drawable::Draw(gfx);
+	dx::XMStoreFloat4x4(&transform, accumulatedTranform);
+	Drawable::Submit(frame);
 }
 DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
 {
@@ -75,7 +60,7 @@ Node::Node(int id, const std::string& name, std::vector<Mesh*> meshPtrs, const D
 	DirectX::XMStoreFloat4x4(&appliedTransform, dx::XMMatrixIdentity());
 }
 
-void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd
+void Node::Submit(FrameCommander& frame, DirectX::FXMMATRIX accumulatedTransform) const noxnd
 {
 	const auto built = 
 		dx::XMLoadFloat4x4(&appliedTransform) *
@@ -83,11 +68,11 @@ void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 		accumulatedTransform;
 	for (const auto pm : meshPtrs)
 	{
-		pm->Draw(gfx, built);
+		pm->Submit(frame, accumulatedTransform);
 	}
 	for (const auto& pc : childPtrs)
 	{
-		pc->Draw(gfx, built);
+		pc->Submit(frame, accumulatedTransform);
 	}
 }
 
@@ -126,21 +111,21 @@ void Node::ShowTree(Node*& pSelectedNode) const noexcept
 	}
 }
 
-const DynamicConstBuf::Buffer* Node::GetMaterialConstants() const noexcept
-{
-	if (meshPtrs.size() == 0)
-	{
-		return nullptr;
-	}
-	auto pBindable = meshPtrs.front()->QueryBindable<Bind::CachingPixelConstantBufferEX>();
-	return &pBindable->GetBuffer();
-}
-void Node::SetMaterialConstants(const DynamicConstBuf::Buffer& buf_in) noxnd
-{
-	auto pcb = meshPtrs.front()->QueryBindable<Bind::CachingPixelConstantBufferEX>();
-	assert(pcb != nullptr);
-	pcb->SetBuffer(buf_in);
-}
+//const DynamicConstBuf::Buffer* Node::GetMaterialConstants() const noexcept
+//{
+//	if (meshPtrs.size() == 0)
+//	{
+//		return nullptr;
+//	}
+//	auto pBindable = meshPtrs.front()->QueryBindable<Bind::CachingPixelConstantBufferEX>();
+//	return &pBindable->GetBuffer();
+//}
+//void Node::SetMaterialConstants(const DynamicConstBuf::Buffer& buf_in) noxnd
+//{
+//	auto pcb = meshPtrs.front()->QueryBindable<Bind::CachingPixelConstantBufferEX>();
+//	assert(pcb != nullptr);
+//	pcb->SetBuffer(buf_in);
+//}
 
 void Node::SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept
 {
@@ -162,102 +147,102 @@ class ModelWindow //pIml idiom, only defined in this class cpp file
 public:
 	void Show(Graphics& gfx, const char* windowName, const Node& root) noexcept
 	{
-		windowName = windowName ? windowName : "Model";
-		
-		int nodeIndexTracker = 0;
+		//windowName = windowName ? windowName : "Model";
+		//
+		//int nodeIndexTracker = 0;
 
-		if (ImGui::Begin(windowName))
-		{
-			ImGui::Columns(2, nullptr, true);
-			root.ShowTree( pSelectedNode);
+		//if (ImGui::Begin(windowName))
+		//{
+		//	ImGui::Columns(2, nullptr, true);
+		//	root.ShowTree( pSelectedNode);
 
-			ImGui::NextColumn();
-			if (pSelectedNode != nullptr)
-			{
-				const auto id = pSelectedNode->GetId();
-				auto i = transforms.find(id);
-				if (i == transforms.end())
-				{
-					const auto& applied = pSelectedNode->GetAppliedTransform();
-					const auto angles = ExtractEulerAngles(applied);
-					const auto translation = ExtractTranslation(applied);
-					TransformParameters tp;
-					tp.rotX = angles.x;
-					tp.rotY = angles.y;
-					tp.rotZ = angles.z;
-					tp.x = translation.x;
-					tp.y = translation.y;
-					tp.z = translation.z;
-					auto pMatConst = pSelectedNode->GetMaterialConstants();
-					auto buf = pMatConst != nullptr ? std::optional<DynamicConstBuf::Buffer>{*pMatConst} : std::optional<DynamicConstBuf::Buffer>{};
-					std::tie(i, std::ignore) = transforms.insert({ id,{tp, false, std::move(buf), false}});
-				}
-				// link imgui control to our cached transform params
-				auto& transform = i->second.transformParams;
-				// dirty check
-				auto& dirty = i->second.transformParamsDirty;
-				const auto dcheck = [&dirty](bool changed) {dirty = dirty || changed; };
-				// widgets
-				ImGui::Text("Orientation");
-				dcheck(ImGui::SliderAngle("X Rotation", &transform.rotX, -180.f, 180.f));
-				dcheck(ImGui::SliderAngle("Y Rotation", &transform.rotY, -180.f, 180.f));
-				dcheck(ImGui::SliderAngle("Z Rotation", &transform.rotZ, -180.f, 180.f));
-				
-				ImGui::Text("Position");
-				dcheck(ImGui::SliderFloat("X", &transform.x, -20.f, 20.f));
-				dcheck(ImGui::SliderFloat("Y", &transform.y, -20.f, 20.f));
-				dcheck(ImGui::SliderFloat("Z", &transform.z, -20.f, 20.f));
+		//	ImGui::NextColumn();
+		//	if (pSelectedNode != nullptr)
+		//	{
+		//		const auto id = pSelectedNode->GetId();
+		//		auto i = transforms.find(id);
+		//		if (i == transforms.end())
+		//		{
+		//			const auto& applied = pSelectedNode->GetAppliedTransform();
+		//			const auto angles = ExtractEulerAngles(applied);
+		//			const auto translation = ExtractTranslation(applied);
+		//			TransformParameters tp;
+		//			tp.rotX = angles.x;
+		//			tp.rotY = angles.y;
+		//			tp.rotZ = angles.z;
+		//			tp.x = translation.x;
+		//			tp.y = translation.y;
+		//			tp.z = translation.z;
+		//			auto pMatConst = pSelectedNode->GetMaterialConstants();
+		//			auto buf = pMatConst != nullptr ? std::optional<DynamicConstBuf::Buffer>{*pMatConst} : std::optional<DynamicConstBuf::Buffer>{};
+		//			std::tie(i, std::ignore) = transforms.insert({ id,{tp, false, std::move(buf), false}});
+		//		}
+		//		// link imgui control to our cached transform params
+		//		auto& transform = i->second.transformParams;
+		//		// dirty check
+		//		auto& dirty = i->second.transformParamsDirty;
+		//		const auto dcheck = [&dirty](bool changed) {dirty = dirty || changed; };
+		//		// widgets
+		//		ImGui::Text("Orientation");
+		//		dcheck(ImGui::SliderAngle("X Rotation", &transform.rotX, -180.f, 180.f));
+		//		dcheck(ImGui::SliderAngle("Y Rotation", &transform.rotY, -180.f, 180.f));
+		//		dcheck(ImGui::SliderAngle("Z Rotation", &transform.rotZ, -180.f, 180.f));
+		//		
+		//		ImGui::Text("Position");
+		//		dcheck(ImGui::SliderFloat("X", &transform.x, -20.f, 20.f));
+		//		dcheck(ImGui::SliderFloat("Y", &transform.y, -20.f, 20.f));
+		//		dcheck(ImGui::SliderFloat("Z", &transform.z, -20.f, 20.f));
 
-				// link imgui control to our cached transform params
-				if (i->second.materialCBuf)
-				{
-					auto& mat = *i->second.materialCBuf;
-					// dirty check
-					auto& dirty = i->second.materialCBufDirty;
-					const auto dcheck = [&dirty](bool changed) {dirty = dirty || changed; };
-					// widgets
-					ImGui::Text("Material");
-					if (auto v = mat["normalMapEnabled"]; v.Exists())
-					{
-						dcheck(ImGui::Checkbox("Norm Map", &v));
-					}
-					if (auto v = mat["specularMapEnabled"]; v.Exists())
-					{
-						dcheck(ImGui::Checkbox("Spec Map", &v));
-					}
-					if (auto v = mat["hasGlossMap"]; v.Exists())
-					{
-						dcheck(ImGui::Checkbox("Gloss Map", &v));
-					}
-					if (auto v = mat["materialColor"]; v.Exists())
-					{
-						dcheck(ImGui::ColorPicker3("Diff Color", reinterpret_cast<float*>(&static_cast<dx::XMFLOAT3&>(v))));
-					}
-					if (auto v = mat["specularPower"]; v.Exists())
-					{
-						dcheck(ImGui::SliderFloat("Spec Power", &v, 0.0f, 100.0f, "%.1f", 1.5f));
-					}
-					if (auto v = mat["specularColor"]; v.Exists())
-					{
-						dcheck(ImGui::ColorPicker3("Spec Color", reinterpret_cast<float*>(&static_cast<dx::XMFLOAT3&>(v))));
-					}
-					if (auto v = mat["specularMapWeight"]; v.Exists())
-					{
-						dcheck(ImGui::SliderFloat("Spec Weight", &v, 0.0f, 4.0f));
-					}
-					if (auto v = mat["specularIntensity"]; v.Exists())
-					{
-						dcheck(ImGui::SliderFloat("Spec Intens", &v, 0.0f, 1.0f));
-					}
-				}
-			}
-			
-		}
-		ImGui::End();
+		//		// link imgui control to our cached transform params
+		//		if (i->second.materialCBuf)
+		//		{
+		//			auto& mat = *i->second.materialCBuf;
+		//			// dirty check
+		//			auto& dirty = i->second.materialCBufDirty;
+		//			const auto dcheck = [&dirty](bool changed) {dirty = dirty || changed; };
+		//			// widgets
+		//			ImGui::Text("Material");
+		//			if (auto v = mat["normalMapEnabled"]; v.Exists())
+		//			{
+		//				dcheck(ImGui::Checkbox("Norm Map", &v));
+		//			}
+		//			if (auto v = mat["specularMapEnabled"]; v.Exists())
+		//			{
+		//				dcheck(ImGui::Checkbox("Spec Map", &v));
+		//			}
+		//			if (auto v = mat["hasGlossMap"]; v.Exists())
+		//			{
+		//				dcheck(ImGui::Checkbox("Gloss Map", &v));
+		//			}
+		//			if (auto v = mat["materialColor"]; v.Exists())
+		//			{
+		//				dcheck(ImGui::ColorPicker3("Diff Color", reinterpret_cast<float*>(&static_cast<dx::XMFLOAT3&>(v))));
+		//			}
+		//			if (auto v = mat["specularPower"]; v.Exists())
+		//			{
+		//				dcheck(ImGui::SliderFloat("Spec Power", &v, 0.0f, 100.0f, "%.1f", 1.5f));
+		//			}
+		//			if (auto v = mat["specularColor"]; v.Exists())
+		//			{
+		//				dcheck(ImGui::ColorPicker3("Spec Color", reinterpret_cast<float*>(&static_cast<dx::XMFLOAT3&>(v))));
+		//			}
+		//			if (auto v = mat["specularMapWeight"]; v.Exists())
+		//			{
+		//				dcheck(ImGui::SliderFloat("Spec Weight", &v, 0.0f, 4.0f));
+		//			}
+		//			if (auto v = mat["specularIntensity"]; v.Exists())
+		//			{
+		//				dcheck(ImGui::SliderFloat("Spec Intens", &v, 0.0f, 1.0f));
+		//			}
+		//		}
+		//	}
+		//	
+		//}
+		//ImGui::End();
 	}
 	void ApplyParameters() noxnd
 	{
-		if (TransformDirty())
+		/*if (TransformDirty())
 		{
 			pSelectedNode->SetAppliedTransform(GetTransform());
 			ResetTransformDirty();
@@ -266,7 +251,7 @@ public:
 		{
 			pSelectedNode->SetMaterialConstants(GetMaterial());
 			ResetMaterialDirty();
-		}
+		}*/
 	}
 private:
 	dx::XMMATRIX GetTransform() const noxnd
@@ -350,10 +335,10 @@ Model::Model(Graphics& gfx, const std::string& pathString, float scale)
 	int nextId = 0;
 	pRoot = ParseNode(nextId, *pScene->mRootNode);
 }
-void Model::Draw(Graphics& gfx) const noxnd
+void Model::Submit(FrameCommander& frame) const noxnd
 {
 	pWindow->ApplyParameters();
-	pRoot->Draw(gfx, dx::XMMatrixIdentity());
+	pRoot->Submit(frame, dx::XMMatrixIdentity());
 }
 
 void Model::ShowWindow(Graphics& gfx, const char* windowName) noexcept
@@ -372,372 +357,373 @@ Model::~Model() noexcept
 
 std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterials, const std::filesystem::path& path, float scale)
 {
-	using namespace std::string_literals;
-	using DynamicVertex::VertexLayout;
-	using namespace Bind;
-
-	const auto rootPath = path.parent_path().string() + "\\";
-
-	std::vector<std::shared_ptr<Bindable>> bindablePtrs;
-
-	bool hasSpecularMap = false;
-	bool hasAlphaGloss = false;
-	bool hasAlphaDiffuse = false;
-	bool hasNormalMap = false;
-	bool hasDiffuseMap = false;
-	float shininess = 2.0f;
-	dx::XMFLOAT4 specularColor = { 0.18f, 0.18f, 0.18f, 1.f };
-	dx::XMFLOAT4 diffuseColor = { 0.45f, 0.45f, 0.85f, 1.0f };
-
-	if (mesh.mMaterialIndex >= 0)
-	{
-		auto& material = *pMaterials[mesh.mMaterialIndex];
-
-		aiString texFileName;
-
-		if (material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName) == aiReturn_SUCCESS)
-		{
-			auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str());
-			hasAlphaDiffuse = tex->HasAlpha();
-			bindablePtrs.push_back(std::move(tex));
-			hasDiffuseMap = true;
-		}
-		else
-		{
-			material.Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(diffuseColor));
-		}
-
-		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
-		{
-			auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str(), 1);
-			hasAlphaGloss = tex->HasAlpha();
-			bindablePtrs.push_back(std::move(tex));
-			hasSpecularMap = true;
-		}
-		else
-		{
-			material.Get(AI_MATKEY_COLOR_SPECULAR, reinterpret_cast<aiColor3D&>(specularColor));
-		}
-		if (!hasAlphaGloss)
-		{
-			material.Get(AI_MATKEY_SHININESS, shininess);
-		}
-		else
-		{
-			material.Get(AI_MATKEY_SHININESS, shininess);
-		}
-
-		if (material.GetTexture(aiTextureType_NORMALS, 0, &texFileName) == aiReturn_SUCCESS)
-		{
-			auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str(), 2);
-			hasAlphaGloss = tex->HasAlpha();
-			bindablePtrs.push_back(std::move(tex));
-			hasNormalMap = true;
-		}
-
-		if (hasDiffuseMap || hasSpecularMap || hasNormalMap)
-		{
-			bindablePtrs.push_back(Bind::Sampler::Resolve(gfx));
-		}
-	}
-
-	const auto meshTag = path.string() + "%" + mesh.mName.C_Str();
-
-	if (hasDiffuseMap && hasNormalMap && hasSpecularMap)
-	{
-		DynamicVertex::VertexBuffer vbuf(std::move(
-			VertexLayout{}
-			.Append(VertexLayout::Position3D)
-			.Append(VertexLayout::Normal)
-			.Append(VertexLayout::Tangent)
-			.Append(VertexLayout::Bitangent)
-			.Append(VertexLayout::Texture2D)
-		));
-
-		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
-		{
-			vbuf.EmplaceBack(
-				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mTangents[i]),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mBitangents[i]),
-				*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
-			);
-		}
-
-		std::vector<unsigned short> indices;
-		indices.reserve(mesh.mNumFaces * 3);
-		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
-		{
-			const auto& face = mesh.mFaces[i];
-			assert(face.mNumIndices == 3);
-			indices.push_back(face.mIndices[0]);
-			indices.push_back(face.mIndices[1]);
-			indices.push_back(face.mIndices[2]);
-		}
-
-		bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
-
-		bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
-
-		auto pvs = VertexShader::Resolve(gfx, "PhongVSNormalMap.cso");
-		auto pvsbc = pvs->GetBytecode();
-		bindablePtrs.push_back(std::move(pvs));
-
-		bindablePtrs.push_back(PixelShader::Resolve(gfx,
-			hasAlphaDiffuse ? "PhongPSSpecNormMask.cso" :"PhongPSSpecNormalMap.cso"
-		));
-
-		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
-
-		DynamicConstBuf::RawLayout lay;
-		lay.Add<DynamicConstBuf::Bool>("normalMapEnabled");
-		lay.Add<DynamicConstBuf::Bool>("specularMapEnabled");
-		lay.Add<DynamicConstBuf::Bool>("hasGlossMap");
-		lay.Add<DynamicConstBuf::Float>("specularPower");
-		lay.Add<DynamicConstBuf::Float3>("specularColor");
-		lay.Add<DynamicConstBuf::Float>("specularMapWeight");
-
-		auto buf = DynamicConstBuf::Buffer(std::move(lay));
-		buf["normalMapEnabled"] = true;
-		buf["specularMapEnabled"] = true;
-		buf["hasGlossMap"] = hasAlphaGloss;
-		buf["specularPower"] = shininess;
-		buf["specularColor"] = dx::XMFLOAT3{ 0.75f,0.75f,0.75f };
-		buf["specularMapWeight"] = 0.671f;
-
-		bindablePtrs.push_back(std::make_shared<CachingPixelConstantBufferEX>(gfx, buf, 1u));
-	}
-	else if (hasDiffuseMap && hasNormalMap)
-	{
-		DynamicVertex::VertexBuffer vbuf(std::move(
-			VertexLayout{}
-			.Append(VertexLayout::Position3D)
-			.Append(VertexLayout::Normal)
-			.Append(VertexLayout::Tangent)
-			.Append(VertexLayout::Bitangent)
-			.Append(VertexLayout::Texture2D)
-		));
-
-		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
-		{
-			vbuf.EmplaceBack(
-				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mTangents[i]),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mBitangents[i]),
-				*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
-			);
-		}
-
-		std::vector<unsigned short> indices;
-		indices.reserve(mesh.mNumFaces * 3);
-		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
-		{
-			const auto& face = mesh.mFaces[i];
-			assert(face.mNumIndices == 3);
-			indices.push_back(face.mIndices[0]);
-			indices.push_back(face.mIndices[1]);
-			indices.push_back(face.mIndices[2]);
-		}
-
-		bindablePtrs.push_back(Bind::VertexBuffer::Resolve(gfx, meshTag, vbuf));
-
-		bindablePtrs.push_back(Bind::IndexBuffer::Resolve(gfx, meshTag, indices));
-
-		auto pvs = Bind::VertexShader::Resolve(gfx, "PhongVSNormalMap.cso");
-		auto pvsbc = pvs->GetBytecode();
-		bindablePtrs.push_back(std::move(pvs));
-
-		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSNormalMap.cso"));
-
-		bindablePtrs.push_back(Bind::InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
-
-		DynamicConstBuf::RawLayout layout;
-	
-		layout.Add<DynamicConstBuf::Float>("specularIntensity");
-		layout.Add<DynamicConstBuf::Float>("specularPower");
-		layout.Add<DynamicConstBuf::Bool>("normalMapEnabled");
-		
-		DynamicConstBuf::Buffer cbuf = DynamicConstBuf::Buffer(std::move(layout));
-		cbuf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
-		cbuf["specularPower"] = shininess;
-		cbuf["normalMapEnabled"] = true;
-
-		bindablePtrs.push_back(std::make_shared<CachingPixelConstantBufferEX>(gfx, cbuf, 1u));
-
-	
-	}
-	else if (hasDiffuseMap && !hasNormalMap && hasSpecularMap)
-	{
-		DynamicVertex::VertexBuffer vbuf(std::move(
-			VertexLayout{}
-			.Append(VertexLayout::Position3D)
-			.Append(VertexLayout::Normal)
-			.Append(VertexLayout::Texture2D)
-		));
-
-		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
-		{
-			vbuf.EmplaceBack(
-				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
-				*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
-			);
-		}
-
-		std::vector<unsigned short> indices;
-		indices.reserve(mesh.mNumFaces * 3);
-		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
-		{
-			const auto& face = mesh.mFaces[i];
-			assert(face.mNumIndices == 3);
-			indices.push_back(face.mIndices[0]);
-			indices.push_back(face.mIndices[1]);
-			indices.push_back(face.mIndices[2]);
-		}
-
-		bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
-
-		bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
-
-		auto pvs = VertexShader::Resolve(gfx, "PhongVS.cso");
-		auto pvsbc = pvs->GetBytecode();
-		bindablePtrs.push_back(std::move(pvs));
-
-		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSSpec.cso"));
-
-		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
-
-		DynamicConstBuf::RawLayout lay;
-		lay.Add<DynamicConstBuf::Float>("specularPower");
-		lay.Add<DynamicConstBuf::Bool>("hasGloss");
-		lay.Add<DynamicConstBuf::Float>("specularMapWeight");
-
-		auto buf = DynamicConstBuf::Buffer(std::move(lay));
-		buf["specularPower"] = shininess;
-		buf["hasGloss"] = hasAlphaGloss;
-		buf["specularMapWeight"] = 1.0f;
-
-		bindablePtrs.push_back(std::make_unique<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
-	}
-	else if (hasDiffuseMap)
-	{
-		DynamicVertex::VertexBuffer vbuf(std::move(
-			VertexLayout{}
-			.Append(VertexLayout::Position3D)
-			.Append(VertexLayout::Normal)
-			.Append(VertexLayout::Texture2D)
-		));
-
-		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
-		{
-			vbuf.EmplaceBack(
-				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
-				*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
-			);
-		}
-
-		std::vector<unsigned short> indices;
-		indices.reserve(mesh.mNumFaces * 3);
-		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
-		{
-			const auto& face = mesh.mFaces[i];
-			assert(face.mNumIndices == 3);
-			indices.push_back(face.mIndices[0]);
-			indices.push_back(face.mIndices[1]);
-			indices.push_back(face.mIndices[2]);
-		}
-
-		bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
-
-		bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
-
-		auto pvs = VertexShader::Resolve(gfx, "PhongVS.cso");
-		auto pvsbc = pvs->GetBytecode();
-		bindablePtrs.push_back(std::move(pvs));
-
-		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPS.cso"));
-
-		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
-
-		DynamicConstBuf::RawLayout lay;
-		lay.Add<DynamicConstBuf::Float>("specularIntensity");
-		lay.Add<DynamicConstBuf::Float>("specularPower");
-
-		auto buf = DynamicConstBuf::Buffer(std::move(lay));
-		buf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
-		buf["specularPower"] = shininess;
-		buf["specularMapWeight"] = 1.0f;
-
-		bindablePtrs.push_back(std::make_unique<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
-		
-	}
-	else if (!hasDiffuseMap && !hasNormalMap && !hasSpecularMap)
-	{
-		DynamicVertex::VertexBuffer vbuf(std::move(
-			VertexLayout{}
-			.Append(VertexLayout::Position3D)
-			.Append(VertexLayout::Normal)
-		));
-
-		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
-		{
-			vbuf.EmplaceBack(
-				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
-				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i])
-			);
-		}
-
-		std::vector<unsigned short> indices;
-		indices.reserve(mesh.mNumFaces * 3);
-		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
-		{
-			const auto& face = mesh.mFaces[i];
-			assert(face.mNumIndices == 3);
-			indices.push_back(face.mIndices[0]);
-			indices.push_back(face.mIndices[1]);
-			indices.push_back(face.mIndices[2]);
-		}
-
-		bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
-
-		bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
-
-		auto pvs = VertexShader::Resolve(gfx, "PhongVSNotex.cso");
-		auto pvsbc = pvs->GetBytecode();
-		bindablePtrs.push_back(std::move(pvs));
-
-		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSNotex.cso"));
-
-		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
-
-		DynamicConstBuf::RawLayout lay;
-		lay.Add<DynamicConstBuf::Float4>("materialColor");
-		lay.Add<DynamicConstBuf::Float4>("specularColor");
-		lay.Add<DynamicConstBuf::Float>("specularPower");
-
-		auto buf = DynamicConstBuf::Buffer(std::move(lay));
-		buf["specularPower"] = shininess;
-		buf["specularColor"] = specularColor;
-		buf["materialColor"] = diffuseColor;
-
-		bindablePtrs.push_back(std::make_unique<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
-		}
-	else
-	{
-		throw std::runtime_error("terrible combination of textures in material");
-	}
-	// anything with alpha is two sided in sponza scene,
-	// need a better way to determine this in the future
-	bindablePtrs.push_back(Rasterizer::Resolve(gfx, hasAlphaDiffuse));
-
-	bindablePtrs.push_back(Blender::Resolve(gfx, false));
-
-	bindablePtrs.push_back(std::make_shared<Stencil>(gfx, Stencil::Mode::Off));
-
-	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
+	//using namespace std::string_literals;
+	//using DynamicVertex::VertexLayout;
+	//using namespace Bind;
+
+	//const auto rootPath = path.parent_path().string() + "\\";
+
+	//std::vector<std::shared_ptr<Bindable>> bindablePtrs;
+
+	//bool hasSpecularMap = false;
+	//bool hasAlphaGloss = false;
+	//bool hasAlphaDiffuse = false;
+	//bool hasNormalMap = false;
+	//bool hasDiffuseMap = false;
+	//float shininess = 2.0f;
+	//dx::XMFLOAT4 specularColor = { 0.18f, 0.18f, 0.18f, 1.f };
+	//dx::XMFLOAT4 diffuseColor = { 0.45f, 0.45f, 0.85f, 1.0f };
+
+	//if (mesh.mMaterialIndex >= 0)
+	//{
+	//	auto& material = *pMaterials[mesh.mMaterialIndex];
+
+	//	aiString texFileName;
+
+	//	if (material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName) == aiReturn_SUCCESS)
+	//	{
+	//		auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str());
+	//		hasAlphaDiffuse = tex->HasAlpha();
+	//		bindablePtrs.push_back(std::move(tex));
+	//		hasDiffuseMap = true;
+	//	}
+	//	else
+	//	{
+	//		material.Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(diffuseColor));
+	//	}
+
+	//	if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
+	//	{
+	//		auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str(), 1);
+	//		hasAlphaGloss = tex->HasAlpha();
+	//		bindablePtrs.push_back(std::move(tex));
+	//		hasSpecularMap = true;
+	//	}
+	//	else
+	//	{
+	//		material.Get(AI_MATKEY_COLOR_SPECULAR, reinterpret_cast<aiColor3D&>(specularColor));
+	//	}
+	//	if (!hasAlphaGloss)
+	//	{
+	//		material.Get(AI_MATKEY_SHININESS, shininess);
+	//	}
+	//	else
+	//	{
+	//		material.Get(AI_MATKEY_SHININESS, shininess);
+	//	}
+
+	//	if (material.GetTexture(aiTextureType_NORMALS, 0, &texFileName) == aiReturn_SUCCESS)
+	//	{
+	//		auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str(), 2);
+	//		hasAlphaGloss = tex->HasAlpha();
+	//		bindablePtrs.push_back(std::move(tex));
+	//		hasNormalMap = true;
+	//	}
+
+	//	if (hasDiffuseMap || hasSpecularMap || hasNormalMap)
+	//	{
+	//		bindablePtrs.push_back(Bind::Sampler::Resolve(gfx));
+	//	}
+	//}
+
+	//const auto meshTag = path.string() + "%" + mesh.mName.C_Str();
+
+	//if (hasDiffuseMap && hasNormalMap && hasSpecularMap)
+	//{
+	//	DynamicVertex::VertexBuffer vbuf(std::move(
+	//		VertexLayout{}
+	//		.Append(VertexLayout::Position3D)
+	//		.Append(VertexLayout::Normal)
+	//		.Append(VertexLayout::Tangent)
+	//		.Append(VertexLayout::Bitangent)
+	//		.Append(VertexLayout::Texture2D)
+	//	));
+
+	//	for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+	//	{
+	//		vbuf.EmplaceBack(
+	//			dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mTangents[i]),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mBitangents[i]),
+	//			*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
+	//		);
+	//	}
+
+	//	std::vector<unsigned short> indices;
+	//	indices.reserve(mesh.mNumFaces * 3);
+	//	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+	//	{
+	//		const auto& face = mesh.mFaces[i];
+	//		assert(face.mNumIndices == 3);
+	//		indices.push_back(face.mIndices[0]);
+	//		indices.push_back(face.mIndices[1]);
+	//		indices.push_back(face.mIndices[2]);
+	//	}
+
+	//	bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+
+	//	bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
+
+	//	auto pvs = VertexShader::Resolve(gfx, "PhongVSNormalMap.cso");
+	//	auto pvsbc = pvs->GetBytecode();
+	//	bindablePtrs.push_back(std::move(pvs));
+
+	//	bindablePtrs.push_back(PixelShader::Resolve(gfx,
+	//		hasAlphaDiffuse ? "PhongPSSpecNormMask.cso" :"PhongPSSpecNormalMap.cso"
+	//	));
+
+	//	bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
+
+	//	DynamicConstBuf::RawLayout lay;
+	//	lay.Add<DynamicConstBuf::Bool>("normalMapEnabled");
+	//	lay.Add<DynamicConstBuf::Bool>("specularMapEnabled");
+	//	lay.Add<DynamicConstBuf::Bool>("hasGlossMap");
+	//	lay.Add<DynamicConstBuf::Float>("specularPower");
+	//	lay.Add<DynamicConstBuf::Float3>("specularColor");
+	//	lay.Add<DynamicConstBuf::Float>("specularMapWeight");
+
+	//	auto buf = DynamicConstBuf::Buffer(std::move(lay));
+	//	buf["normalMapEnabled"] = true;
+	//	buf["specularMapEnabled"] = true;
+	//	buf["hasGlossMap"] = hasAlphaGloss;
+	//	buf["specularPower"] = shininess;
+	//	buf["specularColor"] = dx::XMFLOAT3{ 0.75f,0.75f,0.75f };
+	//	buf["specularMapWeight"] = 0.671f;
+
+	//	bindablePtrs.push_back(std::make_shared<CachingPixelConstantBufferEX>(gfx, buf, 1u));
+	//}
+	//else if (hasDiffuseMap && hasNormalMap)
+	//{
+	//	DynamicVertex::VertexBuffer vbuf(std::move(
+	//		VertexLayout{}
+	//		.Append(VertexLayout::Position3D)
+	//		.Append(VertexLayout::Normal)
+	//		.Append(VertexLayout::Tangent)
+	//		.Append(VertexLayout::Bitangent)
+	//		.Append(VertexLayout::Texture2D)
+	//	));
+
+	//	for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+	//	{
+	//		vbuf.EmplaceBack(
+	//			dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mTangents[i]),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mBitangents[i]),
+	//			*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
+	//		);
+	//	}
+
+	//	std::vector<unsigned short> indices;
+	//	indices.reserve(mesh.mNumFaces * 3);
+	//	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+	//	{
+	//		const auto& face = mesh.mFaces[i];
+	//		assert(face.mNumIndices == 3);
+	//		indices.push_back(face.mIndices[0]);
+	//		indices.push_back(face.mIndices[1]);
+	//		indices.push_back(face.mIndices[2]);
+	//	}
+
+	//	bindablePtrs.push_back(Bind::VertexBuffer::Resolve(gfx, meshTag, vbuf));
+
+	//	bindablePtrs.push_back(Bind::IndexBuffer::Resolve(gfx, meshTag, indices));
+
+	//	auto pvs = Bind::VertexShader::Resolve(gfx, "PhongVSNormalMap.cso");
+	//	auto pvsbc = pvs->GetBytecode();
+	//	bindablePtrs.push_back(std::move(pvs));
+
+	//	bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSNormalMap.cso"));
+
+	//	bindablePtrs.push_back(Bind::InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
+
+	//	DynamicConstBuf::RawLayout layout;
+	//
+	//	layout.Add<DynamicConstBuf::Float>("specularIntensity");
+	//	layout.Add<DynamicConstBuf::Float>("specularPower");
+	//	layout.Add<DynamicConstBuf::Bool>("normalMapEnabled");
+	//	
+	//	DynamicConstBuf::Buffer cbuf = DynamicConstBuf::Buffer(std::move(layout));
+	//	cbuf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
+	//	cbuf["specularPower"] = shininess;
+	//	cbuf["normalMapEnabled"] = true;
+
+	//	bindablePtrs.push_back(std::make_shared<CachingPixelConstantBufferEX>(gfx, cbuf, 1u));
+
+	//
+	//}
+	//else if (hasDiffuseMap && !hasNormalMap && hasSpecularMap)
+	//{
+	//	DynamicVertex::VertexBuffer vbuf(std::move(
+	//		VertexLayout{}
+	//		.Append(VertexLayout::Position3D)
+	//		.Append(VertexLayout::Normal)
+	//		.Append(VertexLayout::Texture2D)
+	//	));
+
+	//	for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+	//	{
+	//		vbuf.EmplaceBack(
+	//			dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+	//			*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
+	//		);
+	//	}
+
+	//	std::vector<unsigned short> indices;
+	//	indices.reserve(mesh.mNumFaces * 3);
+	//	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+	//	{
+	//		const auto& face = mesh.mFaces[i];
+	//		assert(face.mNumIndices == 3);
+	//		indices.push_back(face.mIndices[0]);
+	//		indices.push_back(face.mIndices[1]);
+	//		indices.push_back(face.mIndices[2]);
+	//	}
+
+	//	bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+
+	//	bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
+
+	//	auto pvs = VertexShader::Resolve(gfx, "PhongVS.cso");
+	//	auto pvsbc = pvs->GetBytecode();
+	//	bindablePtrs.push_back(std::move(pvs));
+
+	//	bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSSpec.cso"));
+
+	//	bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
+
+	//	DynamicConstBuf::RawLayout lay;
+	//	lay.Add<DynamicConstBuf::Float>("specularPower");
+	//	lay.Add<DynamicConstBuf::Bool>("hasGloss");
+	//	lay.Add<DynamicConstBuf::Float>("specularMapWeight");
+
+	//	auto buf = DynamicConstBuf::Buffer(std::move(lay));
+	//	buf["specularPower"] = shininess;
+	//	buf["hasGloss"] = hasAlphaGloss;
+	//	buf["specularMapWeight"] = 1.0f;
+
+	//	bindablePtrs.push_back(std::make_unique<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
+	//}
+	//else if (hasDiffuseMap)
+	//{
+	//	DynamicVertex::VertexBuffer vbuf(std::move(
+	//		VertexLayout{}
+	//		.Append(VertexLayout::Position3D)
+	//		.Append(VertexLayout::Normal)
+	//		.Append(VertexLayout::Texture2D)
+	//	));
+
+	//	for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+	//	{
+	//		vbuf.EmplaceBack(
+	//			dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+	//			*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
+	//		);
+	//	}
+
+	//	std::vector<unsigned short> indices;
+	//	indices.reserve(mesh.mNumFaces * 3);
+	//	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+	//	{
+	//		const auto& face = mesh.mFaces[i];
+	//		assert(face.mNumIndices == 3);
+	//		indices.push_back(face.mIndices[0]);
+	//		indices.push_back(face.mIndices[1]);
+	//		indices.push_back(face.mIndices[2]);
+	//	}
+
+	//	bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+
+	//	bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
+
+	//	auto pvs = VertexShader::Resolve(gfx, "PhongVS.cso");
+	//	auto pvsbc = pvs->GetBytecode();
+	//	bindablePtrs.push_back(std::move(pvs));
+
+	//	bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPS.cso"));
+
+	//	bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
+
+	//	DynamicConstBuf::RawLayout lay;
+	//	lay.Add<DynamicConstBuf::Float>("specularIntensity");
+	//	lay.Add<DynamicConstBuf::Float>("specularPower");
+
+	//	auto buf = DynamicConstBuf::Buffer(std::move(lay));
+	//	buf["specularIntensity"] = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
+	//	buf["specularPower"] = shininess;
+	//	buf["specularMapWeight"] = 1.0f;
+
+	//	bindablePtrs.push_back(std::make_unique<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
+	//	
+	//}
+	//else if (!hasDiffuseMap && !hasNormalMap && !hasSpecularMap)
+	//{
+	//	DynamicVertex::VertexBuffer vbuf(std::move(
+	//		VertexLayout{}
+	//		.Append(VertexLayout::Position3D)
+	//		.Append(VertexLayout::Normal)
+	//	));
+
+	//	for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+	//	{
+	//		vbuf.EmplaceBack(
+	//			dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+	//			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i])
+	//		);
+	//	}
+
+	//	std::vector<unsigned short> indices;
+	//	indices.reserve(mesh.mNumFaces * 3);
+	//	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+	//	{
+	//		const auto& face = mesh.mFaces[i];
+	//		assert(face.mNumIndices == 3);
+	//		indices.push_back(face.mIndices[0]);
+	//		indices.push_back(face.mIndices[1]);
+	//		indices.push_back(face.mIndices[2]);
+	//	}
+
+	//	bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+
+	//	bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
+
+	//	auto pvs = VertexShader::Resolve(gfx, "PhongVSNotex.cso");
+	//	auto pvsbc = pvs->GetBytecode();
+	//	bindablePtrs.push_back(std::move(pvs));
+
+	//	bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSNotex.cso"));
+
+	//	bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
+
+	//	DynamicConstBuf::RawLayout lay;
+	//	lay.Add<DynamicConstBuf::Float4>("materialColor");
+	//	lay.Add<DynamicConstBuf::Float4>("specularColor");
+	//	lay.Add<DynamicConstBuf::Float>("specularPower");
+
+	//	auto buf = DynamicConstBuf::Buffer(std::move(lay));
+	//	buf["specularPower"] = shininess;
+	//	buf["specularColor"] = specularColor;
+	//	buf["materialColor"] = diffuseColor;
+
+	//	bindablePtrs.push_back(std::make_unique<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
+	//	}
+	//else
+	//{
+	//	throw std::runtime_error("terrible combination of textures in material");
+	//}
+	//// anything with alpha is two sided in sponza scene,
+	//// need a better way to determine this in the future
+	//bindablePtrs.push_back(Rasterizer::Resolve(gfx, hasAlphaDiffuse));
+
+	//bindablePtrs.push_back(Blender::Resolve(gfx, false));
+
+	//bindablePtrs.push_back(std::make_shared<Stencil>(gfx, Stencil::Mode::Off));
+
+	//return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
+	return {};
 }
 std::unique_ptr<Node> Model::ParseNode(int& nextId, const aiNode& node) noexcept
 {
