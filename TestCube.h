@@ -12,14 +12,6 @@ public:
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	void SpawnControlWindow(Graphics& gfx, const char* name) noexcept;
 private:
-	std::vector<std::shared_ptr<Bind::Bindable>> outlineEffect;
-	struct PSMaterialConstant
-	{
-		float specularIntensity = 0.1f;
-		float specularPower = 20.f;
-		BOOL normalMappingEnabled = TRUE;
-		float padding[1];
-	}pmc;
 	DirectX::XMFLOAT3 pos = { 1.f, 1.f, 1.f };
 	float xRotation = 0.f;
 	float yRotation = 0.f;

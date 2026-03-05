@@ -129,7 +129,7 @@ void App::DoFrame()
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 	cube.SpawnControlWindow(wnd.Gfx(), "Cube 1");
-	cube.SpawnControlWindow(wnd.Gfx(), "Cube 2");
+	cube2.SpawnControlWindow(wnd.Gfx(), "Cube 2");
 	//goblin.ShowWindow(wnd.Gfx(), "Goblin");
 	//wall.ShowWindow(wnd.Gfx(), "Wall");
 	//plane.SpawnControlWindow(wnd.Gfx());

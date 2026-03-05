@@ -40,11 +40,11 @@
     <Filter Include="Header Files\imgui">
       <UniqueIdentifier>{d7e37b1b-07e0-4e2b-9522-02d4dded93c9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\RenderQueue">
-      <UniqueIdentifier>{b15d83f8-f2d3-404c-a4f1-7a9972c7f9eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\RenderQueue">
       <UniqueIdentifier>{03326e86-f455-4d4a-82d7-53a0a6e0c706}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MultiPassSystem">
+      <UniqueIdentifier>{b15d83f8-f2d3-404c-a4f1-7a9972c7f9eb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -399,25 +399,28 @@
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
     <ClInclude Include="Technique.h">
-      <Filter>Header Files\RenderQueue</Filter>
+      <Filter>Header Files\MultiPassSystem</Filter>
     </ClInclude>
     <ClInclude Include="Step.h">
-      <Filter>Header Files\RenderQueue</Filter>
+      <Filter>Header Files\MultiPassSystem</Filter>
     </ClInclude>
     <ClInclude Include="Pass.h">
-      <Filter>Header Files\RenderQueue</Filter>
+      <Filter>Header Files\MultiPassSystem</Filter>
     </ClInclude>
     <ClInclude Include="Job.h">
-      <Filter>Header Files\RenderQueue</Filter>
+      <Filter>Header Files\MultiPassSystem</Filter>
     </ClInclude>
     <ClInclude Include="FrameCommander.h">
-      <Filter>Header Files\RenderQueue</Filter>
+      <Filter>Header Files\MultiPassSystem</Filter>
     </ClInclude>
     <ClInclude Include="NullPixelShader.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
     <ClInclude Include="PerfLog.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TechniqueProbe.h">
+      <Filter>Header Files\MultiPassSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
