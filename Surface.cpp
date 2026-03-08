@@ -83,7 +83,8 @@ Surface Surface::FromFile(const std::string& name)
 
 
 	DirectX::ScratchImage scratch;
-	HRESULT hr = DirectX::LoadFromWICFile(ToWide(name).c_str(), DirectX::WIC_FLAGS_NONE, nullptr, scratch);
+	auto filePath = FindFileInProject(name);
+	HRESULT hr = DirectX::LoadFromWICFile(filePath.c_str(), DirectX::WIC_FLAGS_NONE, nullptr, scratch);
 
 	if (FAILED(hr))
 	{

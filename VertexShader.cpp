@@ -14,7 +14,8 @@ namespace Bind
 	{
 		INFOMAN(gfx);
 
-		GFX_THROW_INFO(D3DReadFileToBlob(ToWide(path).c_str(), &pBytecodeBlob));
+		auto shaderPath = FindFileInProject(path);
+		GFX_THROW_INFO(D3DReadFileToBlob(shaderPath.c_str(), &pBytecodeBlob));
 		GFX_THROW_INFO(GetDevice(gfx)->CreateVertexShader(
 			pBytecodeBlob->GetBufferPointer(),
 			pBytecodeBlob->GetBufferSize(),

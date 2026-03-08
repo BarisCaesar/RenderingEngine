@@ -29,3 +29,23 @@ std::string ToNarrow(const std::wstring& wide)
 	wcstombs_s(nullptr, narrow, wide.c_str(), _TRUNCATE);
 	return narrow;
 }
+
+std::filesystem::path FindFileInProject(const std::string& relativePath)
+{
+	namespace fs = std::filesystem;
+
+	fs::path dir = fs::current_path();
+
+	while (!dir.empty())
+	{
+		fs::path candidate = dir / relativePath;
+
+		if (fs::exists(candidate))
+			return candidate;
+
+		dir = dir.parent_path();
+	}
+
+	throw std::runtime_error("File not found in project tree: " + relativePath);
+}
+
