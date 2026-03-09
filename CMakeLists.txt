@@ -10,8 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # -----------------------------------------
 
 file(GLOB_RECURSE SOURCES *.cpp)
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
-    ${CMAKE_SOURCE_DIR}/*.h
+file(GLOB_RECURSE HEADERS ${CMAKE_SOURCE_DIR}/*.h
 )
 
 add_executable(RenderingEngine ${SOURCES} ${HEADERS})
@@ -30,6 +29,9 @@ ${CMAKE_SOURCE_DIR}
 
 assimp/include
 dxtex/include
+include
+include/Bindables
+include/RenderQueue
 )
 
 # -----------------------------------------
