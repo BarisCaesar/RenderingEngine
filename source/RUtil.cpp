@@ -34,9 +34,12 @@ std::filesystem::path FindFileInProject(const std::string& relativePath)
 {
 	namespace fs = std::filesystem;
 
+	const int maxDepth = 10;
+	int curDepth = 0;
+
 	fs::path dir = fs::current_path();
 
-	while (!dir.empty())
+	while (curDepth < maxDepth)
 	{
 		fs::path candidate = dir / relativePath;
 
@@ -44,6 +47,8 @@ std::filesystem::path FindFileInProject(const std::string& relativePath)
 			return candidate;
 
 		dir = dir.parent_path();
+
+		curDepth++;
 	}
 
 	throw std::runtime_error("File not found in project tree: " + relativePath);
