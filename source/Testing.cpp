@@ -1,8 +1,45 @@
 #include "DynamicConstant.h"
 #include "LayoutCodex.h"
+#include "Vertex.h"
 #include <cstring>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#include "RUtil.h"
 
 namespace dx = DirectX;
+
+void TestDynamicMeshLoading()
+{
+	using namespace DynamicVertex;
+
+	auto path = FindFileInProject("Models\\brick_wall\\brick_wall.obj");
+	
+	Assimp::Importer imp;
+	const auto pScene = imp.ReadFile(path.string(),
+		aiProcess_Triangulate |
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_ConvertToLeftHanded |
+		aiProcess_GenNormals |
+		aiProcess_CalcTangentSpace
+		);
+	auto layout = VertexLayout{}
+		.Append(VertexLayout::Position3D)
+		.Append(VertexLayout::Normal)
+		.Append(VertexLayout::Tangent)
+		.Append(VertexLayout::Bitangent)
+		.Append(VertexLayout::Texture2D);
+	VertexBuffer buf{ layout, *pScene->mMeshes[0] };
+	for (auto i = 0ull, end = buf.Size(); i < end; i++)
+	{
+		const auto a = buf[i].Attr<VertexLayout::Position3D>();
+		const auto b = buf[i].Attr<VertexLayout::Normal>();
+		const auto c = buf[i].Attr<VertexLayout::Tangent>();
+		const auto d = buf[i].Attr<VertexLayout::Bitangent>();
+		const auto e = buf[i].Attr<VertexLayout::Texture2D>();
+	}
+}
+
 
 void TestDynamicConstant()
 {

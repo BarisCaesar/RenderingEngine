@@ -22,7 +22,7 @@ App::App(const std::string& commandLine)
 	light(wnd.Gfx())
 {
 	
-	TestDynamicConstant();
+	TestDynamicMeshLoading();
 	cube.SetPos({ 4.0f,0.0f,0.0f });
 	cube2.SetPos({ 0.0f,4.0f,0.0f });
 	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
