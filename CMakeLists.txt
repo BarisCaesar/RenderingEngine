@@ -34,7 +34,7 @@ include/Model
 include/Macros
 include/Geometry
 include/Drawable
-shades/include
+shaders/include
 )
 
 # Library directories

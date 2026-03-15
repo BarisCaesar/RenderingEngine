@@ -5,15 +5,19 @@
 
 cbuffer ObjectCBuf
 {
-    float4 materialColor;
-    float4 specularColor;
+    float specularIntensity;
     float specularPower;
+    float padding[2];
 };
 
+Texture2D tex;
 
-float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal) : SV_Target
+SamplerState splr;
+
+
+float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float2 tc : Texcoord) : SV_Target
 {
-    // normalize the mesh normal
+    // renormalize interpolated normal
     viewNormal = normalize(viewNormal);
 	// fragment to light vector data
     const LightVectorData lv = CalculateLightVectorData(viewLightPos, viewFragPos);
@@ -21,11 +25,8 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal) : SV_Targ
     const float att = Attenuate(attConst, attLin, attQuad, lv.distToL);
 	// diffuse
     const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, lv.dirToL, viewNormal);
-    // specular
-    const float3 specular = Specular(
-        specularColor.rgb, 1.0f, viewNormal,
-        lv.vToL, viewFragPos, att, specularPower
-    );
+	// specular
+    const float3 specular = Specular(diffuseColor, diffuseIntensity * specularIntensity, viewNormal, lv.vToL, viewFragPos, att, specularPower);
 	// final color
-    return float4(saturate((diffuse + ambient) * materialColor.rgb + specular), 1.0f);
+    return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specular), 1.0f);
 }
