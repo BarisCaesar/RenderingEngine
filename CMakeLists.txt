@@ -30,6 +30,10 @@ dxtex/include
 include
 include/Bindables
 include/RenderQueue
+include/Model
+include/Macros
+include/Geometry
+include/Drawable
 shades/include
 )
 

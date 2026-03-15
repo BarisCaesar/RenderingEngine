@@ -5,7 +5,7 @@
 
 namespace Bind
 {
-	class TransformCBuf : public Bindable
+	class TransformCBuf : public CloningBindable
 	{
 	protected:
 		struct Transforms
@@ -17,6 +17,7 @@ namespace Bind
 		TransformCBuf(Graphics& gfx, UINT slot = 0u);
 		void Bind(Graphics& gfx) noexcept override;
 		void InitializeParentReference(const Drawable& parent) noexcept override;
+		std::unique_ptr<CloningBindable> Clone() const noexcept override;
 	protected:
 		void UpdateBindImpl(Graphics& gfx, const Transforms& transforms) noexcept;
 		Transforms GetTransforms(Graphics& gfx) noexcept;

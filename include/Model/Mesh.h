@@ -12,6 +12,9 @@
 #include <filesystem>
 #include "imgui/imgui.h"
 #include "DynamicConstant.h"
+#include <string>
+
+class Material;
 
 class ModelException : public RException
 {
@@ -27,7 +30,7 @@ private:
 class Mesh : public Drawable
 {
 public:
-	using Drawable::Drawable;
+	Mesh(Graphics& gfx, const Material& mat, const aiMesh& mesh) noxnd;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 	void Submit(FrameCommander& frame, DirectX::FXMMATRIX accumulatedTransform) const noxnd;
 private:

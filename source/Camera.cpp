@@ -44,9 +44,9 @@ void Camera::SpawnControlWindow() noexcept
 
 void Camera::Reset() noexcept
 {
-	pos = { -13.5f, 6.0f, 3.5f };
+	pos = { 0.0f, 0.0f, -3.0f };
 	xRotation = 0.0f;
-	yRotation = PI / 2.f;
+	yRotation = 0.0f;
 }
 
 void Camera::Rotate(float dx, float dy) noexcept
