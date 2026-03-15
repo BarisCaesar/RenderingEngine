@@ -1,4 +1,6 @@
 #include "Material.h"
+#include "DynamicConstant.h"
+#include "ConstantBuffersEx.h"
 
 Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesystem::path& path) noxnd
 	:
@@ -201,6 +203,30 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 DynamicVertex::VertexBuffer Material::ExtractVertices(const aiMesh& mesh) const noexcept
 {
 	return { vertexLayout, mesh };
+}
+
+std::vector<unsigned short> Material::ExtractIndices(const aiMesh& mesh) const noexcept
+{
+	std::vector<unsigned short> indices;
+	indices.reserve(mesh.mNumFaces * 3);
+	DynamicVertex::VertexBuffer buf{ vertexLayout };
+	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+	{
+		const auto& face = mesh.mFaces[i];
+		assert(face.mNumIndices == 3);
+		indices.push_back(face.mIndices[0]);
+		indices.push_back(face.mIndices[1]);
+		indices.push_back(face.mIndices[2]);
+	}
+	return indices;
+}
+std::shared_ptr<Bind::VertexBuffer> Material::MakeVertexBindable(Graphics& gfx, const aiMesh& mesh) const noxnd
+{
+	return Bind::VertexBuffer::Resolve(gfx, MakeMeshTag(mesh), ExtractVertices(mesh));
+}
+std::shared_ptr<Bind::IndexBuffer>  Material::MakeIndexBindable(Graphics& gfx, const aiMesh& mesh) const noxnd
+{
+	return Bind::IndexBuffer::Resolve(gfx, MakeMeshTag(mesh), ExtractIndices(mesh));
 }
 
 std::vector<Technique> Material::GetTechniques() const noexcept

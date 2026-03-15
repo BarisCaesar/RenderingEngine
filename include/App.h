@@ -6,7 +6,7 @@
 #include "PointLight.h"
 #include "TestPlane.h"
 #include "TestCube.h"
-#include "Mesh.h"
+#include "Model.h"
 #include <set>
 #include "ScriptCommander.h"
 #include "Stencil.h"
