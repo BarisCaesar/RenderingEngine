@@ -146,9 +146,9 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 			draw.AddBindable(PixelShader::Resolve(gfx, "Solid_PS.cso"));
 
 			DynamicConstBuf::RawLayout lay;
-			lay.Add<DynamicConstBuf::Float4>("materialColor");
+			lay.Add<DynamicConstBuf::Float3>("materialColor");
 			auto buf = DynamicConstBuf::Buffer(std::move(lay));
-			buf["materialColor"] = DirectX::XMFLOAT4{ 1.f, 0.4f, 0.4f, 1.f };
+			buf["materialColor"] = DirectX::XMFLOAT3{ 1.f, 0.4f, 0.4f };
 			draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
 
 			draw.AddBindable(InputLayout::Resolve(gfx, vertexLayout, pvsbc));
