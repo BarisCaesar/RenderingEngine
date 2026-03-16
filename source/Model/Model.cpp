@@ -6,15 +6,18 @@
 #include "ModelWindow.h"
 #include "Node.h"
 #include "Mesh.h"
+#include "Material.h"
+#include "RUtil.h"
 
 namespace dx = DirectX;
 
 Model::Model(Graphics& gfx, const std::string& pathString, const float scale)
-	:
-	pWindow(std::make_unique<ModelWindow>())
+	//:
+	//pWindow(std::make_unique<ModelWindow>())
 {
+	auto path = FindFileInProject(pathString);
 	Assimp::Importer imp;
-	const auto pScene = imp.ReadFile(pathString.c_str(),
+	const auto pScene = imp.ReadFile(path.string(),
 		aiProcess_Triangulate |
 		aiProcess_JoinIdenticalVertices |
 		aiProcess_ConvertToLeftHanded |
@@ -26,10 +29,19 @@ Model::Model(Graphics& gfx, const std::string& pathString, const float scale)
 	{
 		throw ModelException(__LINE__, __FILE__, imp.GetErrorString());
 	}
+	// parse materials
+	std::vector<Material> materials;
+	materials.reserve(pScene->mNumMaterials);
+	for (size_t i = 0; i < pScene->mNumMaterials; i++)
+	{
+		materials.emplace_back(gfx, *pScene->mMaterials[i], path.string());
+	}
+
 
 	for (size_t i = 0; i < pScene->mNumMeshes; i++)
 	{
-		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i], pScene->mMaterials, pathString, scale));
+		const auto& mesh = *pScene->mMeshes[i];
+		meshPtrs.push_back(std::make_unique<Mesh>(gfx, materials[mesh.mMaterialIndex], mesh));
 	}
 
 	int nextId = 0;
@@ -41,14 +53,14 @@ void Model::Submit(FrameCommander& frame) const noxnd
 	// I'm still not happy about updating parameters (i.e. mutating a bindable GPU state
 	// which is part of a mesh which is part of a node which is part of the model that is
 	// const in this call) Can probably do this elsewhere
-	pWindow->ApplyParameters();
+	//pWindow->ApplyParameters();
 	pRoot->Submit(frame, dx::XMMatrixIdentity());
 }
 
-void Model::ShowWindow(Graphics& gfx, const char* windowName) noexcept
-{
-	pWindow->Show(gfx, windowName, *pRoot);
-}
+//void Model::ShowWindow(Graphics& gfx, const char* windowName) noexcept
+//{
+//	pWindow->Show(gfx, windowName, *pRoot);
+//}
 
 void Model::SetRootTransform(DirectX::FXMMATRIX tf) noexcept
 {
@@ -58,10 +70,6 @@ void Model::SetRootTransform(DirectX::FXMMATRIX tf) noexcept
 Model::~Model() noexcept
 {}
 
-std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterials, const std::filesystem::path& path, float scale)
-{
-	return {};
-}
 
 std::unique_ptr<Node> Model::ParseNode(int& nextId, const aiNode& node) noexcept
 {

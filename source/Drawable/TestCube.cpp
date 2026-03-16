@@ -28,11 +28,11 @@ TestCube::TestCube(Graphics& gfx, float size)
 			only.AddBindable(Texture::Resolve(gfx, "Images\\brickwall.jpg"));
 			only.AddBindable(Sampler::Resolve(gfx));
 
-			auto pvs = VertexShader::Resolve(gfx, "Phong_VS.cso");
+			auto pvs = VertexShader::Resolve(gfx, "PhongDiffuse_VS.cso");
 			auto pvsbc = pvs->GetBytecode();
 			only.AddBindable(std::move(pvs));
 
-			only.AddBindable(PixelShader::Resolve(gfx, "Phong_PS.cso"));
+			only.AddBindable(PixelShader::Resolve(gfx, "PhongDiffuse_PS.cso"));
 
 			DynamicConstBuf::RawLayout lay;
 			lay.Add<DynamicConstBuf::Float>("specularIntensity");

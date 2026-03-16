@@ -21,10 +21,7 @@ public:
 	
 	std::vector<Technique> GetTechniques() const noexcept;
 private:
-	std::string MakeMeshTag(const aiMesh& mesh) const noexcept
-	{
-		return modelPath + "%" + mesh.mName.C_Str();
-	}
+	std::string MakeMeshTag(const aiMesh& mesh) const noexcept;
 private:
 	DynamicVertex::VertexLayout vertexLayout;
 	std::vector<Technique> techniques;

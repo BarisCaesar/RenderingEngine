@@ -27,7 +27,7 @@ App::App(const std::string& commandLine)
 	light(wnd.Gfx())
 {
 	
-	TestMaterialSystemLoading(wnd.Gfx());
+	//TestMaterialSystemLoading(wnd.Gfx());
 	cube.SetPos({ 4.0f,0.0f,0.0f });
 	cube2.SetPos({ 0.0f,4.0f,0.0f });
 	{
@@ -67,7 +67,7 @@ void App::DoFrame()
 	//wall.Draw(wnd.Gfx());
 	//plane.Draw(wnd.Gfx());
 	//nano.Draw(wnd.Gfx());
-	//goblin.Draw(wnd.Gfx());
+	goblin.Submit(frameCommander);
 
 	light.Submit(frameCommander);
 	//sponza.Draw(wnd.Gfx());

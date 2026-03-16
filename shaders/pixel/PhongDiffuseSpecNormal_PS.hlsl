@@ -4,12 +4,12 @@
 
 cbuffer ObjectCBuf
 {
-    bool normalMapEnabled;
-    bool specularMapEnabled;
-    bool hasGloss;
-    float specularPowerConst;
+    bool useGlossAlpha;
     float3 specularColor;
-    float specularMapWeight;
+    float specularWeight;
+    float specularGloss;
+    bool useNormalMap;
+    float normalMapWeight;
 };
 
 Texture2D tex;
@@ -39,7 +39,7 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float3 vi
     // normalize the mesh normal
     viewNormal = normalize(viewNormal);
     // replace normal with mapped if normal mapping enabled
-    if (normalMapEnabled)
+    if (useNormalMap)
     {
         viewNormal = MapNormal(normalize(viewTan), normalize(viewBitan), viewNormal, tc, nmap, samplerState);
     }
@@ -47,22 +47,16 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float3 vi
     const LightVectorData lv = CalculateLightVectorData(viewLightPos, viewFragPos);
     // specular parameter determination (mapped or uniform)
     float3 specularReflectionColor;
-    float specularPower = specularPowerConst;
-    if(specularMapEnabled)
-    {
-        const float4 specularSample = spec.Sample(samplerState, tc);
-        specularReflectionColor = specularSample.rgb * specularMapWeight;
+    float specularPower = specularGloss;
+   
+    const float4 specularSample = spec.Sample(samplerState, tc);
+    specularReflectionColor = specularSample.rgb;
         
-        if(hasGloss)
-        {
-            specularPower = pow(2.f, specularSample.a * 13.f);
-        }  
-    }
-    else
+    if(useGlossAlpha)
     {
-        specularReflectionColor = specularColor;
-    }
-    
+        specularPower = pow(2.f, specularSample.a * 13.f);
+    }  
+  
     // attenuation
     const float att = Attenuate(attConst, attLin, attQuad, lv.distToL);
 	// diffuse light
@@ -70,7 +64,7 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float3 vi
     
     // specular reflected
     const float3 specularReflected = Specular(
-        specularColor, 1.f, viewNormal, 
+        diffuseColor * diffuseIntensity * specularReflectionColor, specularWeight, viewNormal,
         lv.vToL, viewFragPos, att, specularPower
     );
 	// final color = attenuate diffuse & ambient by diffuse texture color and add specular reflected
