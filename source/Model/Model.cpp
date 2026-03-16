@@ -45,7 +45,7 @@ Model::Model(Graphics& gfx, const std::string& pathString, const float scale)
 	}
 
 	int nextId = 0;
-	pRoot = ParseNode(nextId, *pScene->mRootNode);
+	pRoot = ParseNode(nextId, *pScene->mRootNode, dx::XMMatrixScaling(scale, scale, scale));
 }
 
 void Model::Submit(FrameCommander& frame) const noxnd
@@ -71,10 +71,10 @@ Model::~Model() noexcept
 {}
 
 
-std::unique_ptr<Node> Model::ParseNode(int& nextId, const aiNode& node) noexcept
+std::unique_ptr<Node> Model::ParseNode(int& nextId, const aiNode& node, DirectX::FXMMATRIX additionalTransform) noexcept
 {
 	namespace dx = DirectX;
-	const auto transform = dx::XMMatrixTranspose(dx::XMLoadFloat4x4(
+	const auto transform = additionalTransform * dx::XMMatrixTranspose(dx::XMLoadFloat4x4(
 		reinterpret_cast<const dx::XMFLOAT4X4*>(&node.mTransformation)
 	));
 
@@ -89,7 +89,7 @@ std::unique_ptr<Node> Model::ParseNode(int& nextId, const aiNode& node) noexcept
 	auto pNode = std::make_unique<Node>(nextId++, node.mName.C_Str(), std::move(curMeshPtrs), transform);
 	for (size_t i = 0; i < node.mNumChildren; i++)
 	{
-		pNode->AddChild(ParseNode(nextId, *node.mChildren[i]));
+		pNode->AddChild(ParseNode(nextId, *node.mChildren[i], dx::XMMatrixIdentity()));
 	}
 
 	return pNode;

@@ -35,13 +35,12 @@ private:
 	Camera cam;
 	FrameCommander frameCommander;
 	PointLight light;
-	TestCube cube = { wnd.Gfx(), 4.f };
-	TestCube cube2 = { wnd.Gfx(), 4.f };
-	std::unique_ptr<Mesh> pLoaded;
+	//TestCube cube = { wnd.Gfx(), 4.f };
+	//TestCube cube2 = { wnd.Gfx(), 4.f };
 	//Model sponza{ wnd.Gfx(), "Models\\sponza\\sponza.obj", 1.f / 20.f };
 	//TestPlane bluePlane{ wnd.Gfx(), 6.f, {0.3f, 0.3f, 1.f, 0.f} };
 	//TestPlane redPlane{ wnd.Gfx(), 6.f, {1.3f, 0.3f, 0.3f, 0.f} };
-	Model goblin{ wnd.Gfx(), "Models\\goblin\\GoblinX.obj", 6.f };
+	Model goblin{ wnd.Gfx(), "Models\\goblin\\GoblinX.obj", 4.f };
 	//Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj", 2.f};
 	//Model wall{ wnd.Gfx(),"Models\\brick_wall\\brick_wall.obj", 6.f };
 	//TestPlane plane{ wnd.Gfx(), 6.f };
