@@ -54,10 +54,10 @@ void App::DoFrame()
 	//wall.Draw(wnd.Gfx());
 	//plane.Draw(wnd.Gfx());
 	//nano.Draw(wnd.Gfx());
-	goblin.Submit(frameCommander);
+	//goblin.Submit(frameCommander);
 
 	light.Submit(frameCommander);
-	//sponza.Draw(wnd.Gfx());
+	sponza.Submit(frameCommander);
 	//cube.Submit(frameCommander);
 	//cube2.Submit(frameCommander);
 	//bluePlane.Draw(wnd.Gfx());
