@@ -13,6 +13,8 @@
 #include <assimp/postprocess.h>
 #include "Mesh.h"
 #include "DynamicConstant.h"
+#include "ModelProbe.h"
+#include "Node.h"
 
 
 namespace dx = DirectX;
@@ -129,7 +131,7 @@ void App::DoFrame()
 		}
 	}
 	// Mesh techniques window
-	class Probe : public TechniqueProbe
+	class TProbe : public TechniqueProbe
 	{
 	public:
 		void OnSetTechnique() override
@@ -183,8 +185,52 @@ void App::DoFrame()
 			return dirty;
 		}
 	} probe;
+
+	class MProbe : ModelProbe
+	{
+	public:
+		void SpawnWindow(Model& model)
+		{
+			ImGui::Begin("Model");
+			ImGui::Columns(2, nullptr, true);
+			model.Accept(*this);
+
+			ImGui::NextColumn();
+			if (pSelectedNode != nullptr)
+			{
+			}
+			ImGui::End();
+		}
+	protected:
+		bool PushNode(Node& node) override
+		{
+			const int selectedId = (pSelectedNode == nullptr) ? -1 : pSelectedNode->GetId();
+
+			const auto node_flags = ImGuiTreeNodeFlags_OpenOnArrow
+				| ((node.GetId() == selectedId) ? ImGuiTreeNodeFlags_Selected : 0)
+				| (node.HasChildren() ? 0 : ImGuiTreeNodeFlags_Leaf);
+
+			const auto expanded = ImGui::TreeNodeEx(
+				(void*)(intptr_t)node.GetId(),
+				node_flags, node.GetName().c_str()
+			);
+			if (ImGui::IsItemClicked())
+			{
+				pSelectedNode = &node;
+			}
+			return expanded;
+		}
+		void PopNode(Node& node) override
+		{
+			ImGui::TreePop();
+		}
+	protected:
+		Node* pSelectedNode = nullptr;
+	};
+	static MProbe modelProbe;
 	
 	// imgui windows
+	modelProbe.SpawnWindow(sponza);
 	cam.SpawnControlWindow();
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
