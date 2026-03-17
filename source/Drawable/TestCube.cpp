@@ -42,7 +42,7 @@ TestCube::TestCube(Graphics& gfx, float size)
 			buf["specularColor"] = dx::XMFLOAT3{ 1.0f,1.0f,1.0f };
 			buf["specularIntensity"] = 0.1f;
 			buf["specularPower"] = 20.f;
-			only.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
+			only.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEx>(gfx, buf, 1u));
 
 			only.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
 
@@ -82,7 +82,7 @@ TestCube::TestCube(Graphics& gfx, float size)
 			lay.Add<DynamicConstBuf::Float4>("color");
 			auto buf = DynamicConstBuf::Buffer(std::move(lay));
 			buf["color"] = DirectX::XMFLOAT4{ 1.f, 0.4f, 0.4f, 1.f };
-			draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
+			draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEx>(gfx, buf, 1u));
 
 			// TODO: better sub-layout generation tech for future consideration maybe
 			draw.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
