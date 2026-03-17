@@ -32,8 +32,8 @@ App::App(const std::string& commandLine)
 	
 	TestScaleMatrixTranslation();
 	//TestMaterialSystemLoading(wnd.Gfx());
-	//cube.SetPos({ 4.0f,0.0f,0.0f });
-	//cube2.SetPos({ 0.0f,4.0f,0.0f });
+	cube.SetPos({ 4.0f,0.0f,0.0f });
+	cube2.SetPos({ 0.0f,4.0f,0.0f });
 	
 	//wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
 	//plane.SetPos({ 12.0f,0.0f,0.0f });
@@ -61,9 +61,10 @@ void App::DoFrame()
 	//goblin.Submit(frameCommander);
 
 	light.Submit(frameCommander);
+	cube.Submit(frameCommander);
 	sponza.Submit(frameCommander);
-	//cube.Submit(frameCommander);
-	//cube2.Submit(frameCommander);
+	cube2.Submit(frameCommander);
+
 	//bluePlane.Draw(wnd.Gfx());
 	//redPlane.Draw(wnd.Gfx());
 	frameCommander.Execute(wnd.Gfx());
@@ -291,8 +292,8 @@ void App::DoFrame()
 	cam.SpawnControlWindow();
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
-	//cube.SpawnControlWindow(wnd.Gfx(), "Cube 1");
-	//cube2.SpawnControlWindow(wnd.Gfx(), "Cube 2");
+	cube.SpawnControlWindow(wnd.Gfx(), "Cube 1");
+	cube2.SpawnControlWindow(wnd.Gfx(), "Cube 2");
 	//goblin.ShowWindow(wnd.Gfx(), "Goblin");
 	//wall.ShowWindow(wnd.Gfx(), "Wall");
 	//plane.SpawnControlWindow(wnd.Gfx());

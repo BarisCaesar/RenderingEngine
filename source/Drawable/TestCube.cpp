@@ -35,9 +35,11 @@ TestCube::TestCube(Graphics& gfx, float size)
 			only.AddBindable(PixelShader::Resolve(gfx, "PhongDiffuse_PS.cso"));
 
 			DynamicConstBuf::RawLayout lay;
+			lay.Add<DynamicConstBuf::Float3>("specularColor");
 			lay.Add<DynamicConstBuf::Float>("specularIntensity");
 			lay.Add<DynamicConstBuf::Float>("specularPower");
 			auto buf = DynamicConstBuf::Buffer(std::move(lay));
+			buf["specularColor"] = dx::XMFLOAT3{ 1.0f,1.0f,1.0f };
 			buf["specularIntensity"] = 0.1f;
 			buf["specularPower"] = 20.f;
 			only.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEX>(gfx, buf, 1u));
