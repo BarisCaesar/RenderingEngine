@@ -33,7 +33,7 @@ private:
 	Timer timer;
 	float speedFactor = 1.f;
 	Camera cam;
-	FrameCommander frameCommander;
+	FrameCommander frameCommander{wnd.Gfx()};
 	PointLight light;
 	TestCube cube = { wnd.Gfx(), 4.f };
 	TestCube cube2 = { wnd.Gfx(), 4.f };
