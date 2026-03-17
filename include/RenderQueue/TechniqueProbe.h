@@ -28,7 +28,10 @@ public:
 protected:
 	virtual void OnSetTechnique() {}
 	virtual void OnSetStep() {}
-	virtual bool OnVisitBuffer(class DynamicConstBuf::Buffer&) = 0;
+	virtual bool OnVisitBuffer(class DynamicConstBuf::Buffer&)
+	{
+		return false;
+	}
 protected:
 	class Technique* pTech;
 	class Step* pStep;

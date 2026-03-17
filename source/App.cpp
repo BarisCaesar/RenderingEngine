@@ -252,6 +252,28 @@ void App::DoFrame()
 			);
 			if (ImGui::IsItemClicked())
 			{
+				// used to change the highlighted node on selection change
+				struct Probe : public TechniqueProbe
+				{
+					virtual void OnSetTechnique()
+					{
+						if (pTech->GetName() == "Outline")
+						{
+							pTech->SetActiveState(highlighted);
+						}
+					}
+					bool highlighted = false;
+				}probe;
+
+				// remove the highlight on previously selected node
+				if (pSelectedNode != nullptr)
+				{
+					pSelectedNode->Accept(probe);
+				}
+				// add highlight to newly selected node
+				probe.highlighted = true;
+				node.Accept(probe);
+
 				pSelectedNode = &node;
 			}
 			return expanded;
