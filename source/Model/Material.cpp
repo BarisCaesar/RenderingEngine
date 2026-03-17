@@ -149,58 +149,26 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 
 			draw.AddBindable(PixelShader::Resolve(gfx, "Solid_PS.cso"));
 
-			DynamicConstBuf::RawLayout lay;
-			lay.Add<DynamicConstBuf::Float3>("materialColor");
-			auto buf = DynamicConstBuf::Buffer(std::move(lay));
-			buf["materialColor"] = DirectX::XMFLOAT3{ 1.f, 0.4f, 0.4f };
-			draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEx>(gfx, buf, 1u));
-
-			//Dcb::RawLayout lay;
-			//lay.Add<Dcb::Float>( "offset" );
-			//auto buf = Dcb::Buffer( std::move( lay ) );
-			//buf["offset"] = 0.5f;                  
-			//draw.AddBindable( std::make_shared<Bind::CachingVertexConstantBufferEx>( gfx,buf,1u ) );
+			{
+				DynamicConstBuf::RawLayout lay;
+				lay.Add<DynamicConstBuf::Float3>("materialColor");
+				auto buf = DynamicConstBuf::Buffer(std::move(lay));
+				buf["materialColor"] = DirectX::XMFLOAT3{ 1.f, 0.4f, 0.4f };
+				draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEx>(gfx, buf, 1u));
+			}
+			
+			{
+				DynamicConstBuf::RawLayout lay;
+				lay.Add<DynamicConstBuf::Float>( "offset" );
+				auto buf = DynamicConstBuf::Buffer( std::move( lay ) );
+				buf["offset"] = 0.1f;                  
+				draw.AddBindable( std::make_shared<Bind::CachingVertexConstantBufferEx>( gfx,buf,1u ) );
+			}
+		
 
 			draw.AddBindable(InputLayout::Resolve(gfx, vertexLayout, pvsbc));
 
-			class TransformCBufScaling : public TransformCBuf
-			{
-			public:
-				TransformCBufScaling(Graphics& gfx, float scale = 1.04)
-					:
-					TransformCBuf(gfx),
-					buf(MakeLayout())
-				{
-					buf["scale"] = scale;
-				}
-				void Accept(TechniqueProbe& probe) override
-				{
-					probe.VisitBuffer(buf);
-				}
-				void Bind(Graphics& gfx) noexcept override
-				{
-					const float scale = buf["scale"];
-					const auto scaleMatrix = DirectX::XMMatrixScaling(scale, scale, scale);
-					auto xf = GetTransforms(gfx);
-					xf.modelView = xf.modelView * scaleMatrix;
-					xf.modelViewProj = xf.modelViewProj * scaleMatrix;
-					UpdateBindImpl(gfx, xf);
-				}
-				std::unique_ptr<CloningBindable> Clone() const noexcept override
-				{
-					return std::make_unique<TransformCBufScaling>(*this);
-				}
-			private:
-				static DynamicConstBuf::RawLayout MakeLayout()
-				{
-					DynamicConstBuf::RawLayout layout;
-					layout.Add<DynamicConstBuf::Float>("scale");
-					return layout;
-				}
-			private:
-				DynamicConstBuf::Buffer buf;
-			};
-			draw.AddBindable(std::make_shared<TransformCBufScaling>(gfx));
+			draw.AddBindable(std::make_shared<TransformCBuf>(gfx));
 
 			outline.AddStep(std::move(draw));
 		}
