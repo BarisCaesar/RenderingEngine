@@ -60,6 +60,7 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 				hasGlossAlpha = tex->HasAlpha();
 				step.AddBindable(std::move(tex));
 				pscLayout.Add<DynamicConstBuf::Bool>("useGlossAlpha");
+				pscLayout.Add<DynamicConstBuf::Bool>("useSpecularMap");
 			}
 			pscLayout.Add<DynamicConstBuf::Float3>("specularColor");
 			pscLayout.Add<DynamicConstBuf::Float>("specularWeight");
@@ -101,6 +102,7 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 				r = reinterpret_cast<DirectX::XMFLOAT3&>(color);
 			}
 			buf["useGlossAlpha"].SetIfExists(hasGlossAlpha);
+			buf["useSpecularMap"].SetIfExists(true);
 			if (auto r = buf["specularColor"]; r.Exists())
 			{
 				aiColor3D color = { 0.18f,0.18f,0.18f };
