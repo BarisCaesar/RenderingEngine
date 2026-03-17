@@ -15,6 +15,7 @@
 #include "DynamicConstant.h"
 #include "ModelProbe.h"
 #include "Node.h"
+#include "RXM.h"
 
 
 namespace dx = DirectX;
@@ -29,6 +30,7 @@ App::App(const std::string& commandLine)
 	light(wnd.Gfx())
 {
 	
+	TestScaleMatrixTranslation();
 	//TestMaterialSystemLoading(wnd.Gfx());
 	//cube.SetPos({ 4.0f,0.0f,0.0f });
 	//cube2.SetPos({ 0.0f,4.0f,0.0f });
@@ -198,6 +200,26 @@ void App::DoFrame()
 			ImGui::NextColumn();
 			if (pSelectedNode != nullptr)
 			{
+				bool dirty = false;
+				const auto dcheck = [&dirty](bool changed) {dirty = dirty || changed; };
+				auto& tf = ResolveTransform();
+				ImGui::TextColored({ 0.4f,1.0f,0.6f,1.0f }, "Translation");
+				dcheck(ImGui::SliderFloat("X", &tf.x, -60.f, 60.f));
+				dcheck(ImGui::SliderFloat("Y", &tf.y, -60.f, 60.f));
+				dcheck(ImGui::SliderFloat("Z", &tf.z, -60.f, 60.f));
+				ImGui::TextColored({ 0.4f,1.0f,0.6f,1.0f }, "Orientation");
+				dcheck(ImGui::SliderAngle("X-Rotation", &tf.xRot, -180.0f, 180.0f));
+				dcheck(ImGui::SliderAngle("Y-Rotation", &tf.yRot, -180.0f, 180.0f));
+				dcheck(ImGui::SliderAngle("Z-Rotation", &tf.zRot, -180.0f, 180.0f));
+				if (dirty)
+				{
+					pSelectedNode->SetAppliedTransform(
+						dx::XMMatrixRotationX(tf.xRot) *
+						dx::XMMatrixRotationY(tf.yRot) *
+						dx::XMMatrixRotationZ(tf.zRot) *
+						dx::XMMatrixTranslation(tf.x, tf.y, tf.z)
+					);
+				}
 			}
 			ImGui::End();
 		}
@@ -224,8 +246,43 @@ void App::DoFrame()
 		{
 			ImGui::TreePop();
 		}
-	protected:
+	private:
 		Node* pSelectedNode = nullptr;
+		struct TransformParameters
+		{
+			float xRot = 0.0f;
+			float yRot = 0.0f;
+			float zRot = 0.0f;
+			float x = 0.0f;
+			float y = 0.0f;
+			float z = 0.0f;
+		};
+		std::unordered_map<int, TransformParameters> transformParams;
+	private:
+		TransformParameters& ResolveTransform() noexcept
+		{
+			const auto id = pSelectedNode->GetId();
+			auto i = transformParams.find(id);
+			if (i == transformParams.end())
+			{
+				return LoadTransform(id);
+			}
+			return i->second;
+		}
+		TransformParameters& LoadTransform(int id) noexcept
+		{
+			const auto& applied = pSelectedNode->GetAppliedTransform();
+			const auto angles = ExtractEulerAngles(applied);
+			const auto translation = ExtractTranslation(applied);
+			TransformParameters tp;
+			tp.zRot = angles.z;
+			tp.xRot = angles.x;
+			tp.yRot = angles.y;
+			tp.x = translation.x;
+			tp.y = translation.y;
+			tp.z = translation.z;
+			return transformParams.insert({ id,{ tp } }).first->second;
+		}
 	};
 	static MProbe modelProbe;
 	

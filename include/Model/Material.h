@@ -15,7 +15,7 @@ public:
 	
 	std::vector<unsigned short> ExtractIndices(const aiMesh& mesh) const noexcept;
 	
-	std::shared_ptr<Bind::VertexBuffer> MakeVertexBindable(Graphics& gfx, const aiMesh& mesh) const noxnd;
+	std::shared_ptr<Bind::VertexBuffer> MakeVertexBindable(Graphics& gfx, const aiMesh& mesh, float scale = 1.f) const noxnd;
 	
 	std::shared_ptr<Bind::IndexBuffer> MakeIndexBindable(Graphics& gfx, const aiMesh& mesh) const noxnd;
 	
