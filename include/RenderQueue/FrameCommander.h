@@ -6,14 +6,36 @@
 #include "Pass.h"
 #include "PerfLog.h"
 #include "DepthStencil.h"
+#include "RenderTarget.h"
+#include <array>
 
 class FrameCommander
 {
 public:
 	FrameCommander(Graphics& gfx)
 		:
-		depthStencil(gfx, gfx.GetWidth(), gfx.GetHeight())
-	{}
+		depthStencil(gfx, gfx.GetWidth(), gfx.GetHeight()),
+		renderTarget(gfx, gfx.GetWidth(), gfx.GetHeight())
+	{
+		namespace dx = DirectX;
+
+		// setup for fullscreen geometry
+		DynamicVertex::VertexLayout layout;
+		layout.Append(DynamicVertex::VertexLayout::Position2D);
+		DynamicVertex::VertexBuffer bufFull{ layout };
+		bufFull.EmplaceBack(dx::XMFLOAT2{ -1,1 });
+		bufFull.EmplaceBack(dx::XMFLOAT2{ 1,1 });
+		bufFull.EmplaceBack(dx::XMFLOAT2{ -1,-1 });
+		bufFull.EmplaceBack(dx::XMFLOAT2{ 1,-1 });
+		pVertexBufferFull = Bind::VertexBuffer::Resolve(gfx, "$Full", std::move(bufFull));
+		std::vector<unsigned short> indices = { 0, 1, 2, 1, 3, 2 };
+		pIndexBufferFull = Bind::IndexBuffer::Resolve(gfx, "$Full", std::move(indices));
+
+		// setup fullscreen shaders
+		pPixelShaderFull = Bind::PixelShader::Resolve(gfx, "Negative_PS.cso");
+		pVertexShaderFull = Bind::VertexShader::Resolve(gfx, "Fullscreen_VS.cso");
+		pLayoutFull = Bind::InputLayout::Resolve(gfx, layout, pVertexShaderFull->GetBytecode());
+	}
 	void Accept(Job job, size_t target) noexcept
 	{
 		passes[target].Accept(job);
@@ -23,9 +45,9 @@ public:
 		using namespace Bind;
 
 
-		// setup render target used for all passes
+		// setup render target used for normal passes
 		depthStencil.Clear(gfx);
-		gfx.BindSwapBuffer(depthStencil);
+		renderTarget.BindAsTarget(gfx, depthStencil);
 		// main phong lighting pass
 		Stencil::Resolve(gfx, Stencil::Mode::Off)->Bind(gfx);
 		passes[0].Execute(gfx);
@@ -36,6 +58,15 @@ public:
 		// outline drawing pass
 		Stencil::Resolve(gfx, Stencil::Mode::Mask)->Bind(gfx);
 		passes[2].Execute(gfx);
+		// fullscreen negative pass
+		gfx.BindSwapBuffer();
+		renderTarget.BindAsTexture(gfx, 0);
+		pVertexBufferFull->Bind(gfx);
+		pIndexBufferFull->Bind(gfx);
+		pVertexShaderFull->Bind(gfx);
+		pPixelShaderFull->Bind(gfx);
+		pLayoutFull->Bind(gfx);
+		gfx.DrawIndexed(pIndexBufferFull->GetCount());
 	}
 	void Reset() noexcept
 	{
@@ -47,4 +78,10 @@ public:
 private:
 	std::array<Pass, 3> passes;
 	DepthStencil depthStencil;
+	RenderTarget renderTarget;
+	std::shared_ptr<Bind::VertexBuffer> pVertexBufferFull;
+	std::shared_ptr<Bind::IndexBuffer> pIndexBufferFull;
+	std::shared_ptr<Bind::VertexShader> pVertexShaderFull;
+	std::shared_ptr<Bind::PixelShader> pPixelShaderFull;
+	std::shared_ptr<Bind::InputLayout> pLayoutFull;
 };
