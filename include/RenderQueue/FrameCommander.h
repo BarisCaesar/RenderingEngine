@@ -35,6 +35,7 @@ public:
 		pPixelShaderFull = Bind::PixelShader::Resolve(gfx, "Blur_PS.cso");
 		pVertexShaderFull = Bind::VertexShader::Resolve(gfx, "Fullscreen_VS.cso");
 		pLayoutFull = Bind::InputLayout::Resolve(gfx, layout, pVertexShaderFull->GetBytecode());
+		pSamplerFull = Bind::Sampler::Resolve(gfx, false, true);
 	}
 	void Accept(Job job, size_t target) noexcept
 	{
@@ -66,6 +67,7 @@ public:
 		pVertexShaderFull->Bind(gfx);
 		pPixelShaderFull->Bind(gfx);
 		pLayoutFull->Bind(gfx);
+		pSamplerFull->Bind(gfx);
 		gfx.DrawIndexed(pIndexBufferFull->GetCount());
 	}
 	void Reset() noexcept
@@ -84,4 +86,5 @@ private:
 	std::shared_ptr<Bind::VertexShader> pVertexShaderFull;
 	std::shared_ptr<Bind::PixelShader> pPixelShaderFull;
 	std::shared_ptr<Bind::InputLayout> pLayoutFull;
+	std::shared_ptr<Bind::Sampler> pSamplerFull;
 };
