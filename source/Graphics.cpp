@@ -124,7 +124,7 @@ void Graphics::BeginFrame(float red, float green, float blue) noexcept
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 	}
-	const float color[4] = { red, green, blue, 1.f };
+	const float color[4] = { red, green, blue, 0.f };
 	pContext->ClearRenderTargetView(pTarget.Get(), color);
 }
 

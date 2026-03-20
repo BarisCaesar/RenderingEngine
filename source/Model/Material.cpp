@@ -142,7 +142,7 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 		{
 			Step draw(2);
 
-			auto pvs = VertexShader::Resolve(gfx, "Offset_VS.cso");
+			auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
 			auto pvsbc = pvs->GetBytecode();
 			
 			draw.AddBindable(std::move(pvs));

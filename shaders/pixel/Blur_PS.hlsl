@@ -1,7 +1,7 @@
 Texture2D tex;
 SamplerState samplerState;
 
-static const int r = 3;
+static const int r = 7;
 static const float divisor = (r * 2 + 1) * (r * 2 + 1);
 
 float4 main(float2 uv : Texcoord) : SV_Target
