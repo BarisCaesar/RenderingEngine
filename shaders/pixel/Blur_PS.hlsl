@@ -19,13 +19,13 @@ float4 main(float2 uv : Texcoord) : SV_Target
     float dx, dy;
     if(horizontal)
     {
-        dx = 1 / width;
+        dx = 1.f / width;
         dy = 0.f;
     }
     else
     {
         dx = 0.f;
-        dy = 1 / height;
+        dy = 1.f / height;
     }
     const int r = nTaps / 2;
 

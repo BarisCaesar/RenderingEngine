@@ -7,6 +7,7 @@
 #include "PerfLog.h"
 #include "DepthStencil.h"
 #include "RenderTarget.h"
+#include "BlurPack.h"
 #include <array>
 
 class FrameCommander
@@ -15,7 +16,9 @@ public:
 	FrameCommander(Graphics& gfx)
 		:
 		depthStencil(gfx, gfx.GetWidth(), gfx.GetHeight()),
-		renderTarget(gfx, gfx.GetWidth(), gfx.GetHeight())
+		renderTarget1(gfx, gfx.GetWidth(), gfx.GetHeight()),
+		renderTarget2(gfx, gfx.GetWidth(), gfx.GetHeight()),
+		blur(gfx)
 	{
 		namespace dx = DirectX;
 
@@ -32,48 +35,43 @@ public:
 		pIndexBufferFull = Bind::IndexBuffer::Resolve(gfx, "$Full", std::move(indices));
 
 		// setup fullscreen shaders
-		pPixelShaderFull = Bind::PixelShader::Resolve(gfx, "BlurOutline_PS.cso");
 		pVertexShaderFull = Bind::VertexShader::Resolve(gfx, "Fullscreen_VS.cso");
 		pLayoutFull = Bind::InputLayout::Resolve(gfx, layout, pVertexShaderFull->GetBytecode());
 		pSamplerFull = Bind::Sampler::Resolve(gfx, false, true);
-		pBlenderFull = Bind::Blender::Resolve(gfx, true);
 	}
 	void Accept(Job job, size_t target) noexcept
 	{
 		passes[target].Accept(job);
 	}
-	void Execute(Graphics& gfx) const noxnd
+	void Execute(Graphics& gfx) noxnd
 	{
 		using namespace Bind;
 
 
 		// setup render target used for normal passes
 		depthStencil.Clear(gfx);
-		renderTarget.Clear(gfx);
-		gfx.BindSwapBuffer(depthStencil);
+		renderTarget1.Clear(gfx);
+		renderTarget1.BindAsTarget(gfx, depthStencil);
 		// main phong lighting pass
 		Blender::Resolve(gfx, false)->Bind(gfx);
 		Stencil::Resolve(gfx, Stencil::Mode::Off)->Bind(gfx);
 		passes[0].Execute(gfx);
-		// outline masking pass
-		Stencil::Resolve(gfx, Stencil::Mode::Write)->Bind(gfx);
-		NullPixelShader::Resolve(gfx)->Bind(gfx);
-		passes[1].Execute(gfx);
-		// outline drawing pass
-		renderTarget.BindAsTarget(gfx);
-		Stencil::Resolve(gfx, Stencil::Mode::Off)->Bind(gfx);
-		passes[2].Execute(gfx);
-		// fullscreen blur + blend pass
-		gfx.BindSwapBuffer(depthStencil);
-		renderTarget.BindAsTexture(gfx, 0);
+		// fullscreen blur h-pass
+		renderTarget2.BindAsTarget(gfx);
+		renderTarget1.BindAsTexture(gfx, 0);
+		
 		pVertexBufferFull->Bind(gfx);
 		pIndexBufferFull->Bind(gfx);
 		pVertexShaderFull->Bind(gfx);
-		pPixelShaderFull->Bind(gfx);
 		pLayoutFull->Bind(gfx);
 		pSamplerFull->Bind(gfx);
-		pBlenderFull->Bind(gfx);
-		Stencil::Resolve(gfx, Stencil::Mode::Mask)->Bind(gfx);
+		blur.Bind(gfx);
+		blur.SetHorizontal(gfx);
+		gfx.DrawIndexed(pIndexBufferFull->GetCount());
+		// fulscreen blue v-pass
+		gfx.BindSwapBuffer();
+		renderTarget2.BindAsTexture(gfx, 0u);
+		blur.SetVertical(gfx);
 		gfx.DrawIndexed(pIndexBufferFull->GetCount());
 	}
 	void Reset() noexcept
@@ -86,12 +84,12 @@ public:
 private:
 	std::array<Pass, 3> passes;
 	DepthStencil depthStencil;
-	RenderTarget renderTarget;
+	RenderTarget renderTarget1;
+	RenderTarget renderTarget2;
+	BlurPack blur;
 	std::shared_ptr<Bind::VertexBuffer> pVertexBufferFull;
 	std::shared_ptr<Bind::IndexBuffer> pIndexBufferFull;
 	std::shared_ptr<Bind::VertexShader> pVertexShaderFull;
-	std::shared_ptr<Bind::PixelShader> pPixelShaderFull;
 	std::shared_ptr<Bind::InputLayout> pLayoutFull;
 	std::shared_ptr<Bind::Sampler> pSamplerFull;
-	std::shared_ptr<Bind::Blender> pBlenderFull;
 };
