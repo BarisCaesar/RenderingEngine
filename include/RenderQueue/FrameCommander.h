@@ -81,6 +81,10 @@ public:
 			p.Reset();
 		}
 	}
+	void ShowWindows(Graphics& gfx)
+	{
+		blur.ShowWindow(gfx);
+	}
 private:
 	std::array<Pass, 3> passes;
 	DepthStencil depthStencil;
