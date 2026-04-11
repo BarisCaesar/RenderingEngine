@@ -18,7 +18,7 @@ public:
 		depthStencil(gfx, gfx.GetWidth(), gfx.GetHeight()),
 		renderTarget1(gfx, gfx.GetWidth(), gfx.GetHeight()),
 		renderTarget2(gfx, gfx.GetWidth(), gfx.GetHeight()),
-		blur(gfx)
+		blur(gfx, 7, 2.6, "BlurOutline_PS.cso")
 	{
 		namespace dx = DirectX;
 
@@ -38,6 +38,7 @@ public:
 		pVertexShaderFull = Bind::VertexShader::Resolve(gfx, "Fullscreen_VS.cso");
 		pLayoutFull = Bind::InputLayout::Resolve(gfx, layout, pVertexShaderFull->GetBytecode());
 		pSamplerFull = Bind::Sampler::Resolve(gfx, false, true);
+		pBlenderMerge = Bind::Blender::Resolve(gfx, true);
 	}
 	void Accept(Job job, size_t target) noexcept
 	{
@@ -51,15 +52,23 @@ public:
 		// setup render target used for normal passes
 		depthStencil.Clear(gfx);
 		renderTarget1.Clear(gfx);
-		renderTarget1.BindAsTarget(gfx, depthStencil);
+		gfx.BindSwapBuffer(depthStencil);
 		// main phong lighting pass
 		Blender::Resolve(gfx, false)->Bind(gfx);
 		Stencil::Resolve(gfx, Stencil::Mode::Off)->Bind(gfx);
 		passes[0].Execute(gfx);
-		// fullscreen blur h-pass
+		// outline masking pass
+		Stencil::Resolve(gfx, Stencil::Mode::Write)->Bind(gfx);
+		NullPixelShader::Resolve(gfx)->Bind(gfx);
+		passes[1].Execute(gfx);
+		// outline drawing pass
+		renderTarget1.BindAsTarget(gfx);
+		Stencil::Resolve(gfx, Stencil::Mode::Off)->Bind(gfx);
+		passes[2].Execute(gfx);
+		
+		// fullscreen blue h-pass
 		renderTarget2.BindAsTarget(gfx);
 		renderTarget1.BindAsTexture(gfx, 0);
-		
 		pVertexBufferFull->Bind(gfx);
 		pIndexBufferFull->Bind(gfx);
 		pVertexShaderFull->Bind(gfx);
@@ -68,9 +77,11 @@ public:
 		blur.Bind(gfx);
 		blur.SetHorizontal(gfx);
 		gfx.DrawIndexed(pIndexBufferFull->GetCount());
-		// fulscreen blue v-pass
-		gfx.BindSwapBuffer();
+		// fulscreen blue v-pass + combine
+		gfx.BindSwapBuffer(depthStencil);
 		renderTarget2.BindAsTexture(gfx, 0u);
+		pBlenderMerge->Bind(gfx);
+		Stencil::Resolve(gfx, Stencil::Mode::Mask)->Bind(gfx);
 		blur.SetVertical(gfx);
 		gfx.DrawIndexed(pIndexBufferFull->GetCount());
 	}
@@ -96,4 +107,5 @@ private:
 	std::shared_ptr<Bind::VertexShader> pVertexShaderFull;
 	std::shared_ptr<Bind::InputLayout> pLayoutFull;
 	std::shared_ptr<Bind::Sampler> pSamplerFull;
+	std::shared_ptr<Bind::Blender> pBlenderMerge;
 };
