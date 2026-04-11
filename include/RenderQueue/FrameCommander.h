@@ -16,8 +16,8 @@ public:
 	FrameCommander(Graphics& gfx)
 		:
 		depthStencil(gfx, gfx.GetWidth(), gfx.GetHeight()),
-		renderTarget1(gfx, gfx.GetWidth(), gfx.GetHeight()),
-		renderTarget2(gfx, gfx.GetWidth(), gfx.GetHeight()),
+		renderTarget1(gfx, gfx.GetWidth() / 2, gfx.GetHeight() / 2),
+		renderTarget2(gfx, gfx.GetWidth() / 2, gfx.GetHeight() / 2),
 		blur(gfx, 7, 2.6, "BlurOutline_PS.cso")
 	{
 		namespace dx = DirectX;
@@ -37,7 +37,8 @@ public:
 		// setup fullscreen shaders
 		pVertexShaderFull = Bind::VertexShader::Resolve(gfx, "Fullscreen_VS.cso");
 		pLayoutFull = Bind::InputLayout::Resolve(gfx, layout, pVertexShaderFull->GetBytecode());
-		pSamplerFull = Bind::Sampler::Resolve(gfx, false, true);
+		pSamplerFullPoint = Bind::Sampler::Resolve(gfx, false, true);
+		pSamplerFullBilinear = Bind::Sampler::Resolve(gfx, true, true);
 		pBlenderMerge = Bind::Blender::Resolve(gfx, true);
 	}
 	void Accept(Job job, size_t target) noexcept
@@ -73,7 +74,7 @@ public:
 		pIndexBufferFull->Bind(gfx);
 		pVertexShaderFull->Bind(gfx);
 		pLayoutFull->Bind(gfx);
-		pSamplerFull->Bind(gfx);
+		pSamplerFullPoint->Bind(gfx);
 		blur.Bind(gfx);
 		blur.SetHorizontal(gfx);
 		gfx.DrawIndexed(pIndexBufferFull->GetCount());
@@ -81,6 +82,7 @@ public:
 		gfx.BindSwapBuffer(depthStencil);
 		renderTarget2.BindAsTexture(gfx, 0u);
 		pBlenderMerge->Bind(gfx);
+		pSamplerFullBilinear->Bind(gfx);
 		Stencil::Resolve(gfx, Stencil::Mode::Mask)->Bind(gfx);
 		blur.SetVertical(gfx);
 		gfx.DrawIndexed(pIndexBufferFull->GetCount());
@@ -106,6 +108,7 @@ private:
 	std::shared_ptr<Bind::IndexBuffer> pIndexBufferFull;
 	std::shared_ptr<Bind::VertexShader> pVertexShaderFull;
 	std::shared_ptr<Bind::InputLayout> pLayoutFull;
-	std::shared_ptr<Bind::Sampler> pSamplerFull;
+	std::shared_ptr<Bind::Sampler> pSamplerFullPoint;
+	std::shared_ptr<Bind::Sampler> pSamplerFullBilinear;
 	std::shared_ptr<Bind::Blender> pBlenderMerge;
 };
