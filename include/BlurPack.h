@@ -30,9 +30,9 @@ public:
 	{
 		controlConstBuf.Update(gfx, { FALSE });
 	}
-	void ShowWindow(Graphics& gfx)
+	void RenderWidgets(Graphics& gfx)
 	{
-		ImGui::Begin("Blur");
+
 
 		bool filterChanged = false;
 		{
@@ -78,7 +78,7 @@ public:
 				SetKernelBox(gfx, radius);
 			}
 		}
-		ImGui::End();
+	
 	}
 	
 	// for more accurate coefs, need to integrate

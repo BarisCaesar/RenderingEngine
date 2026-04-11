@@ -16,8 +16,8 @@ public:
 	FrameCommander(Graphics& gfx)
 		:
 		depthStencil(gfx, gfx.GetWidth(), gfx.GetHeight()),
-		renderTarget1(gfx, gfx.GetWidth() / 2, gfx.GetHeight() / 2),
-		renderTarget2(gfx, gfx.GetWidth() / 2, gfx.GetHeight() / 2),
+		renderTarget1({ gfx, gfx.GetWidth() / downFactor, gfx.GetHeight() / downFactor }),
+		renderTarget2({gfx, gfx.GetWidth() / 2, gfx.GetHeight() / 2}),
 		blur(gfx, 7, 2.6, "BlurOutline_PS.cso")
 	{
 		namespace dx = DirectX;
@@ -52,7 +52,7 @@ public:
 
 		// setup render target used for normal passes
 		depthStencil.Clear(gfx);
-		renderTarget1.Clear(gfx);
+		renderTarget1->Clear(gfx);
 		gfx.BindSwapBuffer(depthStencil);
 		// main phong lighting pass
 		Blender::Resolve(gfx, false)->Bind(gfx);
@@ -63,13 +63,13 @@ public:
 		NullPixelShader::Resolve(gfx)->Bind(gfx);
 		passes[1].Execute(gfx);
 		// outline drawing pass
-		renderTarget1.BindAsTarget(gfx);
+		renderTarget1->BindAsTarget(gfx);
 		Stencil::Resolve(gfx, Stencil::Mode::Off)->Bind(gfx);
 		passes[2].Execute(gfx);
 		
 		// fullscreen blue h-pass
-		renderTarget2.BindAsTarget(gfx);
-		renderTarget1.BindAsTexture(gfx, 0);
+		renderTarget2->BindAsTarget(gfx);
+		renderTarget1->BindAsTexture(gfx, 0);
 		pVertexBufferFull->Bind(gfx);
 		pIndexBufferFull->Bind(gfx);
 		pVertexShaderFull->Bind(gfx);
@@ -80,7 +80,7 @@ public:
 		gfx.DrawIndexed(pIndexBufferFull->GetCount());
 		// fulscreen blue v-pass + combine
 		gfx.BindSwapBuffer(depthStencil);
-		renderTarget2.BindAsTexture(gfx, 0u);
+		renderTarget2->BindAsTexture(gfx, 0u);
 		pBlenderMerge->Bind(gfx);
 		pSamplerFullBilinear->Bind(gfx);
 		Stencil::Resolve(gfx, Stencil::Mode::Mask)->Bind(gfx);
@@ -96,13 +96,23 @@ public:
 	}
 	void ShowWindows(Graphics& gfx)
 	{
-		blur.ShowWindow(gfx);
+		if (ImGui::Begin("Blur"))
+		{
+			if (ImGui::SliderInt("Down Factor", &downFactor, 1, 16))
+			{
+				renderTarget1.emplace(gfx, gfx.GetWidth() / downFactor, gfx.GetHeight() / downFactor);
+				renderTarget2.emplace(gfx, gfx.GetWidth() / downFactor, gfx.GetHeight() / downFactor);
+			}
+			blur.RenderWidgets(gfx);
+		}
+		ImGui::End();
 	}
 private:
 	std::array<Pass, 3> passes;
+	int downFactor = 1;
 	DepthStencil depthStencil;
-	RenderTarget renderTarget1;
-	RenderTarget renderTarget2;
+	std::optional<RenderTarget> renderTarget1;
+	std::optional<RenderTarget> renderTarget2;
 	BlurPack blur;
 	std::shared_ptr<Bind::VertexBuffer> pVertexBufferFull;
 	std::shared_ptr<Bind::IndexBuffer> pIndexBufferFull;
