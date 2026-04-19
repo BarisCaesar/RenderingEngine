@@ -29,7 +29,7 @@ assimp/include
 dxtex/include
 include
 include/Bindables
-include/RenderQueue
+include/RenderGraph
 include/Model
 include/Macros
 include/Geometry
