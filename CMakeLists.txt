@@ -30,6 +30,7 @@ dxtex/include
 include
 include/Bindables
 include/RenderGraph
+include/RenderGraph/Passes
 include/Model
 include/Macros
 include/Geometry

@@ -4,11 +4,13 @@
 #include <d3dcompiler.h>
 #include <cmath>
 #include <DirectXMath.h>
+#include <array>
 #include "GraphicsThrowMacros.h"
 #include "imgui/imgui_impl_dx11.h"
 #include "imgui/imgui_impl_win32.h"
 #include "ConditionalNoexcept.h"
 #include "DepthStencil.h"
+#include "RenderTarget.h"
 
 namespace wrl = Microsoft::WRL;
 
@@ -66,10 +68,19 @@ Graphics::Graphics(HWND hWnd, int width, int height)
 
 	
 	// gain access to texture subresource in swap chain (back buffer)
-	wrl::ComPtr<ID3D11Resource> pBackBuffer;
-	GFX_THROW_INFO(pSwap->GetBuffer(0, __uuidof(ID3D11Resource), &pBackBuffer));
-	GFX_THROW_INFO(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pTarget));
-
+	wrl::ComPtr<ID3D11Texture2D> pBackBuffer;
+	GFX_THROW_INFO(pSwap->GetBuffer(0, __uuidof(ID3D11Texture2D), &pBackBuffer));
+	pTarget = std::shared_ptr<Bind::RenderTarget>{ new Bind::OutputOnlyRenderTarget(*this,pBackBuffer.Get()) };
+	
+	// viewport always fullscreen (for now)
+	D3D11_VIEWPORT vp;
+	vp.Width = (float)width;
+	vp.Height = (float)height;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+	pContext->RSSetViewports(1u, &vp);
 
 	// init imgui d3d impl
 	ImGui_ImplDX11_Init(pDevice.Get(), pContext.Get());
@@ -114,39 +125,8 @@ void Graphics::BeginFrame(float red, float green, float blue) noexcept
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 	}
-	const float color[4] = { red, green, blue, 0.f };
-	pContext->ClearRenderTargetView(pTarget.Get(), color);
 }
 
-void Graphics::BindSwapBuffer() noexcept
-{
-	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), nullptr);
-
-	// configure viewport
-	D3D11_VIEWPORT vp;
-	vp.Width = (float)width;
-	vp.Height = (float)height;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
-	pContext->RSSetViewports(1u, &vp);
-}
-
-void Graphics::BindSwapBuffer(const DepthStencil& depthStencil) noexcept
-{
-	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), depthStencil.pDepthStencilView.Get());
-
-	// configure viewport
-	D3D11_VIEWPORT vp;
-	vp.Width = (float)width;
-	vp.Height = (float)height;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0.0f;
-	vp.TopLeftY = 0.0f;
-	pContext->RSSetViewports(1u, &vp);
-}
 
 void Graphics::DrawIndexed(UINT count) noxnd
 {
@@ -196,6 +176,11 @@ UINT Graphics::GetWidth() const noexcept
 UINT Graphics::GetHeight() const noexcept
 {
 	return height;
+}
+
+std::shared_ptr<Bind::RenderTarget> Graphics::GetTarget()
+{
+	return pTarget;
 }
 
 

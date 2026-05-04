@@ -1,15 +1,24 @@
 #include "Step.h"
 #include "Drawable.h"
-#include "FrameCommander.h"
+#include "RenderGraph.h"
 #include "TechniqueProbe.h"
+#include "RenderQueuePass.h"
 
-Step::Step(size_t targetPass_in)
+
+Step::Step(std::string targetPassName_in)
 	:
-	targetPass{ targetPass_in }
+	targetPassName{ std::move(targetPassName_in) }
 {}
+
+void Step::Submit(const Drawable& drawable) const
+{
+	pTargetPass->Accept(Job{ this, &drawable });
+}
+
+
 Step::Step(const Step& src) noexcept
 	:
-	targetPass{ src.targetPass }
+	targetPassName{ src.targetPassName }
 {
 	bindables.reserve(src.bindables.size());
 	for (auto& pb : src.bindables)
@@ -29,10 +38,7 @@ void Step::AddBindable(std::shared_ptr<Bind::Bindable> bind_in)
 	bindables.push_back(std::move(bind_in));
 }
 
-void Step::Submit(FrameCommander& frame, const Drawable& drawable) const
-{
-	frame.Accept(Job{ this, &drawable }, targetPass);
-}
+
 
 void Step::Bind(Graphics& gfx) const
 {
@@ -57,4 +63,10 @@ void Step::Accept(TechniqueProbe& probe)
 	{
 		pb->Accept(probe);
 	}
+}
+
+void Step::Link(RenderGraph& rg)
+{
+	assert(pTargetPass == nullptr);
+	pTargetPass = &rg.GetRenderQueue(targetPassName);
 }

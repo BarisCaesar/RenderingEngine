@@ -1,26 +1,29 @@
 #pragma once
+#include <limits>
 
 namespace DynamicConstBuf
 {
 	class Buffer;
 }
+class Technique;
+class Step;
 
 class TechniqueProbe
 {
 public:
-	void SetTechnique(class Technique* pTech_in)
+	void SetTechnique(Technique* pTech_in)
 	{
 		pTech = pTech_in;
 		techIdx++;
 		OnSetTechnique();
 	}
-	void SetStep(class Step* pStep_in)
+	void SetStep(Step* pStep_in)
 	{
 		pStep = pStep_in;
 		stepIdx++;
 		OnSetStep();
 	}
-	virtual bool VisitBuffer(class DynamicConstBuf::Buffer& buf)
+	virtual bool VisitBuffer(DynamicConstBuf::Buffer& buf)
 	{
 		bufIdx++;
 		return OnVisitBuffer(buf);
@@ -28,13 +31,13 @@ public:
 protected:
 	virtual void OnSetTechnique() {}
 	virtual void OnSetStep() {}
-	virtual bool OnVisitBuffer(class DynamicConstBuf::Buffer&)
+	virtual bool OnVisitBuffer(DynamicConstBuf::Buffer&)
 	{
 		return false;
 	}
 protected:
-	class Technique* pTech;
-	class Step* pStep;
+	Technique* pTech;
+	Step* pStep;
 	size_t techIdx = std::numeric_limits<size_t>::max();
 	size_t stepIdx = std::numeric_limits<size_t>::max();
 	size_t bufIdx = std::numeric_limits<size_t>::max();

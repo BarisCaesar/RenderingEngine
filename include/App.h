@@ -10,8 +10,9 @@
 #include <set>
 #include "ScriptCommander.h"
 #include "Stencil.h"
-#include "FrameCommander.h"
 #include "Material.h"
+#include "RenderGraph.h"
+#include <string>
 
 
 class App
@@ -30,14 +31,14 @@ private:
 	ImguiManager imgui;
 	Window wnd;
 	ScriptCommander scriptCommander;
+	RenderGraph rg{ wnd.Gfx() };
 	Timer timer;
 	float speedFactor = 1.f;
 	Camera cam;
-	FrameCommander frameCommander{wnd.Gfx()};
 	PointLight light;
 	TestCube cube = { wnd.Gfx(), 4.f };
 	TestCube cube2 = { wnd.Gfx(), 4.f };
-	Model sponza{ wnd.Gfx(), "Models\\sponza\\sponza.obj", 1.f / 20.f };
+	//Model sponza{ wnd.Gfx(), "Models\\sponza\\sponza.obj", 1.f / 20.f };
 	//TestPlane bluePlane{ wnd.Gfx(), 6.f, {0.3f, 0.3f, 1.f, 0.f} };
 	//TestPlane redPlane{ wnd.Gfx(), 6.f, {1.3f, 0.3f, 0.3f, 0.f} };
 	//Model goblin{ wnd.Gfx(), "Models\\goblin\\GoblinX.obj", 4.f };
