@@ -31,6 +31,7 @@ include
 include/Bindables
 include/RenderGraph
 include/RenderGraph/Passes
+include/RenderGraph/Graphs
 include/Model
 include/Macros
 include/Geometry

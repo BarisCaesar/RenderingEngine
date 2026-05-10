@@ -14,7 +14,8 @@
 	X(Float3) \
 	X(Float4) \
 	X(Matrix) \
-	X(Bool) 
+	X(Bool) \
+	X(Integer)
 
 namespace DynamicConstBuf
 {
@@ -76,6 +77,13 @@ namespace DynamicConstBuf
 		static constexpr size_t hlslSize = 4u; // size of type on GPU side
 		static constexpr const char* code = "BL"; // code used when generating signature for layout
 		static constexpr bool valid = true; // flag to check validity of map type
+	};
+	template<> struct Map<Integer>
+	{
+		using SysType = int;
+		static constexpr size_t hlslSize = sizeof(SysType);
+		static constexpr const char* code = "IN";
+		static constexpr bool valid = true;
 	};
 
 	// ensures that every leaf type in master list has an entry in the static attribute map
