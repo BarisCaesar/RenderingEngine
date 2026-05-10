@@ -7,7 +7,7 @@
 #include "TestCube.h"
 #include "Model.h"
 #include "ScriptCommander.h"
-#include "RenderGraph.h"
+#include "TestRenderGraph.h"
 #include <string>
 
 
@@ -28,7 +28,7 @@ private:
 	ImguiManager imgui;
 	Window wnd;
 	ScriptCommander scriptCommander;
-	RenderGraph rg{ wnd.Gfx() };
+	TestRenderGraph rg{ wnd.Gfx() };
 	Timer timer;
 	float speedFactor = 1.f;
 	Camera cam;
