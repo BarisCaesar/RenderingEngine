@@ -44,8 +44,6 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 
 		only.AddBindable(std::make_shared<TransformCBuf>(gfx));
 
-		only.AddBindable(Blender::Resolve(gfx, false));
-
 		only.AddBindable(Rasterizer::Resolve(gfx, false));
 
 		only.AddBindable(std::make_shared<Stencil>(gfx, Stencil::Mode::Off));

@@ -1,4 +1,8 @@
 #include "BindingPass.h"
+#include "Bindable.h"
+#include "RenderTarget.h"
+#include "DepthStencil.h"
+#include "RenderGraphCompileException.h"
 
 BindingPass::BindingPass(std::string name, std::vector<std::shared_ptr<Bind::Bindable>> binds)
 	:
@@ -19,4 +23,13 @@ void BindingPass::BindAll(Graphics& gfx) const noexcept
 		bind->Bind(gfx);
 	}
 	BindBufferResources(gfx);
+}
+
+void BindingPass::Finalize()
+{
+	Pass::Finalize();
+	if (!renderTarget && !depthStencil)
+	{
+		throw RGC_EXCEPTION("BindingPass [" + GetName() + "] needs at least one of a renderTarget or depthStencil");
+	}
 }

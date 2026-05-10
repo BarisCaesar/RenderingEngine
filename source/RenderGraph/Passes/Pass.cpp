@@ -4,6 +4,8 @@
 #include "DepthStencil.h"
 #include <sstream>
 #include "RUtil.h"
+#include "PassInput.h"
+#include "PassOutput.h"
 
 Pass::Pass(std::string name) noexcept
 	:
@@ -28,6 +30,10 @@ void Pass::Finalize()
 	{
 		out->PostLinkValidate();
 	}
+}
+
+Pass::~Pass()
+{
 }
 
 const std::vector<std::unique_ptr<PassInput>>& Pass::GetInputs() const

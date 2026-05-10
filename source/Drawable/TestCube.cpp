@@ -19,6 +19,8 @@ TestCube::TestCube(Graphics& gfx, float size)
 	pIndices = IndexBuffer::Resolve(gfx, geometryTag, model.indices);
 	pTopology = Topology::Resolve(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+	auto tcb = std::make_shared<TransformCBuf>(gfx);
+
 	{
 		Technique shade("Shade");
 		{
@@ -45,56 +47,82 @@ TestCube::TestCube(Graphics& gfx, float size)
 
 			only.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
 
+			only.AddBindable(Rasterizer::Resolve(gfx, false));
+			
+			only.AddBindable(tcb);
+
 			only.AddBindable(std::make_shared<TransformCBuf>(gfx));
 
 			shade.AddStep(std::move(only));
 		}
 		AddTechnique(std::move(shade));
 	}
-	//{
-	//	Technique outline("Outline");
-	//	{
-	//		Step mask(1);
-	//		auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
-	//		auto pvsbc = pvs->GetBytecode();
-	//		mask.AddBindable(std::move(pvs));
+	{
+		Technique outline("Outline");
+		{
+			Step mask("outlineMask");
+			// TODO: better sub-layout generation tech for future consideration maybe
+			mask.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), VertexShader::Resolve(gfx, "Solid_VS.cso")->GetBytecode()));
 
-	//		// TODO: better sub-layout generation tech for future consideration maybe
-	//		mask.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
+			mask.AddBindable(std::move(tcb));
 
-	//		mask.AddBindable(std::make_shared<TransformCBuf>(gfx));
+			// TODO: might need to specify rasterizer when doubled-sided models start being used
 
-	//		// TODO: might need to specify rasterizer when doubled-sided models start being used
+			outline.AddStep(std::move(mask));
+		}
+		{
+			Step draw("outlineDraw");
 
-	//		outline.AddStep(std::move(mask));
-	//	}
-	//	{
-	//		Step draw(2);
-	//		auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
-	//		auto pvsbc = pvs->GetBytecode();
-	//		draw.AddBindable(std::move(pvs));
+			DynamicConstBuf::RawLayout lay;
+			lay.Add<DynamicConstBuf::Float4>("color");
+			auto buf = DynamicConstBuf::Buffer(std::move(lay));
+			buf["color"] = DirectX::XMFLOAT4{ 1.0f,0.4f,0.4f,1.0f };
+			draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEx>(gfx, buf, 1u));
 
-	//		// this can be pass-constant
-	//		draw.AddBindable(PixelShader::Resolve(gfx, "Solid_PS.cso"));
+			// TODO: better sub-layout generation tech for future consideration maybe
+			draw.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), VertexShader::Resolve(gfx, "Solid_VS.cso")->GetBytecode()));
 
-	//		DynamicConstBuf::RawLayout lay;
-	//		lay.Add<DynamicConstBuf::Float4>("color");
-	//		auto buf = DynamicConstBuf::Buffer(std::move(lay));
-	//		buf["color"] = DirectX::XMFLOAT4{ 1.f, 0.4f, 0.4f, 1.f };
-	//		draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEx>(gfx, buf, 1u));
+			class TransformCBufScaling : public TransformCBuf
+			{
+			public:
+				TransformCBufScaling(Graphics& gfx, float scale = 1.04)
+					:
+					TransformCBuf(gfx),
+					buf(MakeLayout())
+				{
+					buf["scale"] = scale;
+				}
+				void Accept(TechniqueProbe& probe) override
+				{
+					probe.VisitBuffer(buf);
+				}
+				void Bind(Graphics& gfx) noexcept override
+				{
+					const float scale = buf["scale"];
+					const auto scaleMatrix = dx::XMMatrixScaling(scale, scale, scale);
+					auto xf = GetTransforms(gfx);
+					xf.modelView = xf.modelView * scaleMatrix;
+					xf.modelViewProj = xf.modelViewProj * scaleMatrix;
+					UpdateBindImpl(gfx, xf);
+				}
+			private:
+				static DynamicConstBuf::RawLayout MakeLayout()
+				{
+					DynamicConstBuf::RawLayout layout;
+					layout.Add<DynamicConstBuf::Float>("scale");
+					return layout;
+				}
+			private:
+				DynamicConstBuf::Buffer buf;
+			};
+			draw.AddBindable(std::make_shared<TransformCBufScaling>(gfx));
 
-	//		// TODO: better sub-layout generation tech for future consideration maybe
-	//		draw.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
+			// TODO: might need to specify rasterizer when doubled-sided models start being used
 
-	//		
-	//		draw.AddBindable(std::make_shared<TransformCBuf>(gfx));
-
-	//		// TODO: might need to specify rasterizer when doubled-sided models start being used
-
-	//		outline.AddStep(std::move(draw));
-	//	}
-	//	AddTechnique(std::move(outline));
-	//}
+			outline.AddStep(std::move(draw));
+		}
+		AddTechnique(std::move(outline));
+	}
 }
 
 void TestCube::SetPos(DirectX::XMFLOAT3 pos) noexcept
