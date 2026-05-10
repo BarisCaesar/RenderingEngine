@@ -1,6 +1,9 @@
 #include "Material.h"
+#include "BindableCommon.h"
 #include "DynamicConstant.h"
 #include "ConstantBuffersEx.h"
+#include "TransformCBufScaling.h"
+#include "Stencil.h"
 
 Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesystem::path& path) noxnd
 	:
@@ -123,57 +126,57 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 		phong.AddStep(std::move(step));
 		techniques.push_back(std::move(phong));
 	}
-	//// outline technique
-	//{
-	//	Technique outline("Outline", false);
-	//	{
-	//		Step mask(1);
-	//		
-	//		auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
-	//		auto pvsbc = pvs->GetBytecode();
-	//		mask.AddBindable(std::move(pvs));
+	// outline technique
+	{
+		Technique outline("Outline", false);
+		{
+			Step mask("outlineMask");
+			
+			auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
+			auto pvsbc = pvs->GetBytecode();
+			mask.AddBindable(std::move(pvs));
 
-	//		mask.AddBindable(InputLayout::Resolve(gfx, vertexLayout, pvsbc));
+			mask.AddBindable(InputLayout::Resolve(gfx, vertexLayout, pvsbc));
 
-	//		mask.AddBindable(std::make_shared<TransformCBuf>(gfx));
+			mask.AddBindable(std::make_shared<TransformCBuf>(gfx));
 
-	//		outline.AddStep(std::move(mask));
-	//	}
-	//	{
-	//		Step draw(2);
+			outline.AddStep(std::move(mask));
+		}
+		{
+			Step draw("outlineDraw");
 
-	//		auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
-	//		auto pvsbc = pvs->GetBytecode();
-	//		
-	//		draw.AddBindable(std::move(pvs));
+			auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
+			auto pvsbc = pvs->GetBytecode();
+			
+			draw.AddBindable(std::move(pvs));
 
-	//		draw.AddBindable(PixelShader::Resolve(gfx, "Solid_PS.cso"));
+			draw.AddBindable(PixelShader::Resolve(gfx, "Solid_PS.cso"));
 
-	//		{
-	//			DynamicConstBuf::RawLayout lay;
-	//			lay.Add<DynamicConstBuf::Float3>("materialColor");
-	//			auto buf = DynamicConstBuf::Buffer(std::move(lay));
-	//			buf["materialColor"] = DirectX::XMFLOAT3{ 1.f, 0.4f, 0.4f };
-	//			draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEx>(gfx, buf, 1u));
-	//		}
-	//		
-	//		{
-	//			DynamicConstBuf::RawLayout lay;
-	//			lay.Add<DynamicConstBuf::Float>( "offset" );
-	//			auto buf = DynamicConstBuf::Buffer( std::move( lay ) );
-	//			buf["offset"] = 0.1f;                  
-	//			draw.AddBindable( std::make_shared<Bind::CachingVertexConstantBufferEx>( gfx,buf,1u ) );
-	//		}
-	//	
+			{
+				DynamicConstBuf::RawLayout lay;
+				lay.Add<DynamicConstBuf::Float3>("materialColor");
+				auto buf = DynamicConstBuf::Buffer(std::move(lay));
+				buf["materialColor"] = DirectX::XMFLOAT3{ 1.f, 0.4f, 0.4f };
+				draw.AddBindable(std::make_shared<Bind::CachingPixelConstantBufferEx>(gfx, buf, 1u));
+			}
+			
+			{
+				DynamicConstBuf::RawLayout lay;
+				lay.Add<DynamicConstBuf::Float>( "offset" );
+				auto buf = DynamicConstBuf::Buffer( std::move( lay ) );
+				buf["offset"] = 0.1f;                  
+				draw.AddBindable( std::make_shared<Bind::CachingVertexConstantBufferEx>( gfx,buf,1u ) );
+			}
+		
 
-	//		draw.AddBindable(InputLayout::Resolve(gfx, vertexLayout, pvsbc));
+			draw.AddBindable(InputLayout::Resolve(gfx, vertexLayout, pvsbc));
 
-	//		draw.AddBindable(std::make_shared<TransformCBuf>(gfx));
+			draw.AddBindable(std::make_shared<TransformCBufScaling>(gfx, 1.04f));
 
-	//		outline.AddStep(std::move(draw));
-	//	}
-	//	techniques.push_back(std::move(outline));
-	//}
+			outline.AddStep(std::move(draw));
+		}
+		techniques.push_back(std::move(outline));
+	}
 }
 
 DynamicVertex::VertexBuffer Material::ExtractVertices(const aiMesh& mesh) const noexcept

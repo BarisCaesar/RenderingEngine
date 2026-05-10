@@ -1,0 +1,18 @@
+#pragma once
+#include "TransformCBuf.h"
+#include "DynamicConstant.h"
+
+namespace Bind
+{
+	class TransformCBufScaling : public TransformCBuf
+	{
+	public:
+		TransformCBufScaling(Graphics& gfx, float scale);
+		void Accept(TechniqueProbe& probe) override;
+		void Bind(Graphics& gfx) noexcept override;
+	private:
+		static DynamicConstBuf::RawLayout MakeLayout();
+	private:
+		DynamicConstBuf::Buffer buf;
+	};
+}

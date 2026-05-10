@@ -19,6 +19,6 @@ public:
 		RegisterInput(BufferInput<DepthStencil>::Make("depthStencil", depthStencil));
 		RegisterOutput(BufferOutput<RenderTarget>::Make("renderTarget", renderTarget));
 		RegisterOutput(BufferOutput<DepthStencil>::Make("depthStencil", depthStencil));
-		AddBind(Stencil::Resolve(gfx, Stencil::Mode::Mask));
+		AddBind(Stencil::Resolve(gfx, Stencil::Mode::Off));
 	}
 };
