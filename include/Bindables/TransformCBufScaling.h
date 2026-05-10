@@ -10,6 +10,7 @@ namespace Bind
 		TransformCBufScaling(Graphics& gfx, float scale);
 		void Accept(TechniqueProbe& probe) override;
 		void Bind(Graphics& gfx) noexcept override;
+		std::unique_ptr<CloningBindable> Clone() const noexcept override;
 	private:
 		static DynamicConstBuf::RawLayout MakeLayout();
 	private:

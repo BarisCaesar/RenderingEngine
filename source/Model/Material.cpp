@@ -132,11 +132,8 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 		{
 			Step mask("outlineMask");
 			
-			auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
-			auto pvsbc = pvs->GetBytecode();
-			mask.AddBindable(std::move(pvs));
 
-			mask.AddBindable(InputLayout::Resolve(gfx, vertexLayout, pvsbc));
+			mask.AddBindable(InputLayout::Resolve(gfx, vertexLayout, VertexShader::Resolve(gfx, "Solid_VS.cso")->GetBytecode()));
 
 			mask.AddBindable(std::make_shared<TransformCBuf>(gfx));
 
@@ -144,13 +141,6 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 		}
 		{
 			Step draw("outlineDraw");
-
-			auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
-			auto pvsbc = pvs->GetBytecode();
-			
-			draw.AddBindable(std::move(pvs));
-
-			draw.AddBindable(PixelShader::Resolve(gfx, "Solid_PS.cso"));
 
 			{
 				DynamicConstBuf::RawLayout lay;
@@ -169,7 +159,7 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 			}
 		
 
-			draw.AddBindable(InputLayout::Resolve(gfx, vertexLayout, pvsbc));
+			draw.AddBindable(InputLayout::Resolve(gfx, vertexLayout, VertexShader::Resolve(gfx, "Solid_VS.cso")->GetBytecode()));
 
 			draw.AddBindable(std::make_shared<TransformCBufScaling>(gfx, 1.04f));
 

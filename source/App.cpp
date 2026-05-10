@@ -251,9 +251,7 @@ void App::DoFrame()
 						dx::XMMatrixTranslation(tf.x, tf.y, tf.z)
 					);
 				}
-			}
-			if (pSelectedNode != nullptr)
-			{
+			
 				TProbe probe;
 				pSelectedNode->Accept(probe);
 			}
