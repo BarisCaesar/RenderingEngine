@@ -4,6 +4,7 @@
 #include <vector>
 #include "PassInput.h"
 #include "PassOutput.h"
+#include "Stencil.h"
 
 class Graphics;
 
