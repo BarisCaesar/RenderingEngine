@@ -29,7 +29,7 @@ BindingPass(std::move(name))
 	
 }
 
-void FullscreenPass::Execute(Graphics& gfx) const noexcept
+void FullscreenPass::Execute(Graphics& gfx) const noxnd
 {
 	BindAll(gfx);
 	gfx.DrawIndexed(6u);

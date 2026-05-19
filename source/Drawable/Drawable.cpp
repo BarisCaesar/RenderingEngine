@@ -35,7 +35,7 @@ void Drawable::AddTechnique(Technique tech_in) noexcept
 
 
 
-void Drawable::Bind(Graphics& gfx) const noexcept
+void Drawable::Bind(Graphics& gfx) const noxnd
 {
 	pTopology->Bind(gfx);
 	pIndices->Bind(gfx);
