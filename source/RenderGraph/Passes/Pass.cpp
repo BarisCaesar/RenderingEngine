@@ -4,8 +4,8 @@
 #include "DepthStencil.h"
 #include <sstream>
 #include "RUtil.h"
-#include "PassInput.h"
-#include "PassOutput.h"
+#include "Sink.h"
+#include "Source.h"
 
 namespace RenderGraph
 {
@@ -24,11 +24,11 @@ namespace RenderGraph
 
 	void Pass::Finalize()
 	{
-		for (auto& in : inputs)
+		for (auto& in : sinks)
 		{
 			in->PostLinkValidate();
 		}
-		for (auto& out : outputs)
+		for (auto& out : sources)
 		{
 			out->PostLinkValidate();
 		}
@@ -38,18 +38,18 @@ namespace RenderGraph
 	{
 	}
 
-	const std::vector<std::unique_ptr<PassInput>>& Pass::GetInputs() const
+	const std::vector<std::unique_ptr<Sink>>& Pass::GetSinks() const
 	{
-		return inputs;
+		return sinks;
 	}
 
-	PassOutput& Pass::GetOutput(const std::string& registeredName) const
+	Source& Pass::GetSource(const std::string& registeredName) const
 	{
-		for (auto& out : outputs)
+		for (auto& src : sources)
 		{
-			if (out->GetName() == registeredName)
+			if (src->GetName() == registeredName)
 			{
-				return *out;
+				return *src;
 			}
 		}
 
@@ -58,13 +58,13 @@ namespace RenderGraph
 		throw RGC_EXCEPTION(oss.str());
 	}
 
-	PassInput& Pass::GetInput(const std::string& registeredName) const
+	Sink& Pass::GetSink(const std::string& registeredName) const
 	{
-		for (auto& in : inputs)
+		for (auto& sink : sinks)
 		{
-			if (in->GetRegisteredName() == registeredName)
+			if (sink->GetRegisteredName() == registeredName)
 			{
-				return *in;
+				return *sink;
 			}
 		}
 
@@ -73,43 +73,43 @@ namespace RenderGraph
 		throw RGC_EXCEPTION(oss.str());
 	}
 
-	void Pass::RegisterInput(std::unique_ptr<PassInput> input)
+	void Pass::RegisterSink(std::unique_ptr<Sink> sink)
 	{
 		// check for overlap of input names
-		for (auto& in : inputs)
+		for (auto& curSink : sinks)
 		{
-			if (in->GetRegisteredName() == input->GetRegisteredName())
+			if (curSink->GetRegisteredName() == sink->GetRegisteredName())
 			{
-				throw RGC_EXCEPTION("Registered input overlaps with existing: " + input->GetRegisteredName());
+				throw RGC_EXCEPTION("Registered input overlaps with existing: " + sink->GetRegisteredName());
 			}
 		}
 
-		inputs.push_back(std::move(input));
+		sinks.push_back(std::move(sink));
 	}
 
-	void Pass::RegisterOutput(std::unique_ptr<PassOutput> output)
+	void Pass::RegisterSource(std::unique_ptr<Source> source)
 	{
 		// check for overlap of output names
-		for (auto& out : outputs)
+		for (auto& src : sources)
 		{
-			if (out->GetName() == output->GetName())
+			if (src->GetName() == source->GetName())
 			{
-				throw RGC_EXCEPTION("Registered output overlaps with existing: " + output->GetName());
+				throw RGC_EXCEPTION("Registered output overlaps with existing: " + source->GetName());
 			}
 		}
 
-		outputs.push_back(std::move(output));
+		sources.push_back(std::move(source));
 	}
 
-	void Pass::SetInputSource(const std::string& registeredName, const std::string& target)
+	void Pass::SetSinkLinkage(const std::string& registeredName, const std::string& target)
 	{
-		auto& input = GetInput(registeredName);
+		auto& sink = GetSink(registeredName);
 		auto targetSplit = SplitString(target, ".");
 		if (targetSplit.size() != 2u)
 		{
 			throw RGC_EXCEPTION("Input target has incorrect format");
 		}
-		input.SetTarget(std::move(targetSplit[0]), std::move(targetSplit[1]));
+		sink.SetTarget(std::move(targetSplit[0]), std::move(targetSplit[1]));
 	}
 
 	void Pass::BindBufferResources(Graphics& gfx) const noxnd

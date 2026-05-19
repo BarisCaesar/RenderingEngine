@@ -12,31 +12,31 @@ namespace Bind
 
 namespace RenderGraph
 {
-	class PassOutput
+	class Source
 	{
 	public:
 		const std::string& GetName() const noexcept;
 		virtual void PostLinkValidate() const = 0;
 		virtual std::shared_ptr<Bind::Bindable> YieldImmutable();
 		virtual std::shared_ptr<Bind::BufferResource> YieldBuffer();
-		virtual ~PassOutput() = default;
+		virtual ~Source() = default;
 	protected:
-		PassOutput(std::string name);
+		Source(std::string name);
 	private:
 		std::string name;
 	};
 
 	template<class T>
-	class BufferOutput : public PassOutput
+	class DirectBufferSource : public Source
 	{
 	public:
-		static std::unique_ptr<BufferOutput> Make(std::string name, std::shared_ptr<T>& buffer)
+		static std::unique_ptr<DirectBufferSource> Make(std::string name, std::shared_ptr<T>& buffer)
 		{
-			return std::make_unique<BufferOutput>(std::move(name), buffer);
+			return std::make_unique<DirectBufferSource>(std::move(name), buffer);
 		}
-		BufferOutput(std::string name, std::shared_ptr<T>& buffer)
+		DirectBufferSource(std::string name, std::shared_ptr<T>& buffer)
 			:
-			PassOutput(std::move(name)),
+			Source(std::move(name)),
 			buffer(buffer)
 		{}
 		void PostLinkValidate() const
@@ -56,16 +56,16 @@ namespace RenderGraph
 	};
 
 	template<class T>
-	class ImmutableOutput : public PassOutput
+	class DirectBindableSource : public Source
 	{
 	public:
-		static std::unique_ptr<ImmutableOutput> Make(std::string name, std::shared_ptr<T>& buffer)
+		static std::unique_ptr<DirectBindableSource> Make(std::string name, std::shared_ptr<T>& buffer)
 		{
-			return std::make_unique<ImmutableOutput>(std::move(name), buffer);
+			return std::make_unique<DirectBindableSource>(std::move(name), buffer);
 		}
-		ImmutableOutput(std::string name, std::shared_ptr<T>& bind)
+		DirectBindableSource(std::string name, std::shared_ptr<T>& bind)
 			:
-			PassOutput(std::move(name)),
+			Source(std::move(name)),
 			bind(bind)
 		{}
 		void PostLinkValidate() const

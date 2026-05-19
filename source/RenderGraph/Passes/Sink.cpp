@@ -1,5 +1,5 @@
-#include "PassInput.h"
-#include "PassOutput.h"
+#include "Sink.h"
+#include "Source.h"
 #include "RenderGraphCompileException.h"
 #include "RUtil.h"
 #include "Bindable.h"
@@ -10,7 +10,7 @@
 
 namespace RenderGraph
 {
-	PassInput::PassInput(std::string registeredNameIn)
+	Sink::Sink(std::string registeredNameIn)
 		:
 		registeredName(std::move(registeredNameIn))
 	{
@@ -27,22 +27,22 @@ namespace RenderGraph
 		}
 	}
 
-	const std::string& PassInput::GetRegisteredName() const noexcept
+	const std::string& Sink::GetRegisteredName() const noexcept
 	{
 		return registeredName;
 	}
 
-	const std::string& PassInput::GetPassName() const noexcept
+	const std::string& Sink::GetPassName() const noexcept
 	{
 		return passName;
 	}
 
-	const std::string& PassInput::GetOutputName() const noexcept
+	const std::string& Sink::GetOutputName() const noexcept
 	{
 		return outputName;
 	}
 
-	void PassInput::SetTarget(std::string passName, std::string outputName)
+	void Sink::SetTarget(std::string passName, std::string outputName)
 	{
 		{
 			if (passName.empty())
