@@ -7,8 +7,12 @@
 
 class TechniqueProbe;
 class Material;
-class RenderGraph;
 struct aiMesh;
+
+namespace RenderGraph
+{
+	class RenderGraph;
+}
 
 namespace Bind
 {
@@ -31,7 +35,7 @@ public:
 	void Bind(Graphics& gfx) const noxnd;
 	void Accept(TechniqueProbe& probe);
 	UINT GetIndexCount() const noxnd;
-	void LinkTechniques(RenderGraph&);
+	void LinkTechniques(RenderGraph::RenderGraph&);
 	virtual ~Drawable();
 	
 protected:

@@ -12,7 +12,7 @@ Step::Step(std::string targetPassName_in)
 
 void Step::Submit(const Drawable& drawable) const
 {
-	pTargetPass->Accept(Job{ this, &drawable });
+	pTargetPass->Accept(RenderGraph::Job{ this, &drawable });
 }
 
 
@@ -65,7 +65,7 @@ void Step::Accept(TechniqueProbe& probe)
 	}
 }
 
-void Step::Link(RenderGraph& rg)
+void Step::Link(RenderGraph::RenderGraph& rg)
 {
 	assert(pTargetPass == nullptr);
 	pTargetPass = &rg.GetRenderQueue(targetPassName);

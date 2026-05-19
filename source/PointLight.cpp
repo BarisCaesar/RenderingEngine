@@ -49,7 +49,7 @@ void PointLight::Reset() noexcept
 	};
 }
 
-void PointLight::LinkTechniques(RenderGraph& rg)
+void PointLight::LinkTechniques(RenderGraph::RenderGraph& rg)
 {
 	mesh.LinkTechniques(rg);
 }

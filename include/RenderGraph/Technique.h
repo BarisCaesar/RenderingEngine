@@ -4,8 +4,10 @@
 
 class TechniqueProbe;
 class Drawable;
-class RenderGraph;
-
+namespace RenderGraph
+{
+	class RenderGraph;
+}
 class Technique
 {
 public:
@@ -18,7 +20,7 @@ public:
 	void InitializeParentReferences(const Drawable& parent) noexcept;
 	void Accept(TechniqueProbe& probe);
 	const std::string& GetName() const noexcept;
-	void Link(RenderGraph&);
+	void Link(RenderGraph::RenderGraph&);
 private:
 	bool active = true;
 	std::vector<Step> steps;

@@ -1,12 +1,14 @@
 #pragma once
 #include "TechniqueProbe.h"
-
-class RenderGraph;
+namespace RenderGraph
+{
+	class RenderGraph;
+}
 
 class StepLinkingProbe : public TechniqueProbe
 {
 protected:
 	void OnSetStep() override;
 private:
-	RenderGraph& rg;
+	RenderGraph::RenderGraph& rg;
 };

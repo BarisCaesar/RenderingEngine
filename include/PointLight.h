@@ -3,8 +3,10 @@
 #include "SolidSphere.h"
 #include "ConstantBuffers.h"
 
-class RenderGraph;
-
+namespace RenderGraph
+{
+	class RenderGraph;
+}
 class PointLight
 {
 public:
@@ -13,7 +15,7 @@ public:
 	void Reset() noexcept;
 	void Submit() const noxnd;
 	void Bind(Graphics& gfx, DirectX::XMMATRIX view) const noexcept;
-	void LinkTechniques(RenderGraph&);
+	void LinkTechniques(RenderGraph::RenderGraph&);
 private:
 	struct PointLightCBuf
 	{
