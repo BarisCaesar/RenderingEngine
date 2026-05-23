@@ -4,7 +4,9 @@
 #include "Sink.h"
 #include "Source.h"
 #include "Blender.h"
+#include "Sampler.h"
 #include "ConstantBuffersEx.h"
+
 
 namespace RenderGraph
 {
@@ -14,6 +16,7 @@ namespace RenderGraph
 	{
 		AddBind(Bind::PixelShader::Resolve(gfx, "BlurOutline_PS.cso"));
 		AddBind(Bind::Blender::Resolve(gfx, false));
+		AddBind(Bind::Sampler::Resolve(gfx, Bind::Sampler::Type::Point, true));
 
 		AddBindSink<Bind::RenderTarget>("scratchIn");
 		AddBindSink<Bind::CachingPixelConstantBufferEx>("control");
