@@ -19,7 +19,7 @@ namespace RenderGraph
 		AddBind(Bind::Sampler::Resolve(gfx, Bind::Sampler::Type::Point, true));
 
 		AddBindSink<Bind::RenderTarget>("scratchIn");
-		AddBindSink<Bind::CachingPixelConstantBufferEx>("control");
+		AddBindSink<Bind::CachingPixelConstantBufferEx>("kernel");
 		RegisterSink(DirectBindableSink<Bind::CachingPixelConstantBufferEx>::Make("direction", direction));
 
 		// the renderTarget is internally sourced and then exported as a Bindable

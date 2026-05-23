@@ -18,7 +18,7 @@ namespace RenderGraph
 		AddBind(Bind::Sampler::Resolve(gfx, Bind::Sampler::Type::Bilinear, true));
 
 		AddBindSink<Bind::RenderTarget>("scratchIn");
-		AddBindSink<Bind::CachingPixelConstantBufferEx>("control");
+		AddBindSink<Bind::CachingPixelConstantBufferEx>("kernel");
 		RegisterSink(DirectBindableSink<Bind::CachingPixelConstantBufferEx>::Make("direction", direction));
 		RegisterSink(DirectBufferSink<Bind::RenderTarget>::Make("renderTarget", renderTarget));
 		RegisterSink(DirectBufferSink<Bind::DepthStencil>::Make("depthStencil", depthStencil));
