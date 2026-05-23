@@ -23,9 +23,9 @@ namespace RenderGraph
 		}
 	}
 
-	std::shared_ptr<Bind::Bindable> Source::YieldImmutable()
+	std::shared_ptr<Bind::Bindable> Source::YieldBindable()
 	{
-		throw RGC_EXCEPTION("Output cannot be accessed as immutable");
+		throw RGC_EXCEPTION("Output cannot be accessed as bindable");
 	}
 
 	std::shared_ptr<Bind::BufferResource> Source::YieldBuffer()

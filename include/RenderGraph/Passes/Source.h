@@ -17,7 +17,7 @@ namespace RenderGraph
 	public:
 		const std::string& GetName() const noexcept;
 		virtual void PostLinkValidate() const = 0;
-		virtual std::shared_ptr<Bind::Bindable> YieldImmutable();
+		virtual std::shared_ptr<Bind::Bindable> YieldBindable();
 		virtual std::shared_ptr<Bind::BufferResource> YieldBuffer();
 		virtual ~Source() = default;
 	protected:
@@ -70,7 +70,7 @@ namespace RenderGraph
 		{}
 		void PostLinkValidate() const
 		{}
-		std::shared_ptr<Bind::Bindable> YieldImmutable()
+		std::shared_ptr<Bind::Bindable> YieldBindable()
 		{
 			return bind;
 		}
