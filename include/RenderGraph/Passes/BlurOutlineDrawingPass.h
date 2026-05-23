@@ -29,5 +29,10 @@ namespace RenderGraph
 			AddBind(Blender::Resolve(gfx, false));
 			RegisterSource(DirectBindableSource<Bind::RenderTarget>::Make("scratchOut", renderTarget));
 		}
+		void Execute(Graphics& gfx) const noxnd override
+		{
+			renderTarget->Clear(gfx);
+			RenderQueuePass::Execute(gfx);
+		}
 	};
 }
