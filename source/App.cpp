@@ -20,11 +20,21 @@ App::App(const std::string& commandLine)
 {
 	cube.SetPos({ 4.0f,0.0f,0.0f });
 	cube2.SetPos({ 0.0f,4.0f,0.0f });
+	nano.SetRootTransform(
+		dx::XMMatrixRotationY(PI / 2.f) *
+		dx::XMMatrixTranslation(27.f, -0.56f, 1.7f)
+	);
+	goblin.SetRootTransform(
+		dx::XMMatrixRotationY(-PI / 2.f) *
+		dx::XMMatrixTranslation(-8.f, 10.f, 0.f)
+	);
 
 	cube.LinkTechniques(rg);
 	cube2.LinkTechniques(rg);
 	light.LinkTechniques(rg);
 	sponza.LinkTechniques(rg);
+	goblin.LinkTechniques(rg);
+	nano.LinkTechniques(rg);
 	
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 400.0f));
 }
@@ -109,17 +119,24 @@ void App::DoFrame(float dt)
 	cube.Submit();
 	sponza.Submit();
 	cube2.Submit();
+	goblin.Submit();
+	nano.Submit();
 
 	rg.Execute(wnd.Gfx());
 
 	// imgui windows
-	static MP modelProbe;
-	modelProbe.SpawnWindow(sponza);
+	static MP sponzaProbe{"Sponza"};
+	static MP goblinProbe{"Goblin"};
+	static MP nanoProbe{"Nano"};
+	sponzaProbe.SpawnWindow(sponza);
+	goblinProbe.SpawnWindow(goblin);
+	nanoProbe.SpawnWindow(nano);
 	cam.SpawnControlWindow();
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 	cube.SpawnControlWindow(wnd.Gfx(), "Cube 1");
 	cube2.SpawnControlWindow(wnd.Gfx(), "Cube 2");
+
 	rg.RenderWidgets(wnd.Gfx());
 
 	// present
