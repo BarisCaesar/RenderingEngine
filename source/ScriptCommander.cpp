@@ -1,8 +1,10 @@
 #include "ScriptCommander.h"
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 #include "json.hpp"
 #include "TexturePreprocessor.h"
+#include "RUtil.h"
 
 namespace jso = nlohmann;
 using namespace std::string_literals;
@@ -13,7 +15,7 @@ ScriptCommander::ScriptCommander(const std::vector<std::string>& args)
 {
 	if (args.size() >= 2 && args[0] == "--commands")
 	{
-		const auto scriptPath = args[1];
+		const auto scriptPath = FindFileInProject(args[1]).string();
 		std::ifstream script(scriptPath);
 		if (!script.is_open())
 		{
@@ -50,6 +52,11 @@ ScriptCommander::ScriptCommander(const std::vector<std::string>& args)
 					TexturePreprocessor::MakeStripes(params.at("dest"), params.at("size"), params.at("stripeWidth"));
 					abort = true;
 				}
+				else if (commandName == "publish")
+				{
+					Publish(params.at("dest"));
+					abort = true;
+				}
 				else
 				{
 					throw SCRIPT_ERROR("Unknown command: "s + commandName);
@@ -61,6 +68,35 @@ ScriptCommander::ScriptCommander(const std::vector<std::string>& args)
 			}
 		}
 	}
+}
+
+void ScriptCommander::Publish(std::string path) const
+{
+	namespace fs = std::filesystem;
+	fs::create_directory(path);
+	// copy executable
+	fs::path exePath = FindFileInProject(R"(Debug\RenderingEngine.exe)");
+	fs::copy_file(exePath, path + R"(\RenderingEngine.exe)", fs::copy_options::overwrite_existing);
+	// copy assimp ini
+	fs::path imguiConfigPath = FindFileInProject("imgui_default.ini");
+	fs::copy_file(imguiConfigPath, path + R"(\imgui_default.ini)", fs::copy_options::overwrite_existing);
+	// copy all dlls
+	for (auto& p : fs::directory_iterator(""))
+	{
+		if (p.path().extension() == L".dll")
+		{
+			fs::copy_file(p.path(), path + "\\" + p.path().filename().string(),
+				fs::copy_options::overwrite_existing
+			);
+		}
+	}
+	// copy compiled shaders
+	fs::path imagesPath = FindFileInProject("Images");
+	fs::path modelsPath = FindFileInProject("Models");
+	//fs::copy("ShaderBins", path + R"(\ShaderBins)", fs::copy_options::overwrite_existing);
+	// copy assets
+	fs::copy(imagesPath, path + R"(\Images)", fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+	fs::copy(modelsPath, path + R"(\Models)", fs::copy_options::overwrite_existing | fs::copy_options::recursive);
 }
 
 ScriptCommander::Completion::Completion(const std::string& content) noexcept
