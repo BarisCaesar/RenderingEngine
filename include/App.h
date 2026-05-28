@@ -9,6 +9,7 @@
 #include "ScriptCommander.h"
 #include "BlurOutlineRenderGraph.h"
 #include <string>
+#include "RMath.h"
 
 
 class App
@@ -31,7 +32,7 @@ private:
 	RenderGraph::BlurOutlineRenderGraph rg{ wnd.Gfx() };
 	Timer timer;
 	float speedFactor = 1.f;
-	Camera cam;
+	Camera cam{ {-13.5f,6.0f,3.5f},0.0f,PI / 2.0f };
 	PointLight light;
 	TestCube cube = { wnd.Gfx(), 4.f };
 	TestCube cube2 = { wnd.Gfx(), 4.f };
