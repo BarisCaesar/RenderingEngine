@@ -24,7 +24,7 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 		Step only("lambertian");
 
 		auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
-		auto pvsbc = pvs->GetBytecode();
+		only.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), *pvs));
 		only.AddBindable(std::move(pvs));
 
 		only.AddBindable(PixelShader::Resolve(gfx, "Solid_PS.cso"));
@@ -40,7 +40,7 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 		{
 			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		};
-		only.AddBindable(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
+
 
 		only.AddBindable(std::make_shared<TransformCBuf>(gfx));
 
