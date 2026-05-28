@@ -23,6 +23,6 @@ echo Using CMake generator: %VS_GENERATOR%
 if not exist build mkdir build
 cd build
 cmake -G "%VS_GENERATOR%" ..
-cmake --build . --config Debug -v 
+cmake --build . --config Debug 
 
 pause
