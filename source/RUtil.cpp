@@ -54,3 +54,15 @@ std::filesystem::path FindFileInProject(const std::string& relativePath)
 	throw std::runtime_error("File not found in project tree: " + relativePath);
 }
 
+std::vector<std::string> SplitString(const std::string& s, const std::string& delim)
+{
+	std::vector<std::string> strings;
+	SplitStringIter(s, delim, std::back_inserter(strings));
+	return strings;
+}
+
+bool StringContains(std::string_view sourceString, std::string_view searchString)
+{
+	return std::search(sourceString.begin(), sourceString.end(), searchString.begin(), searchString.end()) != sourceString.end();
+}
+
