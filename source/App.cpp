@@ -39,8 +39,7 @@ App::App(const std::string& commandLine)
 	sponza.LinkTechniques(rg);
 	goblin.LinkTechniques(rg);
 	nano.LinkTechniques(rg);
-	
-	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 400.0f));
+
 }
 
 
@@ -116,7 +115,7 @@ void App::HandleInput(float dt)
 void App::DoFrame(float dt)
 {
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
-	wnd.Gfx().SetCamera(cameras.GetCamera().GetMatrix());
+	cameras.GetCamera().BindToGraphics(wnd.Gfx());
 	light.Bind(wnd.Gfx(), cameras.GetCamera().GetMatrix());
 
 	light.Submit();

@@ -13,7 +13,7 @@ constexpr T sq(const T& x) noexcept
 template <typename T>
 T wrap_angle(T theta) noexcept
 {
-	const T modded = fmod(theta, (T)2.0 * (T)PI_D);
+	const T modded = (T)fmod(theta, (T)2.0 * (T)PI_D);
 	return modded < T(0) ? modded + (T)2.0 * (T)PI_D : modded;
 }
 

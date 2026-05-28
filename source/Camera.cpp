@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "imgui/imgui.h"
 #include "RMath.h"
+#include "Graphics.h"
 
 
 namespace dx = DirectX;
@@ -9,9 +10,15 @@ Camera::Camera(std::string name, DirectX::XMFLOAT3 homePos, float homeXRotation,
 	name(std::move(name)),
 	homePos(homePos),
 	homeXRotation(homeXRotation),
-	homeYRotation(homeYRotation)
+	homeYRotation(homeYRotation),
+	proj(1.f, 9.f / 16.f, 0.5f, 400.f)
 {
 	Reset();
+}
+void Camera::BindToGraphics(Graphics& gfx) const
+{
+	gfx.SetCamera(GetMatrix());
+	gfx.SetProjection(proj.GetMatrix());
 }
 DirectX::XMMATRIX Camera::GetMatrix() const noexcept
 {
@@ -42,6 +49,7 @@ void Camera::SpawnControlWidgets() noexcept
 	{
 		Reset();
 	}
+	proj.RenderWidgets();
 }
 
 void Camera::Reset() noexcept
