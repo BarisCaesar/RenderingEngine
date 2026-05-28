@@ -2,7 +2,7 @@
 #include "CustomWindows.h"
 #include "RException.h"
 #include <d3d11.h>
-#include <wrl.h>
+#include <RWRL.h>
 #include <vector>
 #include "DxgiInfoManager.h"
 #include <string>

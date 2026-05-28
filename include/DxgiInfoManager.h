@@ -1,8 +1,8 @@
 #pragma once
 #include "CustomWindows.h"
+#include <RWRL.h>
 #include <vector>
 #include <string>
-#include <wrl.h>
 #include <dxgidebug.h>
 class DxgiInfoManager
 {

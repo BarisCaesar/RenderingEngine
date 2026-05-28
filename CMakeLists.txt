@@ -11,6 +11,8 @@ file(GLOB_RECURSE SOURCES *.cpp)
 file(GLOB_RECURSE HEADERS ${CMAKE_SOURCE_DIR}/*.h
 )
 
+add_compile_options(/W4 /w34265)
+
 add_executable(RenderingEngine ${SOURCES} ${HEADERS})
 
 source_group(TREE ${CMAKE_SOURCE_DIR} FILES ${SOURCES} ${HEADERS})
@@ -89,6 +91,9 @@ MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
 
 
 # Preprocessor definitions
+
+
+
 
 
 target_compile_definitions(RenderingEngine PRIVATE
