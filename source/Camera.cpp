@@ -5,15 +5,18 @@
 
 
 namespace dx = DirectX;
-Camera::Camera(std::string name, DirectX::XMFLOAT3 homePos, float homeXRotation, float homeYRotation) noexcept
+Camera::Camera(Graphics& gfx, std::string name, DirectX::XMFLOAT3 homePos, float homeXRotation, float homeYRotation) noexcept
 	:
 	name(std::move(name)),
 	homePos(homePos),
 	homeXRotation(homeXRotation),
 	homeYRotation(homeYRotation),
-	proj(1.f, 9.f / 16.f, 0.5f, 400.f)
+	proj(1.f, 9.f / 16.f, 0.5f, 400.f),
+	indicator(gfx)
 {
 	Reset();
+	indicator.SetPos(pos);
+	indicator.SetRotation({ xRotation,yRotation,0.0f });
 }
 void Camera::BindToGraphics(Graphics& gfx) const
 {
@@ -63,6 +66,7 @@ void Camera::Rotate(float dx, float dy) noexcept
 {
 	yRotation = wrap_angle(yRotation + dx * rotationSpeed);
 	xRotation = std::clamp(xRotation + dy * rotationSpeed, 0.995f * -PI / 2.0f, 0.995f * PI / 2.0f);
+	indicator.SetRotation({ xRotation,yRotation,0.0f });
 
 }
 
@@ -78,6 +82,7 @@ void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 		pos.y + translation.y,
 		pos.z + translation.z
 	};
+	indicator.SetPos(pos);
 }
 
 DirectX::XMFLOAT3 Camera::GetPos() const noexcept
@@ -88,4 +93,14 @@ DirectX::XMFLOAT3 Camera::GetPos() const noexcept
 const std::string& Camera::GetName() const noexcept
 {
 	return name;
+}
+
+void Camera::LinkTechniques(RenderGraph::RenderGraph& rg)
+{
+	indicator.LinkTechniques(rg);
+}
+
+void Camera::Submit() const
+{
+	indicator.Submit();
 }
