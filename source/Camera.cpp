@@ -14,11 +14,7 @@ Camera::Camera(Graphics& gfx, std::string name, DirectX::XMFLOAT3 homePos, float
 	proj(gfx, 1.f, 9.f / 16.f, 0.5f, 400.f),
 	indicator(gfx)
 {
-	Reset();
-	indicator.SetPos(pos);
-	indicator.SetRotation({ xRotation,yRotation,0.0f });
-	proj.SetPos(pos);
-	proj.SetRotation({ xRotation, yRotation, 0.f });
+	Reset(gfx);
 }
 void Camera::BindToGraphics(Graphics& gfx) const
 {
@@ -42,26 +38,48 @@ DirectX::XMMATRIX Camera::GetMatrix() const noexcept
 
 void Camera::SpawnControlWidgets(Graphics& gfx) noexcept
 {
-	
+	bool rotDirty = false;
+	bool posDirty = false;
+	const auto dcheck = [](bool d, bool& carry) {carry = carry || d; };
 	ImGui::Text("Position");
-	ImGui::SliderFloat("X", &pos.x, -80.0f, 80.0f, "%.1f");
-	ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.0f, "%.1f");
-	ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f");
+	dcheck(ImGui::SliderFloat("X", &pos.x, -80.0f, 80.0f, "%.1f"), posDirty);
+	dcheck(ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.0f, "%.1f"), posDirty);
+	dcheck(ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.0f, "%.1f"), posDirty);
 	ImGui::Text("Orientation");
-	ImGui::SliderAngle("Rotation X", &xRotation, 0.995 * -90.0f, 0.995 * 90.0f);
-	ImGui::SliderAngle("Rotation Y", &yRotation, -180.0f, 180.0f);
+	dcheck(ImGui::SliderAngle("Rotation X", &xRotation, 0.995 * -90.0f, 0.995 * 90.0f), rotDirty);
+	dcheck(ImGui::SliderAngle("Rotation Y", &yRotation, -180.0f, 180.0f), rotDirty);
+	proj.RenderWidgets(gfx);
+	ImGui::Checkbox("Camera Indicator", &enableCameraIndicator);
+	ImGui::Checkbox("Frustum Indicator", &enableFrustumIndicator);
 	if (ImGui::Button("Reset"))
 	{
-		Reset();
+		Reset(gfx);
 	}
-	proj.RenderWidgets(gfx);
+	if (rotDirty)
+	{
+		const dx::XMFLOAT3 angles = { xRotation,yRotation,0.0f };
+		indicator.SetRotation(angles);
+		proj.SetRotation(angles);
+	}
+	if (posDirty)
+	{
+		indicator.SetPos(pos);
+		proj.SetPos(pos);
+	}
 }
 
-void Camera::Reset() noexcept
+void Camera::Reset(Graphics& gfx) noexcept
 {
 	pos = homePos;
 	xRotation = homeXRotation;
 	yRotation = homeYRotation;
+
+	indicator.SetPos(pos);
+	proj.SetPos(pos);
+	const dx::XMFLOAT3 angles = { xRotation,yRotation,0.0f };
+	indicator.SetRotation(angles);
+	proj.SetRotation(angles);
+	proj.Reset(gfx);
 }
 
 void Camera::Rotate(float dx, float dy) noexcept
@@ -108,6 +126,12 @@ void Camera::LinkTechniques(RenderGraph::RenderGraph& rg)
 
 void Camera::Submit() const
 {
-	indicator.Submit();
-	proj.Submit();
+	if (enableCameraIndicator)
+	{
+		indicator.Submit();
+	}
+	if (enableFrustumIndicator)
+	{
+		proj.Submit();
+	}
 }
