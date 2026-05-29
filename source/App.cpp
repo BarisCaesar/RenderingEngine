@@ -136,7 +136,7 @@ void App::DoFrame(float dt)
 	sponzaProbe.SpawnWindow(sponza);
 	goblinProbe.SpawnWindow(goblin);
 	nanoProbe.SpawnWindow(nano);
-	cameras.SpawnWindow();
+	cameras.SpawnWindow(wnd.Gfx());
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 	cube.SpawnControlWindow(wnd.Gfx(), "Cube 1");

@@ -11,12 +11,14 @@ Camera::Camera(Graphics& gfx, std::string name, DirectX::XMFLOAT3 homePos, float
 	homePos(homePos),
 	homeXRotation(homeXRotation),
 	homeYRotation(homeYRotation),
-	proj(1.f, 9.f / 16.f, 0.5f, 400.f),
+	proj(gfx, 1.f, 9.f / 16.f, 0.5f, 400.f),
 	indicator(gfx)
 {
 	Reset();
 	indicator.SetPos(pos);
 	indicator.SetRotation({ xRotation,yRotation,0.0f });
+	proj.SetPos(pos);
+	proj.SetRotation({ xRotation, yRotation, 0.f });
 }
 void Camera::BindToGraphics(Graphics& gfx) const
 {
@@ -38,7 +40,7 @@ DirectX::XMMATRIX Camera::GetMatrix() const noexcept
 	return XMMatrixLookAtLH(camPosition, camTarget, XMVectorSet(0.f, 1.f, 0.f, 0.f));
 }
 
-void Camera::SpawnControlWidgets() noexcept
+void Camera::SpawnControlWidgets(Graphics& gfx) noexcept
 {
 	
 	ImGui::Text("Position");
@@ -52,7 +54,7 @@ void Camera::SpawnControlWidgets() noexcept
 	{
 		Reset();
 	}
-	proj.RenderWidgets();
+	proj.RenderWidgets(gfx);
 }
 
 void Camera::Reset() noexcept
@@ -66,7 +68,9 @@ void Camera::Rotate(float dx, float dy) noexcept
 {
 	yRotation = wrap_angle(yRotation + dx * rotationSpeed);
 	xRotation = std::clamp(xRotation + dy * rotationSpeed, 0.995f * -PI / 2.0f, 0.995f * PI / 2.0f);
-	indicator.SetRotation({ xRotation,yRotation,0.0f });
+	const dx::XMFLOAT3 angles = { xRotation,yRotation,0.0f };
+	indicator.SetRotation(angles);
+	proj.SetRotation(angles);
 
 }
 
@@ -83,6 +87,7 @@ void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
 		pos.z + translation.z
 	};
 	indicator.SetPos(pos);
+	proj.SetPos(pos);
 }
 
 DirectX::XMFLOAT3 Camera::GetPos() const noexcept
@@ -98,9 +103,11 @@ const std::string& Camera::GetName() const noexcept
 void Camera::LinkTechniques(RenderGraph::RenderGraph& rg)
 {
 	indicator.LinkTechniques(rg);
+	proj.LinkTechniques(rg);
 }
 
 void Camera::Submit() const
 {
 	indicator.Submit();
+	proj.Submit();
 }

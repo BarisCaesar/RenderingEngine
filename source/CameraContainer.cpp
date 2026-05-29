@@ -4,7 +4,7 @@
 #include "Graphics.h"
 #include "RenderGraph.h"
 
-void CameraContainer::SpawnWindow()
+void CameraContainer::SpawnWindow(Graphics& gfx)
 {
 	if (ImGui::Begin("Cameras"))
 	{
@@ -20,7 +20,7 @@ void CameraContainer::SpawnWindow()
 			}
 			ImGui::EndCombo();
 		}
-		GetCamera().SpawnControlWidgets();
+		GetCamera().SpawnControlWidgets(gfx);
 	}
 	ImGui::End();
 }
