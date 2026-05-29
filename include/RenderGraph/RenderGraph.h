@@ -26,6 +26,7 @@ namespace RenderGraph
 		void Execute(Graphics& gfx) noxnd;
 		void Reset() noexcept;
 		RenderQueuePass& GetRenderQueue(const std::string& passName);
+		void StoreDepth(Graphics& gfx, const std::string& path);
 	protected:
 		void SetSinkTarget(const std::string& sinkName, const std::string& target);
 		void AddGlobalSource(std::unique_ptr<Source>);
