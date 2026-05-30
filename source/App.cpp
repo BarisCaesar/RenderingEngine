@@ -121,8 +121,8 @@ void App::HandleInput(float dt)
 void App::DoFrame(float dt)
 {
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
-	cameras->BindToGraphics(wnd.Gfx());
 	light.Bind(wnd.Gfx(), cameras->GetMatrix());
+	rg.BindMainCamera(cameras.GetActiveCamera());
 
 	light.Submit(Channel::main);
 	cube.Submit(Channel::main);

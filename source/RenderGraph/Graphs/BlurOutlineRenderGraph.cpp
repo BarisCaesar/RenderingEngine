@@ -145,6 +145,15 @@ namespace RenderGraph
 		ImGui::End();
 	}
 
+	void BlurOutlineRenderGraph::BindMainCamera(Camera& cam)
+	{
+		dynamic_cast<LambertianPass&>(FindPassByName("lambertian")).BindMainCamera(cam);
+	}
+
+	void BlurOutlineRenderGraph::BindShadowCamera(Camera& cam)
+	{
+	}
+
 	void BlurOutlineRenderGraph::SetKernelBox(int radius) noxnd
 	{
 		assert(radius <= maxRadius);

@@ -49,7 +49,7 @@ void CameraContainer::AddCamera(std::shared_ptr<Camera> pCam)
 
 Camera* CameraContainer::operator->()
 {
-	return cameras[active].get();
+	return &GetActiveCamera();
 }
 
 CameraContainer::~CameraContainer()
@@ -73,6 +73,11 @@ void CameraContainer::Submit(size_t channels) const
 			cameras[i]->Submit(channels);
 		}
 	}
+}
+
+Camera& CameraContainer::GetActiveCamera()
+{
+	return *cameras[active];
 }
 
 Camera& CameraContainer::GetControlledCamera()
