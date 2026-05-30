@@ -107,6 +107,13 @@ namespace RenderGraph
 		{
 			const auto& inputSourcePassName = sink->GetPassName();
 
+			if (inputSourcePassName.empty())
+			{
+				std::ostringstream oss;
+				oss << "In pass named [" << pass.GetName() << "] sink named [" << sink->GetRegisteredName() << "] has no target source set.";
+				throw RGC_EXCEPTION(oss.str());
+			}
+
 			// check whether target source is global
 			if (inputSourcePassName == "$")
 			{
