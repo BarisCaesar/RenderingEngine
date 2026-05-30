@@ -43,6 +43,8 @@ App::App(const std::string& commandLine)
 	nano.LinkTechniques(rg);
 	cameras.LinkTechniques(rg);
 
+	rg.BindShadowCamera(*light.ShareCamera());
+
 }
 
 
@@ -132,7 +134,20 @@ void App::DoFrame(float dt)
 	nano.Submit(Channel::main);
 	cameras.Submit(Channel::main);
 
+	sponza.Submit(Channel::shadow);
+	cube.Submit(Channel::shadow);
+	sponza.Submit(Channel::shadow);
+	cube2.Submit(Channel::shadow);
+	goblin.Submit(Channel::shadow);
+	nano.Submit(Channel::shadow);
+
 	rg.Execute(wnd.Gfx());
+
+	if (savingDepth)
+	{
+		rg.DumpShadowMap(wnd.Gfx(), "shadow.png");
+		savingDepth = false;
+	}
 
 	// imgui windows
 	static MP sponzaProbe{"Sponza"};
@@ -153,11 +168,6 @@ void App::DoFrame(float dt)
 	wnd.Gfx().EndFrame();
 	rg.Reset();
 
-	if (savingDepth)
-	{
-		rg.StoreDepth(wnd.Gfx(), "depth.png");
-		savingDepth = false;
-	}
 }
 
 void App::ShowImguiDemoWindow()

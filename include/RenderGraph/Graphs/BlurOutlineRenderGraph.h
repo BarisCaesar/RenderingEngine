@@ -18,6 +18,7 @@ namespace RenderGraph
 	public:
 		BlurOutlineRenderGraph(Graphics& gfx);
 		void RenderWidgets(Graphics& gfx);
+		void DumpShadowMap(Graphics& gfx, const std::string& path);
 		void BindMainCamera(Camera& cam);
 		void BindShadowCamera(Camera& cam);
 	private:
