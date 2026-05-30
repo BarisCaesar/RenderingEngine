@@ -6,6 +6,7 @@
 #include "DynamicConstant.h"
 #include "TechniqueProbe.h"
 #include "TransformCBufScaling.h"
+#include "Channels.h"
 
 TestCube::TestCube(Graphics& gfx, float size)
 {
@@ -23,7 +24,7 @@ TestCube::TestCube(Graphics& gfx, float size)
 	auto tcb = std::make_shared<TransformCBuf>(gfx);
 
 	{
-		Technique shade("Shade");
+		Technique shade("Shade", Channel::main);
 		{
 			Step only("lambertian");
 
@@ -57,7 +58,7 @@ TestCube::TestCube(Graphics& gfx, float size)
 		AddTechnique(std::move(shade));
 	}
 	{
-		Technique outline("Outline");
+		Technique outline("Outline", Channel::main);
 		{
 			Step mask("outlineMask");
 			// TODO: better sub-layout generation tech for future consideration maybe

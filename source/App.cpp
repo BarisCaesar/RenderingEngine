@@ -7,6 +7,7 @@
 #include "PerfLog.h"
 #include "TestModelProbe.h"
 #include "Camera.h"
+#include "Channels.h"
 
 namespace dx = DirectX;
 
@@ -123,13 +124,13 @@ void App::DoFrame(float dt)
 	cameras->BindToGraphics(wnd.Gfx());
 	light.Bind(wnd.Gfx(), cameras->GetMatrix());
 
-	light.Submit();
-	cube.Submit();
-	sponza.Submit();
-	cube2.Submit();
-	goblin.Submit();
-	nano.Submit();
-	cameras.Submit();
+	light.Submit(Channel::main);
+	cube.Submit(Channel::main);
+	sponza.Submit(Channel::main);
+	cube2.Submit(Channel::main);
+	goblin.Submit(Channel::main);
+	nano.Submit(Channel::main);
+	cameras.Submit(Channel::main);
 
 	rg.Execute(wnd.Gfx());
 

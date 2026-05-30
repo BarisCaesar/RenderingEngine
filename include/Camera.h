@@ -24,7 +24,7 @@ public:
 	void SetPos(const DirectX::XMFLOAT3& pos) noexcept;
 	const std::string& GetName() const noexcept;
 	void LinkTechniques(RenderGraph::RenderGraph& rg);
-	void Submit() const;
+	void Submit(size_t channels) const;
 private:
 	bool tethered;
 	std::string name;

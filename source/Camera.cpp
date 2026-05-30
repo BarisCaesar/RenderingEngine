@@ -147,14 +147,14 @@ void Camera::LinkTechniques(RenderGraph::RenderGraph& rg)
 	proj.LinkTechniques(rg);
 }
 
-void Camera::Submit() const
+void Camera::Submit(size_t channels) const
 {
 	if (enableCameraIndicator)
 	{
-		indicator.Submit();
+		indicator.Submit(channels);
 	}
 	if (enableFrustumIndicator)
 	{
-		proj.Submit();
+		proj.Submit(channels);
 	}
 }

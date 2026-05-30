@@ -4,6 +4,7 @@
 #include "Vertex.h"
 #include "Sphere.h"
 #include "Stencil.h"
+#include "Channels.h"
 
 
 SolidSphere::SolidSphere(Graphics& gfx, float radius)
@@ -20,7 +21,7 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 	pTopology = Topology::Resolve(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	{
-		Technique solid;
+		Technique solid{Channel::main};
 		Step only("lambertian");
 
 		auto pvs = VertexShader::Resolve(gfx, "Solid_VS.cso");
