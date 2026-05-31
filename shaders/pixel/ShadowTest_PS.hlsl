@@ -2,19 +2,18 @@
 #include "LightVectorData.hlsl"
 
 #include "PointLight.hlsl"
+#include "ShadowPSCommon.hlsl"
 
-cbuffer ObjectCBuf
+cbuffer ObjectCBuf : register(b1)
 {
     float3 specularColor;
     float specularWeight;
     float specularGloss;
 };
 
-Texture2D tex;
-Texture2D smap : register(t3);
+Texture2D tex : register(t0);
+SamplerState splr : register(s0);
 
-SamplerState splr;
-SamplerState ssam;
 
 
 float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float2 tc : Texcoord, float3 spos : ShadowPosition) : SV_Target
@@ -23,7 +22,7 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float2 tc
     float3 specular;
     
     // shadow map test
-    if (smap.Sample(ssam, spos.xy).r >= spos.z - 0.005f)
+    if (ShadowUnoccluded(spos))
     {
         // renormalize interpolated normal
         viewNormal = normalize(viewNormal);
