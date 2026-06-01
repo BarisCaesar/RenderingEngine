@@ -167,22 +167,22 @@ Material::Material(Graphics& gfx, const aiMaterial& material, const std::filesys
 		techniques.push_back(std::move(outline));
 	}
 	// shadow map technique
-	//{
-	//	Technique map{ "ShadowMap",Channel::shadow,true };
-	//	{
-	//		Step draw("shadowMap");
+	{
+		Technique map{ "ShadowMap",Channel::shadow,true };
+		{
+			Step draw("shadowMap");
 
-	//		// TODO: better sub-layout generation tech for future consideration maybe
-	//		draw.AddBindable(InputLayout::Resolve(gfx, vertexLayout, *VertexShader::Resolve(gfx, "Solid_VS.cso")));
+			// TODO: better sub-layout generation tech for future consideration maybe
+			draw.AddBindable(InputLayout::Resolve(gfx, vertexLayout, *VertexShader::Resolve(gfx, "Solid_VS.cso")));
 
-	//		draw.AddBindable(std::make_shared<TransformCBuf>(gfx));
+			draw.AddBindable(std::make_shared<TransformCBuf>(gfx));
 
-	//		// TODO: might need to specify rasterizer when doubled-sided models start being used
+			// TODO: might need to specify rasterizer when doubled-sided models start being used
 
-	//		map.AddStep(std::move(draw));
-	//	}
-	//	techniques.push_back(std::move(map));
-	//}
+			map.AddStep(std::move(draw));
+		}
+		techniques.push_back(std::move(map));
+	}
 }
 
 DynamicVertex::VertexBuffer Material::ExtractVertices(const aiMesh& mesh) const noexcept
