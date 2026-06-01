@@ -6,9 +6,10 @@ A rendering engine developed to explore computer graphics techniques and game en
 
 ## Features
 
+- Dynamic shadows using shadow-mapping technique.
 - Phong lighting with specular highlights.
 - Importing 3D models and dynamically deciding shaders based on model's attributes.
-- Render queue system for ordering draw calls based on their priority.
+- Render pass system for dividing rendering process into sequential steps such as lighting, depth or shadows.
 - Node system for 3D models that allows shader attributes to be modified dynamically at runtime.
 
 More rendering experiments and engine features will be added over time as the project evolves.
