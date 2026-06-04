@@ -57,6 +57,7 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float2 tc
             lv.vToL, viewFragPos, att, specularPowerLoaded
         );
         diffuse *= shadowLevel;
+        specularReflected *= shadowLevel;
     }
     else
     {
