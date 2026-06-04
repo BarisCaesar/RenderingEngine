@@ -17,12 +17,14 @@ namespace RenderGraph
 	{
 	public:
 		BlurOutlineRenderGraph(Graphics& gfx);
-		void RenderWidgets(Graphics& gfx);
+		void RenderWindows(Graphics& gfx);
 		void DumpShadowMap(Graphics& gfx, const std::string& path);
 		void BindMainCamera(Camera& cam);
 		void BindShadowCamera(Camera& cam);
 	private:
 		// private functions
+		void RenderKernelWindow(Graphics& gfx);
+		void RenderShadowWindow(Graphics& gfx);
 		void SetKernelGauss(int radius, float sigma) noxnd;
 		void SetKernelBox(int radius) noxnd;
 		// private data
@@ -36,5 +38,6 @@ namespace RenderGraph
 		float sigma = 2.0f;
 		std::shared_ptr<Bind::CachingPixelConstantBufferEx> blurKernel;
 		std::shared_ptr<Bind::CachingPixelConstantBufferEx> blurDirection;
+		std::shared_ptr<Bind::CachingPixelConstantBufferEx> shadowControl;
 	};
 }
