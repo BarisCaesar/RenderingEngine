@@ -21,16 +21,15 @@ namespace RenderGraph
 		LambertianPass(Graphics& gfx, std::string name)
 			:
 			RenderQueuePass(std::move(name)),
-			pShadowCBuf{ std::make_shared<Bind::ShadowCameraCBuf>(gfx) },
-			pShadowSampler{ std::make_shared<Bind::ShadowSampler>(gfx) }
+			pShadowCBuf{ std::make_shared<Bind::ShadowCameraCBuf>(gfx) }
 		{
 			using namespace Bind;
 			AddBind(pShadowCBuf);
-			AddBind(pShadowSampler);
 			RegisterSink(DirectBufferSink<RenderTarget>::Make("renderTarget", renderTarget));
 			RegisterSink(DirectBufferSink<DepthStencil>::Make("depthStencil", depthStencil));
 			AddBindSink<Bind::Bindable>("shadowMap");
 			AddBindSink<Bind::Bindable>("shadowControl");
+			AddBindSink<Bind::Bindable>("shadowSampler");
 			RegisterSource(DirectBufferSource<RenderTarget>::Make("renderTarget", renderTarget));
 			RegisterSource(DirectBufferSource<DepthStencil>::Make("depthStencil", depthStencil));
 			AddBind(Stencil::Resolve(gfx, Stencil::Mode::Off));
@@ -51,7 +50,6 @@ namespace RenderGraph
 			RenderQueuePass::Execute(gfx);
 		}
 	private:
-		std::shared_ptr<Bind::ShadowSampler> pShadowSampler;
 		std::shared_ptr<Bind::ShadowCameraCBuf> pShadowCBuf;
 		const Camera* pMainCamera = nullptr;
 	};
