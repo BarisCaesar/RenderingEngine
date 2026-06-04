@@ -32,6 +32,7 @@ namespace RenderGraph
 			AddBind(NullPixelShader::Resolve(gfx));
 			AddBind(Stencil::Resolve(gfx, Stencil::Mode::Off));
 			AddBind(Blender::Resolve(gfx, false));
+			AddBindSink<Bind::Bindable>("shadowRasterizer");
 			RegisterSource(DirectBindableSource<Bind::DepthStencil>::Make("map", depthStencil));
 		}
 		void Execute(Graphics& gfx) const noxnd override
