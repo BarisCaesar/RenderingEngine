@@ -110,6 +110,7 @@ namespace RenderGraph
 	void BlurOutlineRenderGraph::RenderWindows(Graphics& gfx)
 	{
 		RenderKernelWindow(gfx);
+		dynamic_cast<SkyboxPass&>(FindPassByName("skybox")).RenderWindow();
 		
 	}
 	void BlurOutlineRenderGraph::RenderKernelWindow(Graphics& gfx)
