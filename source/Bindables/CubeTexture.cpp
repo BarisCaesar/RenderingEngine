@@ -79,7 +79,7 @@ namespace Bind
 		textureDesc.Height = size;
 		textureDesc.MipLevels = 1;
 		textureDesc.ArraySize = 6;
-		textureDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+		textureDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R32_TYPELESS;
 		textureDesc.SampleDesc.Count = 1;
 		textureDesc.SampleDesc.Quality = 0;
 		textureDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -101,7 +101,7 @@ namespace Bind
 		// make depth buffer resources for capturing shadow map
 		for (UINT face = 0; face < 6; face++)
 		{
-			depthBuffers.push_back(std::make_unique<OutputOnlyDepthStencil>(gfx, pTexture, face));
+			depthBuffers.push_back(std::make_shared<OutputOnlyDepthStencil>(gfx, pTexture, face));
 		}
 	}
 
@@ -111,8 +111,9 @@ namespace Bind
 		GFX_THROW_INFO_ONLY(GetContext(gfx)->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf()));
 	}
 
-	OutputOnlyDepthStencil& DepthCubeTexture::GetDepthBuffer(size_t index) const
+	std::shared_ptr<OutputOnlyDepthStencil> DepthCubeTexture::GetDepthBuffer(size_t index) const
 	{
-		return *depthBuffers[index];
+		return depthBuffers[index];
 	}
 }
+

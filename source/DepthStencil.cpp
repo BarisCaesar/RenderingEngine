@@ -55,6 +55,7 @@ namespace Bind
 		// create target view of depth stencil texture
 		D3D11_DEPTH_STENCIL_VIEW_DESC descView = {};
 		descView.Format = DXGI_FORMAT_D32_FLOAT;
+		descView.Flags = 0;
 		descView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 		descView.Texture2DArray.MipSlice = 0;
 		descView.Texture2DArray.ArraySize = 1;
@@ -259,4 +260,5 @@ namespace Bind
 		assert("OutputOnlyDepthStencil cannot be bound as shader input" && false);
 	}
 }
+
 

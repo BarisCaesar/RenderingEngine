@@ -54,3 +54,4 @@ namespace Bind
 		void Bind(Graphics& gfx) noxnd override;
 	};
 }
+
