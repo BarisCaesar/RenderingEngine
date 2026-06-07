@@ -23,9 +23,11 @@ namespace RenderGraph
 		void DumpShadowMap(Graphics& gfx, const std::string& path);
 		void BindMainCamera(Camera& cam);
 		void BindShadowCamera(Camera& cam);
+		void StoreDepth(Graphics& gfx, const std::string& path);
 	private:
 		// private functions
 		void RenderKernelWindow(Graphics& gfx);
+		void RenderShadowWindow(Graphics& gfx);
 		void SetKernelGauss(int radius, float sigma) noxnd;
 		void SetKernelBox(int radius) noxnd;
 		// private data
