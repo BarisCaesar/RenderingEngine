@@ -35,7 +35,7 @@ namespace RenderGraph
 			AddBind(NullPixelShader::Resolve(gfx));
 			AddBind(Stencil::Resolve(gfx, Stencil::Mode::Off));
 			AddBind(Blender::Resolve(gfx, false));
-			AddBind(std::make_shared<Viewport>(gfx, 100.f));
+			AddBind(std::make_shared<Viewport>(gfx, (float)size, (float)size));
 			AddBind(std::make_shared<Bind::ShadowRasterizer>(gfx, 50, 2.f, 0.1f));
 			RegisterSource(DirectBindableSource<Bind::DepthCubeTexture>::Make("map", pDepthCube));
 
