@@ -41,7 +41,7 @@ namespace RenderGraph
 
 			DirectX::XMStoreFloat4x4(
 				&projection,
-				DirectX::XMMatrixPerspectiveLH(1.f, 1.f, 1.f, 60.f)
+				DirectX::XMMatrixPerspectiveLH(1.f, 1.f, 0.5f, 100.f)
 			);
 			// +x
 			DirectX::XMStoreFloat3(&cameraDirections[0], DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f));
@@ -77,10 +77,6 @@ namespace RenderGraph
 			{
 				auto d = pDepthCube->GetDepthBuffer(i);
 				d->Clear(gfx);
-			}
-			for(size_t i = 0; i < 1; i++)
-			{
-				auto d = pDepthCube->GetDepthBuffer(i);
 				SetDepthBuffer(std::move(d));
 				const auto lookAt = pos + XMLoadFloat3(&cameraDirections[i]);
 				gfx.SetCamera(XMMatrixLookAtLH(pos, lookAt, XMLoadFloat3(&cameraUps[i])));
