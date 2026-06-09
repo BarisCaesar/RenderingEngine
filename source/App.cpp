@@ -21,10 +21,11 @@ App::App(const std::string& commandLine)
 	light(wnd.Gfx(), {10.f, 5.f, 0.f})
 {
 	cameras.AddCamera(std::make_unique<Camera>(wnd.Gfx(), "A", dx::XMFLOAT3{ -13.5f,6.0f,3.5f }, 0.0f, PI / 2.0f));
-	cameras.AddCamera(std::make_unique<Camera>(wnd.Gfx(), "B", dx::XMFLOAT3{ -13.5f,28.8f,-6.4f }, PI / 180.0f * 13.0f, PI / 180.0f * 61.0f));
-	cameras.AddCamera(light.ShareCamera());
+	//cameras.AddCamera(std::make_unique<Camera>(wnd.Gfx(), "B", dx::XMFLOAT3{ -13.5f,28.8f,-6.4f }, PI / 180.0f * 13.0f, PI / 180.0f * 61.0f));
+	//cameras.AddCamera(light.ShareCamera());
 
 	cube.SetPos({ 10.0f,5.0f,6.0f });
+	/*
 	cube2.SetPos({ 10.0f,5.0f,14.0f });
 	nano.SetRootTransform(
 		dx::XMMatrixRotationY(PI / 2.f) *
@@ -34,13 +35,13 @@ App::App(const std::string& commandLine)
 		dx::XMMatrixRotationY(-PI / 2.f) *
 		dx::XMMatrixTranslation(-8.f, 10.f, 0.f)
 	);
-
+	*/
 	cube.LinkTechniques(rg);
-	cube2.LinkTechniques(rg);
+	//cube2.LinkTechniques(rg);
 	light.LinkTechniques(rg);
-	sponza.LinkTechniques(rg);
-	goblin.LinkTechniques(rg);
-	nano.LinkTechniques(rg);
+	//sponza.LinkTechniques(rg);
+	//goblin.LinkTechniques(rg);
+	//nano.LinkTechniques(rg);
 	cameras.LinkTechniques(rg);
 
 	rg.BindShadowCamera(*light.ShareCamera());
@@ -128,18 +129,18 @@ void App::DoFrame(float dt)
 
 	light.Submit(Channel::main);
 	cube.Submit(Channel::main);
-	sponza.Submit(Channel::main);
+	/*sponza.Submit(Channel::main);
 	cube2.Submit(Channel::main);
 	goblin.Submit(Channel::main);
-	nano.Submit(Channel::main);
+	nano.Submit(Channel::main);*/
 	cameras.Submit(Channel::main);
 
-	sponza.Submit(Channel::shadow);
+	//sponza.Submit(Channel::shadow);
 	cube.Submit(Channel::shadow);
-	sponza.Submit(Channel::shadow);
+	/*sponza.Submit(Channel::shadow);
 	cube2.Submit(Channel::shadow);
 	goblin.Submit(Channel::shadow);
-	nano.Submit(Channel::shadow);
+	nano.Submit(Channel::shadow);*/
 
 	rg.Execute(wnd.Gfx());
 
@@ -153,14 +154,14 @@ void App::DoFrame(float dt)
 	static MP sponzaProbe{"Sponza"};
 	static MP goblinProbe{"Goblin"};
 	static MP nanoProbe{"Nano"};
-	sponzaProbe.SpawnWindow(sponza);
-	goblinProbe.SpawnWindow(goblin);
-	nanoProbe.SpawnWindow(nano);
+	//sponzaProbe.SpawnWindow(sponza);
+	//goblinProbe.SpawnWindow(goblin);
+	//nanoProbe.SpawnWindow(nano);
 	cameras.SpawnWindow(wnd.Gfx());
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 	cube.SpawnControlWindow(wnd.Gfx(), "Cube 1");
-	cube2.SpawnControlWindow(wnd.Gfx(), "Cube 2");
+	//cube2.SpawnControlWindow(wnd.Gfx(), "Cube 2");
 
 	rg.RenderWindows(wnd.Gfx());
 

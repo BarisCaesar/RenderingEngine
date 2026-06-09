@@ -34,11 +34,11 @@ private:
 	float speedFactor = 1.f;
 	CameraContainer cameras;
 	PointLight light;
-	TestCube cube = { wnd.Gfx(), 4.f };
-	TestCube cube2 = { wnd.Gfx(), 4.f };
-	Model sponza{ wnd.Gfx(), "Models\\sponza\\sponza.obj", 1.f / 20.f };
-	Model goblin{ wnd.Gfx(), "Models\\goblin\\GoblinX.obj", 4.f };
-	Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj", 2.f };
+	TestCube cube = { wnd.Gfx(), 14.f };
+	//TestCube cube2 = { wnd.Gfx(), 4.f };
+	//Model sponza{ wnd.Gfx(), "Models\\sponza\\sponza.obj", 1.f / 20.f };
+	//Model goblin{ wnd.Gfx(), "Models\\goblin\\GoblinX.obj", 4.f };
+	//Model nano{ wnd.Gfx(), "Models\\nano_textured\\nanosuit.obj", 2.f };
 	bool savingDepth = false;
 
 };
