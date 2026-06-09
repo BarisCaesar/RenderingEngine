@@ -42,13 +42,10 @@ namespace Bind
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pShaderResourceView;
 	};
 
-	// RT for Graphics to create RenderTarget for the back buffer
 	class OutputOnlyRenderTarget : public RenderTarget
 	{
-		friend Graphics;
 	public:
 		void Bind(Graphics& gfx) noxnd override;
-	private:
 		OutputOnlyRenderTarget(Graphics& gfx, ID3D11Texture2D* pTexture, std::optional<UINT> face = {});
 	};
 }
