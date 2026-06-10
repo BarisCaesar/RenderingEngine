@@ -131,6 +131,11 @@ namespace Bind
 
 		auto [pTexTemp, desc] = MakeStaging(gfx);
 
+		if (desc.Format != DXGI_FORMAT::DXGI_FORMAT_B8G8R8A8_UNORM)
+		{
+			throw std::runtime_error("tosurface in RenderTarget on bad dxgi format");
+		}
+
 		// create Surface and copy from temp texture to it
 		const auto width = GetWidth();
 		const auto height = GetHeight();
