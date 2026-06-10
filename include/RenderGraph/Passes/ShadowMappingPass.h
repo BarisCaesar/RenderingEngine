@@ -38,7 +38,8 @@ namespace RenderGraph
 			AddBind(Stencil::Resolve(gfx, Stencil::Mode::Off));
 			AddBind(Blender::Resolve(gfx, false));
 			AddBind(std::make_shared<Viewport>(gfx, (float)size, (float)size));
-			AddBind(std::make_shared<Bind::Rasterizer>(gfx, false));
+			AddBind( std::make_shared<Bind::ShadowRasterizer>( gfx,0.0f,20.0f,1.0f ) );
+			//AddBind(std::make_shared<Bind::Rasterizer>(gfx, false));
 			RegisterSource(DirectBindableSource<Bind::CubeTargetTexture>::Make("map", pDepthCube));
 
 			DirectX::XMStoreFloat4x4(
@@ -78,7 +79,7 @@ namespace RenderGraph
 				auto rt = pDepthCube->GetRenderTarget(i);
 				rt->Clear(gfx);
 				depthStencil->Clear(gfx);
-				SetRenderTarget(std::move(rt));
+				SetRenderTarget(rt);
 				const auto lookAt = pos + XMLoadFloat3(&cameraDirections[i]);
 				gfx.SetCamera(XMMatrixLookAtLH(pos, lookAt, XMLoadFloat3(&cameraUps[i])));
 				RenderQueuePass::Execute(gfx);

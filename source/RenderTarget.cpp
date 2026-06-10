@@ -159,7 +159,9 @@ namespace Bind
 	std::pair<Microsoft::WRL::ComPtr<ID3D11Texture2D>, D3D11_TEXTURE2D_DESC> Bind::RenderTarget::MakeStaging(Graphics& gfx) const
 	{
 		INFOMAN(gfx);
-
+		// get info about the stencil view
+		D3D11_RENDER_TARGET_VIEW_DESC srcViewDesc{};
+		pTargetView->GetDesc(&srcViewDesc);
 		// creating a temp texture compatible with the source, but with CPU read access
 		wrl::ComPtr<ID3D11Resource> pResSource;
 		pTargetView->GetResource(&pResSource);
@@ -178,8 +180,16 @@ namespace Bind
 			&tmpTextureDesc, nullptr, &pTexTemp
 		));
 
-		// copy the contents to temp staging texture
-		GFX_THROW_INFO_ONLY(GetContext(gfx)->CopyResource(pTexTemp.Get(), pTexSource.Get()));
+		// copy texture contents
+		if (srcViewDesc.ViewDimension == D3D11_RTV_DIMENSION::D3D11_RTV_DIMENSION_TEXTURE2DARRAY)
+		{
+			// source is actually inside a cubemap texture, use view info to find the correct slice and copy subresource
+			GFX_THROW_INFO_ONLY(GetContext(gfx)->CopySubresourceRegion(pTexTemp.Get(), 0, 0, 0, 0, pTexSource.Get(), srcViewDesc.Texture2DArray.FirstArraySlice, nullptr));
+		}
+		else
+		{
+			GFX_THROW_INFO_ONLY(GetContext(gfx)->CopyResource(pTexTemp.Get(), pTexSource.Get()));
+		}
 
 		return { std::move(pTexTemp),srcTextureDesc };
 	}
